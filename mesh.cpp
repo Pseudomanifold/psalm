@@ -27,24 +27,153 @@ bool mesh::load_ply(const char* filename)
 	if(in.bad())
 		return(false);
 
-	// Read the headers; this is quick and dirty for now: All lines
-	// are skipped until "end_header" appears. Afterwards, the
-	// vertices followed by the faces will be read.
-		
 	string data;
-
-	in >> data;
-	if(data != "ply")
-		return(false);
 	
-	size_t num_vertices 	= 12; // FIXME: This should be read from file.
-	size_t num_faces 	= 20;
+	// Read the headers: Only ASCII format is accepted, but the version is
+	// ignored
 
-	while(in.good() && data != "end_header")
-		in >> data;
+	cout << "Parsing PLY header...\n";
+		
+	getline(in, data);
+	if(data != "ply")
+	{
+		cerr << "Error: \"" << filename << "\" is not a PLY file.\n";
+		return(false);
+	}
 
-	cout 	<< num_vertices << " vertices read\n"
-		<< num_faces	<< " faces read\n";
+	getline(in, data);
+	if(data.find("format ascii") == string::npos)
+	{
+		cerr << data;
+		cerr << "Error: \"" << filename << "\" is not an ASCII PLY file.\n";
+		return(false);
+	}
+
+	/*
+		Parsing further element properties is quick and dirty: It is
+		assumed that face data is declared _after_ the vertex data.
+		Properties are assumed to come in the natural order, i.e.:
+
+			x
+			y
+			z
+
+		for vertex data.
+	*/
+
+	size_t num_vertices 	= 0;
+	size_t num_faces 	= 0;
+
+	const short MODE_PARSE_HEADER			= 0;
+	const short MODE_PARSE_VERTEX_PROPERTIES 	= 1;
+	const short MODE_PARSE_FACE_PROPERTIES	 	= 2;
+	
+	short mode = MODE_PARSE_HEADER;
+	while(!in.eof()) 
+	{
+		getline(in, data);
+		
+		/*
+			Lines contaning "comment" or "obj_info" are skipped.
+			Not sure whether obj_info is allowed to appear at all.
+		*/
+		if(	data.find("comment")  != string::npos ||
+			data.find("obj_info") != string::npos)
+			continue;
+		else if(data.find("end_header") != string::npos)
+		{
+			cout << "...finished parsing.\n";
+			break;
+		}
+
+		switch(mode)
+		{
+			case MODE_PARSE_VERTEX_PROPERTIES:
+
+				if(data.find("property") != string::npos)
+				{
+					/*
+						Ignore. Some special handlings
+						for more properties could be
+						added here.
+					*/
+
+					continue;
+				}
+				else if(data.find("element face") != string::npos)
+				{
+					mode = MODE_PARSE_FACE_PROPERTIES;
+
+					string dummy; // not necessary, but more readable
+					istringstream converter(data);
+					converter >> dummy >> dummy >> num_faces;
+
+					if(num_faces == 0)
+					{
+						cerr << "Unable to read number of faces from PLY file.\n";
+						return(false);
+					}
+
+					cout << "* Number of faces: " << num_faces << "\n"; 
+
+					mode = MODE_PARSE_FACE_PROPERTIES;
+				}
+				else
+				{
+					cerr << "Error: Got \"" << data << "\", expected \"property\"\n";
+					return(false);
+				}
+				
+				break;
+			
+			case MODE_PARSE_FACE_PROPERTIES:
+
+				if(data.find("property list") == string::npos)
+				{
+					cerr << "Warning: Got \"" << data << "\". "
+					<< "This property is unknown and might lead "
+					<< "to problems when parsing the file.\n";
+				}
+
+				break;
+
+			// Expect "element vertex" line
+			case MODE_PARSE_HEADER:
+
+				if(data.find("element vertex") != string::npos)
+				{
+					mode = MODE_PARSE_VERTEX_PROPERTIES;
+
+					string dummy; // not necessary, but more readable
+					istringstream converter(data);
+					converter >> dummy >> dummy >> num_vertices;
+
+					if(num_vertices == 0)
+					{
+						cerr << "Unable to read number of vertices from PLY file.\n";
+						return(false);
+					}
+
+					cout << "* Number of vertices: " << num_vertices << "\n";
+					
+					mode = MODE_PARSE_VERTEX_PROPERTIES;
+				}
+				else
+				{
+					cerr 	<< "Got \"" << data 
+						<< "\", but expected \"element vertex\" "
+						<< "or \"element face\"\n";
+					return(false);
+				}
+				
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	cout << "Reading vertex and edge data...\n";
 	
 	size_t line 	= 0;
 	size_t k 	= 0; // number of vertices for face
@@ -84,29 +213,8 @@ bool mesh::load_ply(const char* filename)
 
 		line++;
 	}
-
-//	for(size_t i = 0; i < F.size(); i++)
-//	{
-//		cout 	<< "Face [" << setw(4) << i << "]:\n\n"
-//			<< "\t\t";
-//		for(size_t j = 0; j < F[i].E.size(); j++)
-//		{
-//			// FIXME
-//			edge e = edge_table.get(F[i].E[j].e);
-//			if(F[i].E[j].inverted)
-//				cout << e.v << "--" << e.u << " ";
-//			else
-//				cout << e.u << "--" << e.v << " ";
-//		//	edge e = edge_table.vec_edge[F[i].E[j].e-1];
-//		//	if(F[i].E[j].flip)
-//		//		cout << e.v << "--" << e.u << " ";
-//		//	else
-//		//		cout << e.u << "--" << e.v << " ";
-//		}
-//
-//		cout << "\n\n";
-//	}
-
+	
+	cout << "...finished.\n";
 	return(true);
 }
 

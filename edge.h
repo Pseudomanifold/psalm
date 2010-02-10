@@ -3,8 +3,8 @@
 *	@brief	Edge class
 */
 
-#ifndef EDGE_H
-#define EDGE_H
+#ifndef __EDGE_H__
+#define __EDGE_H__
 
 #include <iostream>
 
@@ -26,7 +26,6 @@ class edge
 		size_t f2;
 
 		bool operator<(const edge& b) const;
-		bool operator==(const edge& b) const;
 };
 
 #endif

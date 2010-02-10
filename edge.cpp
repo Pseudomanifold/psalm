@@ -45,12 +45,3 @@ bool edge::operator<(const edge& b) const
 
 	return(false);
 }
-
-bool edge::operator==(const edge& b) const
-{
-	if(	u == b.u && v == b.v ||
-		v == b.u && u == b.v)
-		return(true);
-	else
-		return(false);
-}
