@@ -38,7 +38,6 @@ class t_edge
 		size_t size();
 
 	private:
-
 		std::vector<edge>	E;
 		std::map<edge, size_t> 	T;
 };

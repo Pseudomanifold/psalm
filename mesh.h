@@ -13,8 +13,8 @@
 #include "edge.h"
 #include "face.h"
 
-#include "t_edge.h"
 #include "t_face.h"
+#include "t_edge_hash.h"
 
 /*!
 *	@class mesh
@@ -24,16 +24,14 @@
 class mesh
 {
 	public:
-		
 		bool load_ply(const char* filename);
 		bool save_ply(const char* filename);
 
 		void draw();
 
 	private:
-
-		t_edge edge_table;
-		t_face face_table;
+		t_edge_hash 	edge_table;
+		t_face 		face_table;
 		
 		std::vector<vertex> 	V;
 		std::vector<edge>	E;

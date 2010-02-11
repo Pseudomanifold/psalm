@@ -8,6 +8,7 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <ctime>
 
 #include "v3ctor.cpp"
 #include "mesh.h"
@@ -175,6 +176,8 @@ bool mesh::load_ply(const char* filename)
 
 	cout << "Reading vertex and edge data...\n";
 	
+	clock_t start = clock();
+
 	size_t line 	= 0;
 	size_t k 	= 0; // number of vertices for face
 
@@ -189,19 +192,15 @@ bool mesh::load_ply(const char* filename)
 		else
 		{
 			k = 0;
-
 			in >> k;
-			edge e;
-			face f;
-
 			if(k == 0)
 				break;
 
-			size_t v = 0;
-
 			// Store vertices of face in proper order and add a new
 			// face.
+			
 			vector<size_t> vertices;
+			size_t v = 0;
 			for(size_t i = 0; i < k; i++)
 			{
 				in >> v;
@@ -213,8 +212,10 @@ bool mesh::load_ply(const char* filename)
 
 		line++;
 	}
+
+	clock_t end = clock();
 	
-	cout << "...finished.\n";
+	cout << "...finished in " << (end-start)/static_cast<double>(CLOCKS_PER_SEC) << "s\n";
 	return(true);
 }
 
