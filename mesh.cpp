@@ -292,9 +292,14 @@ void mesh::add_face(vector<size_t> vertices)
 		// Edge already known; update second adjacent face
 		if(result.inverted)
 			face_table.set_f2(result.e, face_index);
-		// New edge; update first adjacent face
+		// New edge; update first adjacent face and adjacent vertices
 		else
+		{
 			face_table.set_f1(result.e, face_index);
+
+			V[u].add_incident_edge(result.e);
+			V[v].add_incident_edge(result.e);
+		}
 
 		// Set next start vertex; the orientation should be correct
 		// here

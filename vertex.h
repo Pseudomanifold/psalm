@@ -6,6 +6,7 @@
 #ifndef VERTEX_H
 #define VERTEX_H
 
+#include <vector>
 #include "v3ctor.h"
 
 /*!
@@ -17,6 +18,14 @@ class vertex
 {
 	public:
 		v3ctor p;
+
+		void add_incident_edge(const size_t& e);
+		size_t& get(const size_t& i);
+		
+		size_t size();
+
+	private:
+		std::vector<size_t> E;
 };
 
 #endif
