@@ -19,10 +19,14 @@ class vertex
 	public:
 		v3ctor p;
 
+		size_t v_p; // FIXME: Vertex points should be stored elsewhere.
+
 		void add_incident_edge(const size_t& e);
 		size_t& get(const size_t& i);
 		
 		size_t size();
+
+		bool v_v; // FIXME: Flag whether it is a "vertex vertex".
 
 	private:
 		std::vector<size_t> E;

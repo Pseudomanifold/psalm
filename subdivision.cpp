@@ -9,6 +9,7 @@
 
 #include "subdivision.h"
 #include "mesh.h"
+#include "zpr.h"
 
 using namespace std;
 
@@ -63,6 +64,8 @@ int main(int argc, char* argv[])
 
 void init_scene(void)
 {
+	zprInit();
+
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_DEPTH_TEST);
@@ -131,9 +134,9 @@ void keyboard_callback(unsigned char key, int x, int y)
 //			scene_mesh.subdivide_catmull_clark();
 //			break;
 //		
-//		case 'l':
-//			scene_mesh.subdivide_loop();
-//			break;	
+		case 'l':
+			scene_mesh.subdivide_loop();
+			break;	
 
 		case 'r':
 			scene_mesh.load_ply(input.c_str());

@@ -17,10 +17,13 @@ class face
 {
 	public:
 		void add_edge(const edge_query& result);
+		edge_query& find_edge(const size_t& e, size_t& pos);
 
 	private:
 		std::vector<edge_query> E;
 		std::vector<size_t> V;
+
+	friend class mesh; 
 };
 
 #endif

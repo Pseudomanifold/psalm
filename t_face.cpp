@@ -33,7 +33,7 @@ void t_face::set_f2(size_t e, size_t f2)
 *	Returns specified edge from edge vector.
 */
 
-face_query t_face::get(size_t e)
+face_query& t_face::get(size_t e)
 {
 	return(T[e]);
 }

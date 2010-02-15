@@ -9,6 +9,8 @@
 #include <sstream>
 #include <iomanip>
 #include <ctime>
+#include <cmath>
+#include <climits>
 
 #include "v3ctor.cpp"
 #include "mesh.h"
@@ -228,6 +230,42 @@ bool mesh::load_ply(const char* filename)
 
 bool mesh::save_ply(const char* filename)
 {
+	cout << "Exporting mesh to \"" << filename << "\"...\n";
+	
+	ofstream out(filename);
+	if(!out.good())
+		return(false);
+
+	// header information
+	out 	<< "ply\n"
+		<< "format ascii 1.0\n"
+		<< "element vertex " << V.size() << "\n"
+		<< "property float x\n"
+		<< "property float y\n"
+		<< "property float z\n"
+		<< "element face " << F.size() << "\n"
+		<< "property list uchar int vertex_indices\n"
+		<< "end_header\n";
+
+	// write vertex list (separated by spaces)
+	for(size_t i = 0; i < V.size(); i++)
+		out << fixed << setprecision(8) << V[i].p[0] << " " << V[i].p[1] << " " << V[i].p[2] << "\n";
+
+	// write face list (separated by spaces)
+	for(size_t i = 0; i < F.size(); i++)
+	{
+		out << F[i].V.size() << " ";
+		for(size_t j = 0; j < F[i].V.size(); j++)
+		{
+			out << F[i].V[j];
+			if(j < F.size()-1)
+				out << " ";
+		}
+
+		out << "\n";
+	}
+
+	cout << "...finished.\n";
 	return(true);
 }
 
@@ -237,10 +275,16 @@ bool mesh::save_ply(const char* filename)
 
 void mesh::draw()
 {
-	glColor3f(1.0, 0.0, 0.0);
 	glBegin(GL_POINTS);
 	for(size_t i = 0; i < V.size(); i++)
+	{
+		if(V[i].v_v)
+			glColor3f(0.0, 0.0, 1.0);
+		else
+			glColor3f(1.0, 0.0, 0.0);
+
 		glVertex3f(V[i].p[0], V[i].p[1], V[i].p[2]);
+	}
 	glEnd();
 
 	glColor3f(0.0, 1.0, 0.0);
@@ -255,13 +299,26 @@ void mesh::draw()
 		glVertex3f(v2.p[0], v2.p[1], v2.p[2]);
 	}
 	glEnd();
+
+	glColor3f(1.0, 1.0, 1.0);
+	glBegin(GL_TRIANGLES);
+	for(size_t i = 0; i < F.size(); i++)
+	{
+		for(size_t j = 0; j < F[i].V.size(); j++)
+			glVertex3f(	V[F[i].V[j]].p[0],
+					V[F[i].V[j]].p[1],
+					V[F[i].V[j]].p[2]);
+
+
+	}
+	glEnd();
 }
 
 void mesh::add_face(vector<size_t> vertices)
 {
 	size_t u = 0;
 	size_t v = 0;
-	size_t face_index = F.size()+1;
+	size_t face_index = F.size();
 
 	if(vertices.size() == 0)
 		return;
@@ -281,7 +338,11 @@ void mesh::add_face(vector<size_t> vertices)
 		// Normal case
 		else
 			v = vertices[i];
-
+		
+		// Add vertex to face; only the first vertex of the edge needs
+		// to be considered here
+		f.V.push_back(u);
+		
 		e.u = u;
 		e.v = v;
 
@@ -289,13 +350,29 @@ void mesh::add_face(vector<size_t> vertices)
 		edge_query result = edge_table.add(e);
 		f.add_edge(result);
 
+		/*
+			GIANT FIXME: We are assuming that the edges are ordered
+			properly. Hence, an edge is supposed to appear only
+			_once_ in a fixed direction. If this is not the case,
+			the lookup below will _fail_ or an already stored face
+			might be overwritten!
+		*/
+
 		// Edge already known; update second adjacent face
 		if(result.inverted)
 			face_table.set_f2(result.e, face_index);
+		
 		// New edge; update first adjacent face and adjacent vertices
 		else
 		{
+		//	if(face_table.get(result.e).f2 < SIZE_T_MAX && face_table.get(result.e).f2 > 0)
+		//		cout << "WTF 1?n";
+	
+		//	if(face_table.get(result.e).f1 < SIZE_T_MAX && face_table.get(result.e).f1 > 0)
+		//		cout << "WTF 2?\n";
+
 			face_table.set_f1(result.e, face_index);
+			face_table.set_f2(result.e, SIZE_T_MAX);	// TODO: Better place this in the constructor.
 
 			V[u].add_incident_edge(result.e);
 			V[v].add_incident_edge(result.e);
@@ -327,6 +404,260 @@ void mesh::add_vertex(double x, double y, double z)
 	v.p[0] = x;
 	v.p[1] = y;
 	v.p[2] = z;
+
+	// FIXME
+	v.v_v = false;
+	// FIXME
 	
 	V.push_back(v);
+}
+
+/*!
+*	Performs one Loop subdivision step on the current mesh.
+*/
+
+void mesh::subdivide_loop()
+{
+	mesh M_;
+
+	// Construct vertex points
+	vertex v;
+	for(size_t i = 0; i < V.size(); i++)
+	{
+		// Find neighbours
+
+		size_t n = V[i].size();
+		
+		v3ctor vertex_point;
+		for(size_t j = 0; j < n; j++)
+		{
+			const edge& e = edge_table.get(V[i].get(j));
+			const vertex& neighbour = (e.u != i? V[e.u] : V[e.v]); 	// i is index of current vertex; if the
+										// start of the edge is _not_ the current
+										// vertex, it must be the neighbouring
+										// vertex.
+
+			vertex_point += neighbour.p;
+		}
+
+		double s = 0.0;
+	//	if(n > 3)
+			s = (1.0/n*(0.625-pow(0.375+0.25*cos(2*M_PI/n), 2)));
+	//	else
+	//		s = 0.1875;
+
+		vertex_point *= s; 
+		vertex_point += V[i].p*(1.0-n*s);
+
+		v.v_v = true;
+		v.p = vertex_point;
+		M_.V.push_back(v);
+		
+		V[i].v_p = M_.V.size()-1;
+	}
+
+	// Create edge points
+	for(size_t i = 0; i < edge_table.size(); i++)
+	{
+		v3ctor edge_point;
+		const face_query& result = face_table.get(i);
+		edge& e = edge_table.get(i);
+
+		// Find remaining vertex of first face
+		size_t v1 = SIZE_T_MAX;
+		for(size_t j = 0; j < F[result.f1].V.size(); j++)
+		{
+			if(	F[result.f1].V[j] != e.u &&
+				F[result.f1].V[j] != e.v)
+				v1 = F[result.f1].V[j];
+		}
+		
+		//cout << F[result.f1].V.size() << " (" << e.u << "," << e.v << "," << v1 << ")\n";
+		
+		// Find remaining vertex of second face
+		size_t v2 = SIZE_T_MAX;
+		if(result.f2 != SIZE_T_MAX)
+		{
+			for(size_t j = 0; j < F[result.f2].V.size(); j++)
+			{
+				if(	F[result.f2].V[j] != e.u &&
+					F[result.f2].V[j] != e.v)
+					v2 = F[result.f2].V[j];
+			}
+		
+			//cout << F[result.f2].V.size() << " (" << e.u << "," << e.v << "," << v2 << ")\n";
+		}
+
+		edge_point = (V[e.u].p+V[e.v].p)*0.375+(V[v1].p+V[v2].p)*0.125;
+
+		v.v_v = false;
+		v.p = edge_point;
+		M_.V.push_back(v);
+
+		e.e_p = M_.V.size()-1;
+	}
+	
+	// Create topology for new mesh
+	for(size_t i = 0; i < F.size(); i++)
+	{
+		// ...go through all vertices of the face
+		for(size_t j = 0; j < F[i].V.size(); j++)
+		{
+			/*
+				F[i].V[j] is the current vertex of a face. We
+				now need to find the _two_ adjacent edges for
+				the face. This yields one new triangle.
+			*/
+
+			size_t v1, v2, v3;
+			size_t n = F[i].E.size(); // number of edges in face
+
+			size_t e1 = SIZE_T_MAX;	// first adjacent edge (for vertex & face)
+			size_t e2 = SIZE_T_MAX;	// second adjacent edge (for vertex & face)
+
+	//		// ...find an edge that contains the current vertex
+	//		for(size_t k = 0; k < n; k++)
+	//		{
+	//			const edge& e = edge_table.get(F[i].E[k].e);
+	//			
+	//			// Vertex is start vertex of edge
+	//			if(e.u == F[i].V[j])
+	//			{
+	//				/*
+	//					If our vertex is the start
+	//					vertex of the edge, and the
+	//					edge has been inverted, we need
+	//					to consider the next edge.
+	//					Situation: v--u--u--w.
+
+	//					If the edge has not been
+	//					inverted, we need to consider
+	//					the previous edge. Situation:
+	//					w--u--u--v
+
+	//					Just the other way round if the
+	//					vertex is the end vertex.
+	//				*/
+
+	//				//e1 = F[i].E[k].e;
+	//				e1 = k;
+	//				if(F[i].E[k].inverted)
+	//				{
+	//					//e2 = F[i].E[(k+1)%n].e;
+	//					e2 = (k+1)%n;
+	//				}
+	//				else
+	//				{
+	//					//e2 = F[i].E[(k-1)%n].e;
+	//					e2 = (k-1)%n;
+	//				}
+
+	//				break;
+	//			}
+	//			// Vertex is end vertex of edge
+	//			else if(e.v == F[i].V[j])
+	//			{
+	//				//e1 = F[i].E[k].e;
+	//				e1 = k;
+	//				if(F[i].E[k].inverted)
+	//				{
+	//					//e2 = F[i].E[(k-1)%n].e;
+	//					e2 = (k-1)%n;
+	//				}
+	//				else
+	//				{
+	//					//e2 = F[i].E[(k+1)%n].e;
+	//					e2 = (k+1)%n;
+	//				}
+
+	//				break;
+	//			}
+	//		}
+
+	//		if(	(edge_table.get(e1).u != F[i].V[j] && edge_table.get(e1).v != F[i].V[j]) ||
+	//			(edge_table.get(e2).u != F[i].V[j] && edge_table.get(e2).v != F[i].V[j]))
+	//			cout << "Error in mesh.\n";
+	
+			// brute-force search for the two edges
+			//
+			// TODO: Optimize!
+			for(size_t k = 0; k < n; k++)
+			{
+				const edge& e = edge_table.get(F[i].E[k].e);
+				if(e.u == F[i].V[j] || e.v == F[i].V[j])
+				{
+					if(e1 == SIZE_T_MAX)
+						e1 = k;
+					else
+					{
+						e2 = k;
+						break;
+					}
+				}
+			}
+		
+			v1 = V[F[i].V[j]].v_p; // vertex point of current vertex
+			//v2 = edge_table.get(e1).e_p;
+			//v3 = edge_table.get(e2).e_p;
+			v2 = edge_table.get(F[i].E[e1].e).e_p;
+			v3 = edge_table.get(F[i].E[e2].e).e_p;
+
+			// Create vertices for _new_ face. It is important to
+			// determine the proper order of the edges here. The
+			// new edges should run "along" the old ones.
+			vector<size_t> vertices;
+
+			vertices.push_back(v1);
+
+			if(	(edge_table.get(F[i].E[e1].e).u == F[i].V[j] && F[i].E[e1].inverted == false)  ||
+				(edge_table.get(F[i].E[e1].e).v == F[i].V[j] && F[i].E[e1].inverted))
+			{
+				vertices.push_back(v2);
+				vertices.push_back(v3);
+			}
+			else
+			{
+				vertices.push_back(v3);
+				vertices.push_back(v2);
+			}
+
+			M_.add_face(vertices);
+		}
+
+		// Create face from all three edge points of the face
+		vector<size_t> vertices;
+		for(size_t j = 0; j < F[i].E.size(); j++)
+			vertices.push_back(edge_table.get(F[i].E[j].e).e_p);
+
+		M_.add_face(vertices);
+	}
+
+//	M_.F = F;
+//	M_.edge_table = edge_table;
+//	M_.face_table = face_table;
+
+	*this = M_;
+
+	cout << "[E_t,F_t]\t= " << edge_table.size() << "," << face_table.T.size() << "\n";
+	cout << "[V,F]\t\t= " << V.size() << "," << F.size() << "\n";
+
+	cout 	<< "Loop subdivision step finished:\n"
+		<< "* Number of vertices: " 	<< V.size() << "\n"
+		<< "* Number of faces: "	<< F.size() << "\n";
+}
+
+/*!
+*	Performs one step of Doo-Sabin subdivision on the current mesh.
+*/
+
+void mesh::subdivide_doo_sabin()
+{
+}
+
+/*!
+*	Performs one step of Catmull-Clark subdivision on the current mesh.
+*/
+
+void mesh::subdivide_catmull_clark()
+{
 }

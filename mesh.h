@@ -27,6 +27,10 @@ class mesh
 		bool load_ply(const char* filename);
 		bool save_ply(const char* filename);
 
+		void subdivide_loop();
+		void subdivide_doo_sabin();
+		void subdivide_catmull_clark();
+
 		void draw();
 
 	private:
@@ -34,7 +38,6 @@ class mesh
 		t_face 		face_table;
 		
 		std::vector<vertex> 	V;
-		std::vector<edge>	E;
 		std::vector<face>	F;
 
 		vertex& get_vertex(size_t v);

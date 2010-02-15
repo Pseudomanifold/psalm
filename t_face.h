@@ -32,10 +32,12 @@ class t_face
 		void set_f1(size_t e, size_t f1);
 		void set_f2(size_t e, size_t f2);
 		
-		face_query get(size_t e); 
+		face_query& get(size_t e); 
 
 	private:
 		std::map<size_t, face_query> T;
+
+	friend class mesh;
 };
 
 #endif
