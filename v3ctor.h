@@ -4,14 +4,14 @@
 *
 *	<HR>
 *
-* 	Copyright 2010, Bastian Rieck. All rights reserved.
+*	Copyright 2010, Bastian Rieck. All rights reserved.
 *
-* 	Redistribution and use in source and binary forms, with or without
-* 	modification, are permitted provided that the following conditions are
-* 	met:
+*	Redistribution and use in source and binary forms, with or without
+*	modification, are permitted provided that the following conditions are
+*	met:
 *
-* 	-# Redistributions of source code must retain the above copyright
-* 	notice, this list of conditions and the following disclaimer.
+*	-# Redistributions of source code must retain the above copyright
+*	notice, this list of conditions and the following disclaimer.
 *	-# Redistributions in binary form must reproduce the above copyright
 *	notice, this list of conditions and the following disclaimer in the
 *	documentation and/or other materials provided with the distribution.
@@ -42,7 +42,7 @@ class v3ctor
 {
 	public:
 		v3ctor();
-		
+
 		v3ctor  operator+ (const v3ctor& b) const;
 		v3ctor& operator+=(const v3ctor& b);
 		v3ctor  operator- (const v3ctor& b) const;
@@ -56,6 +56,7 @@ class v3ctor
 
 		double  operator*(const v3ctor& a) const;
 		double& operator[](short i);
+		const double& operator[](short i) const;
 
 		v3ctor normalize() const;
 		double length() const;

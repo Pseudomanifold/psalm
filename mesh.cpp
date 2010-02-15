@@ -231,13 +231,13 @@ bool mesh::load_ply(const char* filename)
 bool mesh::save_ply(const char* filename)
 {
 	cout << "Exporting mesh to \"" << filename << "\"...\n";
-	
+
 	ofstream out(filename);
 	if(!out.good())
 		return(false);
 
 	// header information
-	out 	<< "ply\n"
+	out	<< "ply\n"
 		<< "format ascii 1.0\n"
 		<< "element vertex " << V.size() << "\n"
 		<< "property float x\n"
@@ -249,16 +249,20 @@ bool mesh::save_ply(const char* filename)
 
 	// write vertex list (separated by spaces)
 	for(size_t i = 0; i < V.size(); i++)
-		out << fixed << setprecision(8) << V[i].p[0] << " " << V[i].p[1] << " " << V[i].p[2] << "\n";
+	{
+		out << fixed << setprecision(8) << V[i]->get_position()[0] << " "
+						<< V[i]->get_position()[1] << " "
+						<< V[i]->get_position()[2] << "\n";
+	}
 
 	// write face list (separated by spaces)
 	for(size_t i = 0; i < F.size(); i++)
 	{
-		out << F[i].V.size() << " ";
-		for(size_t j = 0; j < F[i].V.size(); j++)
+		out << F[i].num_vertices() << " ";
+		for(size_t j = 0; j < F[i].num_vertices(); j++)
 		{
-			out << F[i].V[j];
-			if(j < F.size()-1)
+			out << F[i].get_vertex(j)->get_id();
+			if(j < F[i].num_vertices()-1)
 				out << " ";
 		}
 
@@ -278,12 +282,10 @@ void mesh::draw()
 	glBegin(GL_POINTS);
 	for(size_t i = 0; i < V.size(); i++)
 	{
-		if(V[i].v_v)
-			glColor3f(0.0, 0.0, 1.0);
-		else
-			glColor3f(1.0, 0.0, 0.0);
+		const v3ctor& p = V[i]->get_position();
 
-		glVertex3f(V[i].p[0], V[i].p[1], V[i].p[2]);
+		glColor3f(1.0, 0.0, 0.0);
+		glVertex3f(p[0], p[1], p[2]);
 	}
 	glEnd();
 
@@ -291,12 +293,19 @@ void mesh::draw()
 	glBegin(GL_LINES);
 	for(size_t i = 0; i < edge_table.size(); i++)
 	{
-		edge& e = edge_table.get(i);
-		vertex& v1 = get_vertex(e.u);
-		vertex& v2 = get_vertex(e.v);
+		edge* e = edge_table.get(i);
+		vertex* v1 = NULL;
+		vertex* v2 = NULL;
 
-		glVertex3f(v1.p[0], v1.p[1], v1.p[2]);
-		glVertex3f(v2.p[0], v2.p[1], v2.p[2]);
+		e->get(v1, v2);
+
+		//vertex* v1 = e.u;
+		//vertex* v2 = e.v;
+		//vertex& v1 = get_vertex(e.u);
+		//vertex& v2 = get_vertex(e.v);
+
+		glVertex3f(v1->get_position()[0], v1->get_position()[1], v1->get_position()[2]);
+		glVertex3f(v2->get_position()[0], v2->get_position()[1], v2->get_position()[2]);
 	}
 	glEnd();
 
@@ -304,12 +313,11 @@ void mesh::draw()
 	glBegin(GL_TRIANGLES);
 	for(size_t i = 0; i < F.size(); i++)
 	{
-		for(size_t j = 0; j < F[i].V.size(); j++)
-			glVertex3f(	V[F[i].V[j]].p[0],
-					V[F[i].V[j]].p[1],
-					V[F[i].V[j]].p[2]);
-
-
+		for(size_t j = 0; j < F[i].num_vertices(); j++)
+		{
+			const v3ctor& p = F[i].get_vertex(j)->get_position();
+			glVertex3f(p[0], p[1], p[2]);
+		}
 	}
 	glEnd();
 }
@@ -338,17 +346,17 @@ void mesh::add_face(vector<size_t> vertices)
 		// Normal case
 		else
 			v = vertices[i];
-		
+
+		e.set(get_vertex(u), get_vertex(v));
+
 		// Add vertex to face; only the first vertex of the edge needs
 		// to be considered here
-		f.V.push_back(u);
-		
-		e.u = u;
-		e.v = v;
+		//f.V.push_back(u);
+		f.add_vertex(get_vertex(u));
 
 		// Add it to list of edges for face
-		edge_query result = edge_table.add(e);
-		f.add_edge(result);
+		directed_edge edge = edge_table.add(e);
+		f.add_edge(edge);
 
 		/*
 			GIANT FIXME: We are assuming that the edges are ordered
@@ -359,8 +367,8 @@ void mesh::add_face(vector<size_t> vertices)
 		*/
 
 		// Edge already known; update second adjacent face
-		if(result.inverted)
-			face_table.set_f2(result.e, face_index);
+		if(edge.inverted)
+			face_table.set_f2(edge.e, face_index);
 		
 		// New edge; update first adjacent face and adjacent vertices
 		else
@@ -371,11 +379,11 @@ void mesh::add_face(vector<size_t> vertices)
 		//	if(face_table.get(result.e).f1 < SIZE_T_MAX && face_table.get(result.e).f1 > 0)
 		//		cout << "WTF 2?\n";
 
-			face_table.set_f1(result.e, face_index);
-			face_table.set_f2(result.e, SIZE_T_MAX);	// TODO: Better place this in the constructor.
+			face_table.set_f1(edge.e, face_index);
+			face_table.set_f2(edge.e, SIZE_T_MAX);	// TODO: Better place this in the constructor.
 
-			V[u].add_incident_edge(result.e);
-			V[v].add_incident_edge(result.e);
+			V[u]->add_incident_edge(edge.e);
+			V[v]->add_incident_edge(edge.e);
 		}
 
 		// Set next start vertex; the orientation should be correct
@@ -386,12 +394,24 @@ void mesh::add_face(vector<size_t> vertices)
 	F.push_back(f);
 }
 
-vertex& mesh::get_vertex(size_t v)
+/*!
+*	Returns vertex for a certain ID. The ID is supposed to be the number of
+*	the vertex, starting from 0.
+*/
+
+vertex* mesh::get_vertex(size_t id)
 {
-	return(V[v]);
+	/*
+		TODO:
+			- Check for invalid ranges
+			- Is it a good idea to assume that the ID is the place
+			  of the vertex?
+	*/
+
+	return(V[id]);
 }
 
-edge& mesh::get_edge(size_t e)
+edge* mesh::get_edge(size_t e)
 {
 	return(edge_table.get(e));
 }
@@ -400,15 +420,7 @@ edge& mesh::get_edge(size_t e)
 
 void mesh::add_vertex(double x, double y, double z)
 {
-	vertex v;
-	v.p[0] = x;
-	v.p[1] = y;
-	v.p[2] = z;
-
-	// FIXME
-	v.v_v = false;
-	// FIXME
-	
+	vertex* v = new vertex(x,y,z, V.size());
 	V.push_back(v);
 }
 
@@ -416,6 +428,8 @@ void mesh::add_vertex(double x, double y, double z)
 *	Performs one Loop subdivision step on the current mesh.
 */
 
+// FIXME
+#ifdef INCLUDE_LOOP_SUBDIVISION
 void mesh::subdivide_loop()
 {
 	mesh M_;
@@ -645,6 +659,7 @@ void mesh::subdivide_loop()
 		<< "* Number of vertices: " 	<< V.size() << "\n"
 		<< "* Number of faces: "	<< F.size() << "\n";
 }
+#endif
 
 /*!
 *	Performs one step of Doo-Sabin subdivision on the current mesh.

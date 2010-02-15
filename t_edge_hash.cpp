@@ -1,5 +1,5 @@
 /*!
-*	@file 	t_edge_hash.cpp
+*	@file	t_edge_hash.cpp
 *	@brief	Implementation of an edge lookup table using a hash map.
 */
 
@@ -18,12 +18,12 @@ size_t t_edge_hash::size()
 *	Adds an edge to the edge table if it (or the inverted edge) does not
 *	already exist.
 *
-*	@param 	e Edge to add
+*	@param	e Edge to add
 */
 
-edge_query t_edge_hash::add(const edge& e)
+directed_edge t_edge_hash::add(const edge& e)
 {
-	edge_query result;
+	directed_edge result;
 
 	// Calculate ID of edge. This maps the lower half of N^2 to N.
 	size_t n = 178975;
@@ -48,7 +48,7 @@ edge_query t_edge_hash::add(const edge& e)
 	else
 	{
 		// Edge has been found, check whether the proper direction has
-		// been stored 
+		// been stored.
 		if(E[it->second].u != e.u)
 			result.inverted = true;
 		else
@@ -64,7 +64,7 @@ edge_query t_edge_hash::add(const edge& e)
 *	Returns edge from edge vector.
 */
 
-edge& t_edge_hash::get(size_t e)
+edge* t_edge_hash::get(size_t e)
 {
 	// TODO: Handle invalid ranges
 	return(E[e]);

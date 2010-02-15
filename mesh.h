@@ -1,6 +1,6 @@
 /*!
-*	@file 	mesh.h
-*	@brief	Data structures for representing a mesh 
+*	@file	mesh.h
+*	@brief	Data structures for representing a mesh
 */
 
 #ifndef MESH_H
@@ -34,14 +34,14 @@ class mesh
 		void draw();
 
 	private:
-		t_edge_hash 	edge_table;
-		t_face 		face_table;
-		
-		std::vector<vertex> 	V;
+		t_edge_hash	edge_table;
+		t_face		face_table;
+
+		std::vector<vertex*>	V;
 		std::vector<face>	F;
 
-		vertex& get_vertex(size_t v);
-		edge& get_edge(size_t e);
+		vertex* get_vertex(size_t id);
+		edge* get_edge(size_t e);
 
 		void add_face(std::vector<size_t> vertices);
 		void add_vertex(double x, double y, double z);

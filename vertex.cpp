@@ -6,6 +6,60 @@
 #include "vertex.h"
 
 /*!
+*	Default constructor for vertex.
+*/
+
+vertex::vertex()
+{
+	// TODO:
+	// Fill with interesting code?
+}
+
+/*!
+*	Constructor that sets all vertex attributes at once.
+*/
+
+vertex::vertex(double x, double y, double z, size_t id)
+{
+	set(x,y,z,id);
+}
+
+/*!
+*	Sets vertex data.
+*
+*	@param x	x value of vertex position
+*	@param y	y value of vertex position
+*	@param z	z value of vertex position
+*	@param id	ID of vertex
+*/
+
+void vertex::set(double x, double y, double z, size_t id)
+{
+	this->p[0]	= x;
+	this->p[1]	= y;
+	this->p[2]	= z;
+	this->id	= id;
+}
+
+/*!
+*	Returns reference to vertex position.
+*/
+
+const v3ctor& vertex::get_position()
+{
+	return(p);
+}
+
+/*!
+*	Returns vertex ID.
+*/
+
+size_t vertex::get_id()
+{
+	return(id);
+}
+
+/*!
 *	Adds incident edge to vertex.
 */
 

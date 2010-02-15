@@ -1,5 +1,5 @@
 /*!
-*	@file 	t_edge_hash.h
+*	@file	t_edge_hash.h
 *	@brief	Class implementing an edge lookup table using a hash map.
 */
 
@@ -7,7 +7,9 @@
 #define __T_EDGE_HASH_H__
 
 #include <ext/hash_map>
-#include "t_edge.h"
+
+#include "edge.h"
+#include "directed_edge.h"
 
 namespace std
 {
@@ -15,22 +17,22 @@ namespace std
 }
 
 /*!
-*	@class 	t_edge_hash
-*	@brief 	A table that stores edges and provides lookup functions. A hash
+*	@class	t_edge_hash
+*	@brief	A table that stores edges and provides lookup functions. A hash
 *		table is used instead of a map.
 */
 
 class t_edge_hash
 {
 	public:
-		edge_query add(const edge& e);
-		edge& get(size_t e);
+		directed_edge add(const edge& e);
+		edge* get(size_t e);
 
 		size_t size();
 
 	private:
-		std::vector<edge>		E;
-		std::hash_map<size_t, size_t> 	T;
+		std::vector<edge*>		E;
+		std::hash_map<edge*, size_t>	T;
 };
 
 #endif

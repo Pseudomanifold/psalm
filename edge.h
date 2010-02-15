@@ -1,5 +1,5 @@
 /*!
-*	@file 	edge.h
+*	@file	edge.h
 *	@brief	Edge class
 */
 
@@ -7,6 +7,8 @@
 #define __EDGE_H__
 
 #include <iostream>
+
+#include "vertex.h"
 
 /*!
 *	@class edge
@@ -17,10 +19,10 @@ class edge
 {
 	public:
 		edge();
-		edge(size_t u, size_t v);
+		edge(vertex* u, vertex* v);
 
-		size_t u;	///< Index of start vertex
-		size_t v;	///< Index of end vertex
+		void set(vertex* u, vertex* v);
+		void get(vertex* u, vertex* v);
 
 		size_t f1;
 		size_t f2;
@@ -28,6 +30,10 @@ class edge
 		size_t e_p; // FIXME: Edge points should be stored elsewhere.
 
 		bool operator<(const edge& b) const;
+
+	private:
+		vertex* u; ///< Pointer to start vertex
+		vertex* v; ///< Pointer to end vertex
 };
 
 #endif

@@ -1,32 +1,62 @@
 /*!
-*	@file 	edge.cpp
-*	@brief 	Functions and implementations for edge class
+*	@file	edge.cpp
+*	@brief	Functions and implementations for edge class
 */
 
 #include "edge.h"
 
 /*!
-*	Default constructor. Creates invalid edge by setting both parameters to
-*	0.
+*	Default constructor that creates and invalid edge.
 */
 
 edge::edge()
 {
-	u = v = 0;
+	u = v = NULL;
 }
 
 /*!
 *	Constructor that creates a new edge (u,v).
 *
-*	@param 	u Start vertex index
-*	@param 	v End vertex index
+*	@param	u Pointer to start vertex
+*	@param	v Pointer to end vertex
 */
 
-edge::edge(size_t u, size_t v)
+edge::edge(vertex* u, vertex* v)
 {
 	this->u = u;
 	this->v = v;
 }
+
+/*!
+*	Sets start and end vertex of the edge.
+*
+*	@param	u Pointer to start vertex
+*	@param	v Pointer to end vertex
+*/
+
+void edge::set(vertex* u, vertex* v)
+{
+	if(u == v)
+		u = v = NULL;
+
+	this->u = u;
+	this->v = v;
+}
+
+/*!
+*	Sets the provided parameters to the current start and end vertex of the
+*	edge.
+*
+*	@param u Will contain reference to start vertex
+*	@param v Will contain reference to end vertex
+*/
+
+void edge::get(vertex* u, vertex* v)
+{
+	u = this->u;
+	v = this->v;
+}
+
 
 /*!
 *	Comparison operator for edges: Weak ordering by index is applied,
