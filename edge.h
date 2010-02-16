@@ -7,8 +7,7 @@
 #define __EDGE_H__
 
 #include <iostream>
-
-class vertex; // forward declaration to break up circular dependency
+#include "vertex.h"
 
 /*!
 *	@class edge

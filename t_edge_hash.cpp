@@ -33,8 +33,15 @@ directed_edge t_edge_hash::add(edge& e)
 //	else
 //		k = (e.u+1)*n+(e.v+1)-n;
 
-	// FIXME
-	size_t k = 1;
+	/*
+		Calculate ID of edge by using the Cantor pairing function.
+
+		TODO: Check whether this works.
+	*/
+
+	size_t id_u = e.get_u()->get_id();
+	size_t id_v = e.get_v()->get_id();
+	size_t k = static_cast<size_t>(0.5*(id_u+id_v)*(id_u+id_v+1)+id_v);
 
 	// Check whether edge exists
 	std::hash_map<size_t, edge*>::iterator it;

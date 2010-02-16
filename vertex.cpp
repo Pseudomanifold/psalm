@@ -54,7 +54,7 @@ const v3ctor& vertex::get_position()
 *	Returns vertex ID.
 */
 
-size_t vertex::get_id()
+size_t vertex::get_id() const
 {
 	return(id);
 }
@@ -82,7 +82,7 @@ void vertex::add_incident_edge(const edge* e)
 *	Returns number of incident edges, i.e., the valence.
 */
 
-size_t vertex::size()
+size_t vertex::size() const
 {
 	return(E.size());
 }

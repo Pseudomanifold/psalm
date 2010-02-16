@@ -29,12 +29,10 @@ class vertex
 		size_t v_p; // FIXME: Vertex points should be stored elsewhere.
 
 		void add_incident_edge(const edge* e);
-		//size_t& get(const size_t& i);
-		size_t	get_id();
 
-		size_t size();
-
-		bool v_v; // FIXME: Flag whether it is a "vertex vertex".
+		//size_t& vertex::get(const size_t& i)
+		size_t get_id() const;
+		size_t size() const;
 
 	private:
 		std::vector<const edge*> E;
