@@ -7,7 +7,10 @@
 #define VERTEX_H
 
 #include <vector>
+
 #include "v3ctor.h"
+
+class edge; // forward declaration to break up circular dependency
 
 /*!
 *	@class vertex
@@ -25,8 +28,8 @@ class vertex
 
 		size_t v_p; // FIXME: Vertex points should be stored elsewhere.
 
-		void add_incident_edge(const size_t& e);
-		size_t& get(const size_t& i);
+		void add_incident_edge(const edge* e);
+		//size_t& get(const size_t& i);
 		size_t	get_id();
 
 		size_t size();
@@ -34,7 +37,7 @@ class vertex
 		bool v_v; // FIXME: Flag whether it is a "vertex vertex".
 
 	private:
-		std::vector<size_t> E;
+		std::vector<const edge*> E;
 
 		v3ctor p;
 		size_t id;

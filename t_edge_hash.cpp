@@ -21,35 +21,41 @@ size_t t_edge_hash::size()
 *	@param	e Edge to add
 */
 
-directed_edge t_edge_hash::add(const edge& e)
+directed_edge t_edge_hash::add(edge& e)
 {
 	directed_edge result;
 
 	// Calculate ID of edge. This maps the lower half of N^2 to N.
-	size_t n = 178975;
-	size_t k;
-	if(e.u >= e.v)
-		k = (e.v+1)*n+(e.u+1)-n;
-	else
-		k = (e.u+1)*n+(e.v+1)-n;
+//	size_t n = 178975;
+//	size_t k;
+//	if(e.u >= e.v)
+//		k = (e.v+1)*n+(e.u+1)-n;
+//	else
+//		k = (e.u+1)*n+(e.v+1)-n;
+
+	// FIXME
+	size_t k = 1;
 
 	// Check whether edge exists
-	std::hash_map<size_t, size_t>::iterator it;
+	std::hash_map<size_t, edge*>::iterator it;
 	if((it = T.find(k)) == T.end())
 	{
-		// Edge not found, add the _original_ (!) edge to the
-		// vector
-		E.push_back(e);
-		T[k] = E.size()-1;
+		// Edge not found, create an edge from the _original_ edge and
+		// add it to the map
+		edge* new_edge = new edge(e.get_u(), e.get_v());
+		E.push_back(new_edge);
+		T[k] = new_edge;
 
-		result.e = E.size()-1;
+		result.e = new_edge;
 		result.inverted = false;
 	}
 	else
 	{
 		// Edge has been found, check whether the proper direction has
 		// been stored.
-		if(E[it->second].u != e.u)
+		vertex* u1 = it->second->get_u();
+		vertex* u2 = e.get_u();
+		if(u1 != u2)
 			result.inverted = true;
 		else
 			result.inverted = false;

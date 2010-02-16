@@ -25,14 +25,14 @@ namespace std
 class t_edge_hash
 {
 	public:
-		directed_edge add(const edge& e);
+		directed_edge add(edge& e);
 		edge* get(size_t e);
 
 		size_t size();
 
 	private:
 		std::vector<edge*>		E;
-		std::hash_map<edge*, size_t>	T;
+		std::hash_map<size_t, edge*>	T;
 };
 
 #endif

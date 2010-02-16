@@ -8,6 +8,7 @@
 #define __T_FACE_H__
 
 #include <map>
+#include "edge.h"
 
 /*!
 *	@class 	face_query
@@ -29,15 +30,13 @@ class face_query
 class t_face
 {
 	public:
-		void set_f1(size_t e, size_t f1);
-		void set_f2(size_t e, size_t f2);
+		void set_f1(const edge* e, size_t f1);
+		void set_f2(const edge* e, size_t f2);
 		
-		face_query& get(size_t e); 
+		face_query& get(const edge* e); 
 
 	private:
-		std::map<size_t, face_query> T;
-
-	friend class mesh;
+		std::map<const edge*, face_query> T;
 };
 
 #endif

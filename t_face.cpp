@@ -12,7 +12,7 @@
 *	@param f1	First face to assign to the edge
 */
 
-void t_face::set_f1(size_t e, size_t f1)
+void t_face::set_f1(const edge* e, size_t f1)
 {
 	T[e].f1 = f1;
 }
@@ -24,7 +24,7 @@ void t_face::set_f1(size_t e, size_t f1)
 *	@param f2	First face to assign to the edge
 */
 
-void t_face::set_f2(size_t e, size_t f2)
+void t_face::set_f2(const edge* e, size_t f2)
 {
 	T[e].f2 = f2;
 }
@@ -33,7 +33,7 @@ void t_face::set_f2(size_t e, size_t f2)
 *	Returns specified edge from edge vector.
 */
 
-face_query& t_face::get(size_t e)
+face_query& t_face::get(const edge* e)
 {
 	return(T[e]);
 }

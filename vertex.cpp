@@ -63,7 +63,7 @@ size_t vertex::get_id()
 *	Adds incident edge to vertex.
 */
 
-void vertex::add_incident_edge(const size_t& e)
+void vertex::add_incident_edge(const edge* e)
 {
 	E.push_back(e);
 }
@@ -72,11 +72,11 @@ void vertex::add_incident_edge(const size_t& e)
 *	Returns index of incident edge.
 */
 
-size_t& vertex::get(const size_t& i)
-{
-	// TODO: Check invalid range?
-	return(E[i]);
-}
+//size_t& vertex::get(const size_t& i)
+//{
+//	// TODO: Check invalid range?
+//	return(E[i]);
+//}
 
 /*!
 *	Returns number of incident edges, i.e., the valence.

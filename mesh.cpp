@@ -12,7 +12,6 @@
 #include <cmath>
 #include <climits>
 
-#include "v3ctor.cpp"
 #include "mesh.h"
 
 using namespace std;
@@ -294,18 +293,14 @@ void mesh::draw()
 	for(size_t i = 0; i < edge_table.size(); i++)
 	{
 		edge* e = edge_table.get(i);
-		vertex* v1 = NULL;
-		vertex* v2 = NULL;
-
-		e->get(v1, v2);
 
 		//vertex* v1 = e.u;
 		//vertex* v2 = e.v;
 		//vertex& v1 = get_vertex(e.u);
 		//vertex& v2 = get_vertex(e.v);
 
-		glVertex3f(v1->get_position()[0], v1->get_position()[1], v1->get_position()[2]);
-		glVertex3f(v2->get_position()[0], v2->get_position()[1], v2->get_position()[2]);
+		glVertex3f(e->get_u()->get_position()[0], e->get_u()->get_position()[1], e->get_u()->get_position()[2]);
+		glVertex3f(e->get_v()->get_position()[0], e->get_v()->get_position()[1], e->get_v()->get_position()[2]);
 	}
 	glEnd();
 
@@ -428,10 +423,10 @@ void mesh::add_vertex(double x, double y, double z)
 *	Performs one Loop subdivision step on the current mesh.
 */
 
-// FIXME
-#ifdef INCLUDE_LOOP_SUBDIVISION
 void mesh::subdivide_loop()
 {
+	// FIXME
+	#ifdef INCLUDE_LOOP_SUBDIVISION
 	mesh M_;
 
 	// Construct vertex points
@@ -658,8 +653,9 @@ void mesh::subdivide_loop()
 	cout 	<< "Loop subdivision step finished:\n"
 		<< "* Number of vertices: " 	<< V.size() << "\n"
 		<< "* Number of faces: "	<< F.size() << "\n";
+
+	#endif
 }
-#endif
 
 /*!
 *	Performs one step of Doo-Sabin subdivision on the current mesh.

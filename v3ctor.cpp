@@ -38,7 +38,7 @@
 *	Constructor; sets components to zero.
 */
 
-inline v3ctor::v3ctor()
+v3ctor::v3ctor()
 {
 	x = y = z = 0.0;
 }
@@ -47,7 +47,7 @@ inline v3ctor::v3ctor()
 *	Adds two vectors.
 */
 
-inline v3ctor v3ctor::operator+(const v3ctor& b) const
+v3ctor v3ctor::operator+(const v3ctor& b) const
 {
 	v3ctor res;
 
@@ -62,7 +62,7 @@ inline v3ctor v3ctor::operator+(const v3ctor& b) const
 *	Adds vector to the current vector.
 */
 
-inline v3ctor& v3ctor::operator+=(const v3ctor& b)
+v3ctor& v3ctor::operator+=(const v3ctor& b)
 {
 	x += b.x;
 	y += b.y;
@@ -75,7 +75,7 @@ inline v3ctor& v3ctor::operator+=(const v3ctor& b)
 *	Subtracts two vectors from one another.
 */
 
-inline v3ctor v3ctor::operator-(const v3ctor& b) const
+v3ctor v3ctor::operator-(const v3ctor& b) const
 {
 	v3ctor res;
 	res.x = x - b.x;
@@ -89,7 +89,7 @@ inline v3ctor v3ctor::operator-(const v3ctor& b) const
 *	Subtracts vector from current vector.
 */
 
-inline v3ctor& v3ctor::operator-=(const v3ctor& b)
+v3ctor& v3ctor::operator-=(const v3ctor& b)
 {
 	x -= b.x;
 	y -= b.y;
@@ -102,7 +102,7 @@ inline v3ctor& v3ctor::operator-=(const v3ctor& b)
 *	Multiplies vector by scalar.
 */
 
-inline v3ctor v3ctor::operator*(const double& a) const
+v3ctor v3ctor::operator*(const double& a) const
 {
 	v3ctor res;
 	res.x = x*a;
@@ -116,7 +116,7 @@ inline v3ctor v3ctor::operator*(const double& a) const
 *	Multiplies current vector by scalar value. 
 */
 
-inline v3ctor& v3ctor::operator*=(const double& a)
+v3ctor& v3ctor::operator*=(const double& a)
 {
 	x *= a;
 	y *= a;
@@ -129,7 +129,7 @@ inline v3ctor& v3ctor::operator*=(const double& a)
 *	Divides vector by scalar value.
 */
 
-inline v3ctor v3ctor::operator/(const double& a) const
+v3ctor v3ctor::operator/(const double& a) const
 {
 	if(a == 0.0)
 		throw "Attempted division by zero.\n";
@@ -141,7 +141,7 @@ inline v3ctor v3ctor::operator/(const double& a) const
 *	Divides current vector by scalar.
 */
 
-inline v3ctor& v3ctor::operator/=(const double& a)
+v3ctor& v3ctor::operator/=(const double& a)
 {
 	if(a == 0.0)
 		throw "Attempted division by zero.\n";
@@ -153,7 +153,7 @@ inline v3ctor& v3ctor::operator/=(const double& a)
 *	Assigns vector to current vector.
 */
 
-inline v3ctor& v3ctor::operator=(const v3ctor& b)
+v3ctor& v3ctor::operator=(const v3ctor& b)
 {
 	x = b.x;
 	y = b.y;
@@ -166,7 +166,7 @@ inline v3ctor& v3ctor::operator=(const v3ctor& b)
 *	Computes standard euclidean scalar product of two vectors.
 */
 
-inline double v3ctor::operator*(const v3ctor& b) const
+double v3ctor::operator*(const v3ctor& b) const
 {
 	return(x*b.x + y*b.y + z*b.z);
 }
@@ -175,7 +175,7 @@ inline double v3ctor::operator*(const v3ctor& b) const
 *	Computes cross product of two vectors.
 */
 
-inline v3ctor v3ctor::operator|(const v3ctor& b) const
+v3ctor v3ctor::operator|(const v3ctor& b) const
 {
 	v3ctor res;
 
@@ -190,7 +190,7 @@ inline v3ctor v3ctor::operator|(const v3ctor& b) const
 *	Allows element-wise access to vector.
 */
 
-inline double& v3ctor::operator[](short i)
+double& v3ctor::operator[](short i)
 {
 	switch(i)
 	{
@@ -205,7 +205,7 @@ inline double& v3ctor::operator[](short i)
 	}
 }
 
-inline const double& v3ctor::operator[](short i) const
+const double& v3ctor::operator[](short i) const
 {
 	switch(i)
 	{
@@ -224,7 +224,7 @@ inline const double& v3ctor::operator[](short i) const
 *	Normalizes a vector.
 */
 
-inline v3ctor v3ctor::normalize() const
+v3ctor v3ctor::normalize() const
 {
 	if(length() == 0)
 		return(*this);
@@ -236,7 +236,7 @@ inline v3ctor v3ctor::normalize() const
 *	Computes standard Euclidean length, i.e., the norm, of a vector.
 */
 
-inline double v3ctor::length() const
+double v3ctor::length() const
 {
 	return(sqrt(x*x+y*y+z*z));
 }

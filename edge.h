@@ -8,7 +8,7 @@
 
 #include <iostream>
 
-#include "vertex.h"
+class vertex; // forward declaration to break up circular dependency
 
 /*!
 *	@class edge
@@ -22,7 +22,9 @@ class edge
 		edge(vertex* u, vertex* v);
 
 		void set(vertex* u, vertex* v);
-		void get(vertex* u, vertex* v);
+
+		vertex* get_u();
+		vertex* get_v();
 
 		size_t f1;
 		size_t f2;

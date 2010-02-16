@@ -44,17 +44,21 @@ void edge::set(vertex* u, vertex* v)
 }
 
 /*!
-*	Sets the provided parameters to the current start and end vertex of the
-*	edge.
-*
-*	@param u Will contain reference to start vertex
-*	@param v Will contain reference to end vertex
+*	Returns pointer to start vertex.
 */
 
-void edge::get(vertex* u, vertex* v)
+vertex* edge::get_u()
 {
-	u = this->u;
-	v = this->v;
+	return(u);
+}
+
+/*!
+*	Returns pointer to end vertex.
+*/
+
+vertex* edge::get_v()
+{
+	return(v);
 }
 
 
