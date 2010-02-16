@@ -63,8 +63,8 @@ vertex* edge::get_v()
 
 
 /*!
-*	Comparison operator for edges: Weak ordering by index is applied,
-*	hence (u,v) < (u',v') if u < u' or (u == u' and v < v').
+*	Comparison operator for edges: Weak ordering by index of the vertices
+*	is applied, hence (u,v) < (u',v') if u < u' or (u == u' and v < v').
 *
 *	@param	b Edge to compare current edge with.
 *	@return	true if current edge is smaller than b, else false.
@@ -72,10 +72,10 @@ vertex* edge::get_v()
 
 bool edge::operator<(const edge& b) const
 {
-	if(u < b.u)
+	if(u->get_id() < b.u->get_id())
 		return(true);
-	else if(u == b.u)
-		return(v < b.v);
+	else if(u->get_id() == b.u->get_id())
+		return(v->get_id() < b.v->get_id());
 
 	return(false);
 }

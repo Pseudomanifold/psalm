@@ -25,9 +25,6 @@ class edge
 		vertex* get_u();
 		vertex* get_v();
 
-		size_t f1;
-		size_t f2;
-
 		size_t e_p; // FIXME: Edge points should be stored elsewhere.
 
 		bool operator<(const edge& b) const;
