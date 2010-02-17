@@ -3,6 +3,7 @@
 *	@brief	Functions and implementations for edge class
 */
 
+#include <cassert>
 #include "edge.h"
 
 /*!
@@ -12,6 +13,7 @@
 edge::edge()
 {
 	u = v = NULL;
+	f = g = NULL;
 }
 
 /*!
@@ -21,10 +23,9 @@ edge::edge()
 *	@param	v Pointer to end vertex
 */
 
-edge::edge(vertex* u, vertex* v)
+edge::edge(const vertex* u, const vertex* v)
 {
-	this->u = u;
-	this->v = v;
+	set(u,v);
 }
 
 /*!
@@ -34,7 +35,7 @@ edge::edge(vertex* u, vertex* v)
 *	@param	v Pointer to end vertex
 */
 
-void edge::set(vertex* u, vertex* v)
+void edge::set(const vertex* u, const vertex* v)
 {
 	if(u == v)
 		u = v = NULL;
@@ -47,7 +48,7 @@ void edge::set(vertex* u, vertex* v)
 *	Returns pointer to start vertex.
 */
 
-vertex* edge::get_u()
+const vertex* edge::get_u() const
 {
 	return(u);
 }
@@ -56,11 +57,48 @@ vertex* edge::get_u()
 *	Returns pointer to end vertex.
 */
 
-vertex* edge::get_v()
+const vertex* edge::get_v() const
 {
 	return(v);
 }
 
+/*!
+*	Sets pointer to first adjacent face.
+*/
+
+void edge::set_f(const face* f)
+{
+	assert(g == NULL && this->f == NULL);
+	this->f = f;
+}
+
+/*!
+*	Sets pointer to second adjacent face.
+*/
+
+void edge::set_g(const face* g)
+{
+	assert(f != NULL && this->g == NULL);
+	this->g = g;
+}
+
+/*!
+*	Returns pointer to first adjacent face.
+*/
+
+const face* edge::get_f() const
+{
+	return(f);
+}
+
+/*!
+*	Returns pointer to second adjacent face.
+*/
+
+const face* edge::get_g() const
+{
+	return(g);
+}
 
 /*!
 *	Comparison operator for edges: Weak ordering by index of the vertices

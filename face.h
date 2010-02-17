@@ -6,8 +6,8 @@
 #ifndef __FACE_H__
 #define __FACE_H__
 
-#include "directed_edge.h"
 #include "vertex.h"
+#include "directed_edge.h"
 
 /*!
 *	@class face

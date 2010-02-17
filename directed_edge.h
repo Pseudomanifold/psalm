@@ -6,7 +6,7 @@
 #ifndef __DIRECTED_EDGE_H__
 #define __DIRECTED_EDGE_H__
 
-#include "edge.h"
+class edge; // forward declaration to break up circular dependency with face class
 
 /*!
 *	@class directed_edge
