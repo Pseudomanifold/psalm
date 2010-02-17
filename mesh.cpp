@@ -363,6 +363,44 @@ void mesh::destroy()
 	F.clear();
 }
 
+/*!
+*	Assignment operator for meshes. Instead of performing a _copy_ of
+*	pointers, which will inevitably lead to serious errors, the pointer
+*	_data_ is duplicated.
+*
+*	@param	M Mesh data to assign to the current mesh.
+*	@return Reference to current mesh.
+*/
+
+mesh& mesh::operator=(const mesh& M)
+{
+	this->destroy();
+
+	for(vector<vertex*>::const_iterator it = M.V.begin(); it != M.V.end(); it++)
+	{
+		vertex* v = new vertex;
+		*v = *(*it);
+
+		V.push_back(v);
+	}
+
+	this->edge_table	= M.edge_table;
+	this->face_table	= M.face_table;
+	this->F			= M.F;
+
+	// FIXME: Need to remove old version.
+	for(vector<face*>::const_iterator it = M.G.begin(); it != M.G.end(); it++)
+	{
+		face* f = new face;
+		*f = *(*it);
+
+		G.push_back(f);
+	}
+
+	return(*this);
+}
+
+
 void mesh::add_face(vector<size_t> vertices)
 {
 	size_t u = 0;
@@ -706,7 +744,6 @@ void mesh::subdivide_loop()
 	#endif
 
 	// FIXME: Make this more elegant. Perhaps a "replace" function?
-	destroy();
 	*this = M_;
 
 //	cout << "[E_t,F_t]\t= " << edge_table.size() << "," << face_table.T.size() << "\n";

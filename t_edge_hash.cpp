@@ -106,3 +106,32 @@ void t_edge_hash::destroy()
 	E.clear();
 	T.clear();
 }
+
+/*!
+*	Assignment operator for edge tables. Instead of performing a _copy_ of
+*	pointers, which will inevitably lead to serious errors, the pointer
+*	_data_ is duplicated.
+*
+*	@param	edge_table	Edge table to assign to the current edge table.
+*	@return			Reference to current edge table.
+*/
+
+t_edge_hash& t_edge_hash::operator=(const t_edge_hash& edge_table)
+{
+	this->destroy();
+
+	edge* e;
+	for(std::hash_map<size_t, edge*>::const_iterator it = edge_table.T.begin(); it != edge_table.T.end(); it++)
+	{
+		e = new edge;
+		*e = *(it->second);
+
+		// FIXME: Need to check whether the order of elements is
+		// relevant here.
+
+		T[it->first] = e;
+		E.push_back(e);
+	}
+
+	return(*this);
+}

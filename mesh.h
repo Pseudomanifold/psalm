@@ -37,6 +37,8 @@ class mesh
 		void draw();
 		void destroy();
 
+		mesh& operator=(const mesh& M);
+
 	private:
 		t_edge_hash	edge_table;
 		t_face		face_table;
