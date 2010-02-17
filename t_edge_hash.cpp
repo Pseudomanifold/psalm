@@ -60,9 +60,7 @@ directed_edge t_edge_hash::add(edge& e)
 	{
 		// Edge has been found, check whether the proper direction has
 		// been stored.
-		vertex* u1 = it->second->get_u();
-		vertex* u2 = e.get_u();
-		if(u1 != u2)
+		if(it->second->get_u()->get_id() != e.get_u()->get_id())
 			result.inverted = true;
 		else
 			result.inverted = false;

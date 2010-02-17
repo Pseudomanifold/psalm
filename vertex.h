@@ -24,15 +24,15 @@ class vertex
 		vertex(double x, double y, double z, size_t id);
 
 		void set(double x, double y, double z, size_t id);
-		const v3ctor& get_position();
+		const v3ctor& get_position() const;
 
-		size_t v_p; // FIXME: Vertex points should be stored elsewhere.
+		vertex* vertex_point; // FIXME: Make this private?
 
-		void add_incident_edge(const edge* e);
+		void add_edge(const edge* e);
+		const edge* get_edge(size_t i);
 
-		//size_t& vertex::get(const size_t& i)
 		size_t get_id() const;
-		size_t size() const;
+		size_t valency() const;
 
 	private:
 		std::vector<const edge*> E;

@@ -45,7 +45,7 @@ void vertex::set(double x, double y, double z, size_t id)
 *	Returns reference to vertex position.
 */
 
-const v3ctor& vertex::get_position()
+const v3ctor& vertex::get_position() const
 {
 	return(p);
 }
@@ -63,26 +63,26 @@ size_t vertex::get_id() const
 *	Adds incident edge to vertex.
 */
 
-void vertex::add_incident_edge(const edge* e)
+void vertex::add_edge(const edge* e)
 {
 	E.push_back(e);
 }
 
-/*!
-*	Returns index of incident edge.
+/*
+*	Returns pointer to incident edge.
 */
 
-//size_t& vertex::get(const size_t& i)
-//{
-//	// TODO: Check invalid range?
-//	return(E[i]);
-//}
+const edge* vertex::get_edge(size_t i)
+{
+	// TODO: Check invalid range?
+	return(E[i]);
+}
 
 /*!
-*	Returns number of incident edges, i.e., the valence.
+*	Returns the valency of the vertex, i.e., the number of incident edges.
 */
 
-size_t vertex::size() const
+size_t vertex::valency() const
 {
 	return(E.size());
 }
