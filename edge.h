@@ -32,7 +32,7 @@ class edge
 		const face* get_f() const;
 		const face* get_g() const;
 
-		size_t e_p; // FIXME: Edge points should be stored elsewhere.
+		vertex* edge_point; // FIXME: Make this private?
 
 		bool operator<(const edge& b) const;
 

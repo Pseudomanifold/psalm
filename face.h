@@ -25,12 +25,12 @@ class face
 		size_t num_edges() const;
 		size_t num_vertices() const;
 
-		vertex* get_vertex(size_t i);
+		const vertex* get_vertex(size_t i) const;
 		directed_edge get_edge(size_t i);
 
 	private:
 		std::vector<directed_edge> E;
-		std::vector<vertex*> V;
+		std::vector<const vertex*> V;
 };
 
 #endif

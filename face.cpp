@@ -41,7 +41,7 @@ void face::add_vertex(vertex* v)
 *	Returns vertex with a certain index.
 */
 
-vertex* face::get_vertex(size_t i)
+const vertex* face::get_vertex(size_t i) const
 {
 	// TODO:
 	// Check for invalid ranges

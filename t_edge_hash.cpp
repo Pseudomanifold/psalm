@@ -39,9 +39,19 @@ directed_edge t_edge_hash::add(edge& e)
 		TODO: Check whether this works.
 	*/
 
-	size_t id_u = e.get_u()->get_id();
-	size_t id_v = e.get_v()->get_id();
-	size_t k = static_cast<size_t>(0.5*(id_u+id_v)*(id_u+id_v+1)+id_v);
+	size_t k1, k2;
+	if(e.get_u()->get_id() < e.get_v()->get_id())
+	{
+		k1 = e.get_u()->get_id();
+		k2 = e.get_v()->get_id();
+	}
+	else
+	{
+		k1 = e.get_v()->get_id();
+		k2 = e.get_u()->get_id();
+	}
+
+	size_t k = static_cast<size_t>(0.5*(k1+k2)*(k1+k2+1)+k2);
 
 	// Check whether edge exists
 	std::hash_map<size_t, edge*>::iterator it;

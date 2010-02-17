@@ -344,6 +344,7 @@ void mesh::destroy()
 {
 	cout << "Cleaning up...\n";
 
+	cout << V.size() << "\n";
 	for(vector<vertex*>::iterator it = V.begin(); it != V.end(); it++)
 	{
 		if(*it != NULL)
@@ -357,7 +358,9 @@ void mesh::destroy()
 	cout << "* Removed edge data\n";
 
 	face_table.destroy();
-	cout << "* Remove face data\n";
+	cout << "* Removed face data\n";
+
+	F.clear();
 }
 
 void mesh::add_face(vector<size_t> vertices)
@@ -371,6 +374,9 @@ void mesh::add_face(vector<size_t> vertices)
 
 	face f;
 	edge e;
+
+	// FIXME: Need to delete old code.
+	face* g = new face;
 
 	u = vertices[0];
 	for(size_t i = 1; i <= vertices.size(); i++)
@@ -391,10 +397,15 @@ void mesh::add_face(vector<size_t> vertices)
 		// to be considered here
 		//f.V.push_back(u);
 		f.add_vertex(get_vertex(u));
+		g->add_vertex(get_vertex(u));
 
 		// Add it to list of edges for face
 		directed_edge edge = edge_table.add(e);
 		f.add_edge(edge);
+		g->add_edge(edge);
+
+		// FIXME: Need to remove the old code concerning edge
+		// updates (face_table.set_f1 etc.).
 
 		/*
 			GIANT FIXME: We are assuming that the edges are ordered
@@ -406,7 +417,10 @@ void mesh::add_face(vector<size_t> vertices)
 
 		// Edge already known; update second adjacent face
 		if(edge.inverted)
+		{
 			face_table.set_f2(edge.e, face_index);
+			edge.e->set_g(g);
+		}
 		
 		// New edge; update first adjacent face and adjacent vertices
 		else
@@ -420,8 +434,10 @@ void mesh::add_face(vector<size_t> vertices)
 			face_table.set_f1(edge.e, face_index);
 			face_table.set_f2(edge.e, SIZE_T_MAX);	// TODO: Better place this in the constructor.
 
-			V[u]->add_incident_edge(edge.e);
-			V[v]->add_incident_edge(edge.e);
+			edge.e->set_f(g);
+
+			V[u]->add_edge(edge.e);
+			V[v]->add_edge(edge.e);
 		}
 
 		// Set next start vertex; the orientation should be correct
@@ -429,6 +445,7 @@ void mesh::add_face(vector<size_t> vertices)
 		u = v;
 	}
 
+	G.push_back(g);
 	F.push_back(f);
 }
 
@@ -460,12 +477,17 @@ edge* mesh::get_edge(size_t e)
 *	@param x x position of vertex
 *	@param y y position of vertex
 *	@param z z position of vertex
+*
+*	@return Pointer to new vertex. The pointer remains valid during the
+*	lifecycle of the mesh.
 */
 
-void mesh::add_vertex(double x, double y, double z)
+vertex* mesh::add_vertex(double x, double y, double z)
 {
 	vertex* v = new vertex(x,y,z, V.size());
 	V.push_back(v);
+
+	return(v);
 }
 
 /*!
@@ -475,7 +497,6 @@ void mesh::add_vertex(double x, double y, double z)
 void mesh::subdivide_loop()
 {
 	// FIXME
-	#ifdef INCLUDE_LOOP_SUBDIVISION
 	mesh M_;
 
 	// Construct vertex points
@@ -484,18 +505,21 @@ void mesh::subdivide_loop()
 	{
 		// Find neighbours
 
-		size_t n = V[i].size();
-		
+		size_t n = V[i]->valency();
+
 		v3ctor vertex_point;
 		for(size_t j = 0; j < n; j++)
 		{
-			const edge& e = edge_table.get(V[i].get(j));
-			const vertex& neighbour = (e.u != i? V[e.u] : V[e.v]); 	// i is index of current vertex; if the
-										// start of the edge is _not_ the current
-										// vertex, it must be the neighbouring
-										// vertex.
+			const edge* e = V[i]->get_edge(j);
 
-			vertex_point += neighbour.p;
+			/*
+				i is the index of the current vertex; if the
+				start vertex of the edge is _not_ the current
+				vertex, it must be the neighbouring vertex.
+			*/
+
+			const vertex* neighbour = (e->get_u()->get_id() != V[i]->get_id()? e->get_u() : e->get_v());
+			vertex_point += neighbour->get_position();
 		}
 
 		double s = 0.0;
@@ -504,57 +528,42 @@ void mesh::subdivide_loop()
 	//	else
 	//		s = 0.1875;
 
-		vertex_point *= s; 
-		vertex_point += V[i].p*(1.0-n*s);
+		vertex_point *= s;
+		vertex_point += V[i]->get_position()*(1.0-n*s);
 
-		v.v_v = true;
-		v.p = vertex_point;
-		M_.V.push_back(v);
-		
-		V[i].v_p = M_.V.size()-1;
+		// FIXME: Provide interface of add_vertex that accepts v3ctor
+		// variables and not just coordinates
+		V[i]->vertex_point = M_.add_vertex(vertex_point[0], vertex_point[1], vertex_point[2]);
 	}
 
 	// Create edge points
 	for(size_t i = 0; i < edge_table.size(); i++)
 	{
 		v3ctor edge_point;
-		const face_query& result = face_table.get(i);
-		edge& e = edge_table.get(i);
+		edge* e = edge_table.get(i);
 
-		// Find remaining vertex of first face
-		size_t v1 = SIZE_T_MAX;
-		for(size_t j = 0; j < F[result.f1].V.size(); j++)
-		{
-			if(	F[result.f1].V[j] != e.u &&
-				F[result.f1].V[j] != e.v)
-				v1 = F[result.f1].V[j];
-		}
-		
-		//cout << F[result.f1].V.size() << " (" << e.u << "," << e.v << "," << v1 << ")\n";
-		
-		// Find remaining vertex of second face
-		size_t v2 = SIZE_T_MAX;
-		if(result.f2 != SIZE_T_MAX)
-		{
-			for(size_t j = 0; j < F[result.f2].V.size(); j++)
-			{
-				if(	F[result.f2].V[j] != e.u &&
-					F[result.f2].V[j] != e.v)
-					v2 = F[result.f2].V[j];
-			}
-		
-			//cout << F[result.f2].V.size() << " (" << e.u << "," << e.v << "," << v2 << ")\n";
-		}
+		// Find remaining vertices of the adjacent faces of the edge
+		const vertex* v1 = find_remaining_vertex(e, e->get_f());
+		const vertex* v2 = find_remaining_vertex(e, e->get_g());
 
-		edge_point = (V[e.u].p+V[e.v].p)*0.375+(V[v1].p+V[v2].p)*0.125;
+		if(v1 == NULL)
+			cout << "v1 == NULL\n";
+		if(v2 == NULL)
+			cout << "v2 == NULL\n";
 
-		v.v_v = false;
-		v.p = edge_point;
-		M_.V.push_back(v);
+		// TODO: Need special case when v2 is NULL (edge is on
+		// boundary).
 
-		e.e_p = M_.V.size()-1;
+		edge_point =	(e->get_u()->get_position()+e->get_v()->get_position())*0.375+
+				(v1->get_position()+v2->get_position())*0.125;
+
+		// FIXME: Provide interface of add_vertex that accepts v3ctor
+		// variables and not just coordinates
+		e->edge_point = M_.add_vertex(edge_point[0], edge_point[1], edge_point[2]);
 	}
-	
+
+	#ifdef INCLUDE_LOOP_SUBDIVISION
+
 	// Create topology for new mesh
 	for(size_t i = 0; i < F.size(); i++)
 	{
@@ -694,16 +703,18 @@ void mesh::subdivide_loop()
 //	M_.edge_table = edge_table;
 //	M_.face_table = face_table;
 
+	#endif
+
+	// FIXME: Make this more elegant. Perhaps a "replace" function?
+	destroy();
 	*this = M_;
 
-	cout << "[E_t,F_t]\t= " << edge_table.size() << "," << face_table.T.size() << "\n";
-	cout << "[V,F]\t\t= " << V.size() << "," << F.size() << "\n";
-
-	cout 	<< "Loop subdivision step finished:\n"
-		<< "* Number of vertices: " 	<< V.size() << "\n"
-		<< "* Number of faces: "	<< F.size() << "\n";
-
-	#endif
+//	cout << "[E_t,F_t]\t= " << edge_table.size() << "," << face_table.T.size() << "\n";
+//	cout << "[V,F]\t\t= " << V.size() << "," << F.size() << "\n";
+//
+//	cout 	<< "Loop subdivision step finished:\n"
+//		<< "* Number of vertices: " 	<< V.size() << "\n"
+//		<< "* Number of faces: "	<< F.size() << "\n";
 }
 
 /*!
@@ -720,4 +731,38 @@ void mesh::subdivide_doo_sabin()
 
 void mesh::subdivide_catmull_clark()
 {
+}
+
+/*!
+*	 Given an edge and a triangular face (where the edge is supposed to be
+*	 part of the face), return the remaining vertex of the face. This
+*	 function is used for Loop subdivision.
+*
+*	@param e Edge
+*	@param f Face that is adjacent to the edge. The face is supposed to
+*	have only 3 vertices.
+*
+*	@return Pointer to the remaining vertex of the face or NULL if the
+*	vertex could not be found.
+*/
+
+const vertex* mesh::find_remaining_vertex(const edge* e, const face* f)
+{
+	const vertex* result = NULL;
+	if(f == NULL || e == NULL)
+		return(result);
+
+	for(size_t i = 0; i < f->num_vertices(); i++)
+	{
+		// The IDs of the start and end vertices of the edge
+		// differ from the ID of the remaining edge.
+		if(	f->get_vertex(i)->get_id() != e->get_u()->get_id() &&
+			f->get_vertex(i)->get_id() != e->get_v()->get_id())
+		{
+			result = f->get_vertex(i);
+			break;
+		}
+	}
+
+	return(result);
 }

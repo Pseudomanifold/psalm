@@ -17,7 +17,7 @@ class edge; // forward declaration to break up circular dependency with face cla
 class directed_edge
 {
 	public:
-		const edge* e;
+		edge* e;
 		bool inverted;
 };
 

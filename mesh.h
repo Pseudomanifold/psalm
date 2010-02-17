@@ -43,12 +43,15 @@ class mesh
 
 		std::vector<vertex*>	V;
 		std::vector<face>	F;
+		std::vector<face*>	G; // FIXME: Need to remove old version.
 
 		vertex* get_vertex(size_t id);
 		edge* get_edge(size_t e);
 
 		void add_face(std::vector<size_t> vertices);
-		void add_vertex(double x, double y, double z);
+		vertex* add_vertex(double x, double y, double z);
+
+		const vertex* find_remaining_vertex(const edge* e, const face* f);
 };
 
 #endif
