@@ -26,7 +26,7 @@ class face
 		size_t num_vertices() const;
 
 		const vertex* get_vertex(size_t i) const;
-		directed_edge get_edge(size_t i);
+		directed_edge& get_edge(size_t i); // FIXME: Need to check whether this can be made constant
 
 	private:
 		std::vector<directed_edge> E;

@@ -374,12 +374,16 @@ void mesh::destroy()
 
 mesh& mesh::operator=(const mesh& M)
 {
+	cout << "?\n";
 	this->destroy();
 
 	for(vector<vertex*>::const_iterator it = M.V.begin(); it != M.V.end(); it++)
 	{
 		vertex* v = new vertex;
 		*v = *(*it);
+
+		// UPDATE EDGES...
+		// ...UPDATES EDGE POINTERS...
 
 		V.push_back(v);
 	}
@@ -400,6 +404,30 @@ mesh& mesh::operator=(const mesh& M)
 	return(*this);
 }
 
+/*!
+*	Replaces the current mesh with another one. The other mesh will
+*	be deleted/cleared by this operation.
+*
+*	@param	M Mesh to replace current mesh with.
+*	@return	Reference to current mesh.
+*/
+
+mesh& mesh::replace_with(mesh& M)
+{
+	this->destroy();
+	this->V = M.V;
+	this->F = M.F;
+	this->G = M.G;
+	this->edge_table = M.edge_table;
+	this->face_table = M.face_table;
+
+	M.V.clear();
+	M.F.clear();
+	M.G.clear();
+	M.edge_table.destroy(false);
+
+	return(*this);
+}
 
 void mesh::add_face(vector<size_t> vertices)
 {
@@ -600,13 +628,11 @@ void mesh::subdivide_loop()
 		e->edge_point = M_.add_vertex(edge_point[0], edge_point[1], edge_point[2]);
 	}
 
-	#ifdef INCLUDE_LOOP_SUBDIVISION
-
 	// Create topology for new mesh
 	for(size_t i = 0; i < F.size(); i++)
 	{
 		// ...go through all vertices of the face
-		for(size_t j = 0; j < F[i].V.size(); j++)
+		for(size_t j = 0; j < F[i].num_vertices(); j++)
 		{
 			/*
 				F[i].V[j] is the current vertex of a face. We
@@ -614,11 +640,11 @@ void mesh::subdivide_loop()
 				the face. This yields one new triangle.
 			*/
 
-			size_t v1, v2, v3;
-			size_t n = F[i].E.size(); // number of edges in face
+			size_t n = F[i].num_edges(); // number of edges in face
+			bool assigned_first_edge = false;
 
-			size_t e1 = SIZE_T_MAX;	// first adjacent edge (for vertex & face)
-			size_t e2 = SIZE_T_MAX;	// second adjacent edge (for vertex & face)
+			directed_edge d_e1; // first adjacent edge (for vertex & face)
+			directed_edge d_e2; // second adjacent edge (for vertex & face)
 
 	//		// ...find an edge that contains the current vertex
 	//		for(size_t k = 0; k < n; k++)
@@ -688,63 +714,69 @@ void mesh::subdivide_loop()
 			// TODO: Optimize!
 			for(size_t k = 0; k < n; k++)
 			{
-				const edge& e = edge_table.get(F[i].E[k].e);
-				if(e.u == F[i].V[j] || e.v == F[i].V[j])
+				directed_edge d_edge  = F[i].get_edge(k);
+				if(	d_edge.e->get_u()->get_id() == F[i].get_vertex(j)->get_id() ||
+					d_edge.e->get_v()->get_id() == F[i].get_vertex(j)->get_id())
 				{
-					if(e1 == SIZE_T_MAX)
-						e1 = k;
+					if(!assigned_first_edge)
+					{
+						d_e1 = d_edge;
+						assigned_first_edge = true;
+					}
 					else
 					{
-						e2 = k;
+						d_e2 = d_edge;
 						break;
 					}
 				}
 			}
-		
-			v1 = V[F[i].V[j]].v_p; // vertex point of current vertex
-			//v2 = edge_table.get(e1).e_p;
-			//v3 = edge_table.get(e2).e_p;
-			v2 = edge_table.get(F[i].E[e1].e).e_p;
-			v3 = edge_table.get(F[i].E[e2].e).e_p;
+
+
+			const vertex* v1 = F[i].get_vertex(j)->vertex_point;
+			const vertex* v2 = d_e1.e->edge_point;
+			const vertex* v3 = d_e2.e->edge_point;
 
 			// Create vertices for _new_ face. It is important to
 			// determine the proper order of the edges here. The
 			// new edges should run "along" the old ones.
 			vector<size_t> vertices;
+			vertices.push_back(v1->get_id());
 
-			vertices.push_back(v1);
-
-			if(	(edge_table.get(F[i].E[e1].e).u == F[i].V[j] && F[i].E[e1].inverted == false)  ||
-				(edge_table.get(F[i].E[e1].e).v == F[i].V[j] && F[i].E[e1].inverted))
+			// Check whether the current vertex is the _start_
+			// vertex of the first edge. This is the case if
+			// _either_ the edge is not inverted and the current
+			// vertex is equal to the vertex u (start vertex) of
+			// the edge _or_ the edge is inverted and the current
+			// vertex is equal to the vertex v (end vertex) of the
+			// edge.
+			if(	(d_e1.e->get_u()->get_id() == F[i].get_vertex(j)->get_id() && d_e1.inverted == false) ||
+				(d_e1.e->get_v()->get_id() == F[i].get_vertex(j)->get_id() && d_e1.inverted))
 			{
-				vertices.push_back(v2);
-				vertices.push_back(v3);
+				vertices.push_back(v2->get_id());
+				vertices.push_back(v3->get_id());
 			}
 			else
 			{
-				vertices.push_back(v3);
-				vertices.push_back(v2);
+				vertices.push_back(v3->get_id());
+				vertices.push_back(v2->get_id());
 			}
 
 			M_.add_face(vertices);
 		}
 
-		// Create face from all three edge points of the face
+		// Create face from all three edge points of the face; since
+		// the edges are stored in the proper order when adding the
+		// face, the order in which the edge points are set will be
+		// correct.
 		vector<size_t> vertices;
-		for(size_t j = 0; j < F[i].E.size(); j++)
-			vertices.push_back(edge_table.get(F[i].E[j].e).e_p);
+		for(size_t j = 0; j < F[i].num_edges(); j++)
+			vertices.push_back(F[i].get_edge(j).e->edge_point->get_id());
 
 		M_.add_face(vertices);
 	}
 
-//	M_.F = F;
-//	M_.edge_table = edge_table;
-//	M_.face_table = face_table;
-
-	#endif
-
 	// FIXME: Make this more elegant. Perhaps a "replace" function?
-	*this = M_;
+	this->replace_with(M_);
 
 //	cout << "[E_t,F_t]\t= " << edge_table.size() << "," << face_table.T.size() << "\n";
 //	cout << "[V,F]\t\t= " << V.size() << "," << F.size() << "\n";

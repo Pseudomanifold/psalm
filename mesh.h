@@ -38,6 +38,7 @@ class mesh
 		void destroy();
 
 		mesh& operator=(const mesh& M);
+		mesh& replace_with(mesh& M);
 
 	private:
 		t_edge_hash	edge_table;

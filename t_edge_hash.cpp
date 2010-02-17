@@ -92,15 +92,21 @@ edge* t_edge_hash::get(size_t e)
 }
 
 /*!
-*	Destroys the edge table and frees up used memory.
+*	Destroys the edge table by clearing all internal data structures.
+*	Memory is freed by default, although this behaviour can be toggled.
+*
+*	@param free_memory Toggles whether memory is freed (by default) or not.
 */
 
-void t_edge_hash::destroy()
+void t_edge_hash::destroy(bool free_memory)
 {
-	for(std::vector<edge*>::iterator it = E.begin(); it != E.end(); it++)
+	if(free_memory)
 	{
-		if(*it != NULL)
-			delete(*it);
+		for(std::vector<edge*>::iterator it = E.begin(); it != E.end(); it++)
+		{
+			if(*it != NULL)
+				delete(*it);
+		}
 	}
 
 	E.clear();
@@ -116,22 +122,22 @@ void t_edge_hash::destroy()
 *	@return			Reference to current edge table.
 */
 
-t_edge_hash& t_edge_hash::operator=(const t_edge_hash& edge_table)
-{
-	this->destroy();
-
-	edge* e;
-	for(std::hash_map<size_t, edge*>::const_iterator it = edge_table.T.begin(); it != edge_table.T.end(); it++)
-	{
-		e = new edge;
-		*e = *(it->second);
-
-		// FIXME: Need to check whether the order of elements is
-		// relevant here.
-
-		T[it->first] = e;
-		E.push_back(e);
-	}
-
-	return(*this);
-}
+//t_edge_hash& t_edge_hash::operator=(const t_edge_hash& edge_table)
+//{
+//	this->destroy();
+//
+//	edge* e;
+//	for(std::hash_map<size_t, edge*>::const_iterator it = edge_table.T.begin(); it != edge_table.T.end(); it++)
+//	{
+//		e = new edge;
+//		*e = *(it->second);
+//
+//		// FIXME: Need to check whether the order of elements is
+//		// relevant here.
+//
+//		T[it->first] = e;
+//		E.push_back(e);
+//	}
+//
+//	return(*this);
+//}

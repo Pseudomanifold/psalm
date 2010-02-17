@@ -31,9 +31,9 @@ class t_edge_hash
 
 		size_t size();
 
-		void destroy();
+		void destroy(bool free_memory = true);
 
-		t_edge_hash& operator=(const t_edge_hash& e);
+		//t_edge_hash& operator=(const t_edge_hash& e);
 
 	private:
 		std::vector<edge*>		E;

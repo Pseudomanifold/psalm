@@ -21,7 +21,7 @@ void face::add_edge(const directed_edge& result)
 *	Returns edge with a certain index.
 */
 
-directed_edge face::get_edge(size_t i)
+directed_edge& face::get_edge(size_t i)
 {
 	// TODO:
 	// Check for invalid ranges
