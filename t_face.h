@@ -33,7 +33,9 @@ class t_face
 		void set_f1(const edge* e, size_t f1);
 		void set_f2(const edge* e, size_t f2);
 		
-		face_query& get(const edge* e); 
+		face_query& get(const edge* e);
+
+		void destroy();
 
 	private:
 		std::map<const edge*, face_query> T;

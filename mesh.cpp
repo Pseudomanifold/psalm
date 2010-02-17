@@ -1,5 +1,5 @@
 /*!
-*	@file 	mesh.cpp
+*	@file	mesh.cpp
 *	@brief	Functions for representing a mesh
 */
 
@@ -15,6 +15,24 @@
 #include "mesh.h"
 
 using namespace std;
+
+/*!
+*	Default constructor. Not used at the moment.
+*/
+
+mesh::mesh()
+{
+}
+
+/*!
+*	Destructor for mesh. Calls destroy() function (if the user did not
+*	already delete data).
+*/
+
+mesh::~mesh()
+{
+	destroy();
+}
 
 /*!
 *	Loads a mesh from a .PLY file.
@@ -317,6 +335,31 @@ void mesh::draw()
 	glEnd();
 }
 
+/*!
+*	Destroys the mesh and all related data structures and frees up used
+*	memory.
+*/
+
+void mesh::destroy()
+{
+	cout << "Cleaning up...\n";
+
+	for(vector<vertex*>::iterator it = V.begin(); it != V.end(); it++)
+	{
+		if(*it != NULL)
+			delete(*it);
+	}
+
+	V.clear();
+	cout << "* Removed vertex data\n";
+
+	edge_table.destroy();
+	cout << "* Removed edge data\n";
+
+	face_table.destroy();
+	cout << "* Remove face data\n";
+}
+
 void mesh::add_face(vector<size_t> vertices)
 {
 	size_t u = 0;
@@ -411,7 +454,13 @@ edge* mesh::get_edge(size_t e)
 	return(edge_table.get(e));
 }
 
-
+/*!
+*	Adds a vertex to the mesh. Vertex ID is assigned automatically.
+*
+*	@param x x position of vertex
+*	@param y y position of vertex
+*	@param z z position of vertex
+*/
 
 void mesh::add_vertex(double x, double y, double z)
 {

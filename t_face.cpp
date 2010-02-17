@@ -37,3 +37,12 @@ face_query& t_face::get(const edge* e)
 {
 	return(T[e]);
 }
+
+/*!
+*	Destroys the face table and frees up used memory.
+*/
+
+void t_face::destroy()
+{
+	T.clear();
+}

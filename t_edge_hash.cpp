@@ -82,3 +82,19 @@ edge* t_edge_hash::get(size_t e)
 	// TODO: Handle invalid ranges
 	return(E[e]);
 }
+
+/*!
+*	Destroys the edge table and frees up used memory.
+*/
+
+void t_edge_hash::destroy()
+{
+	for(std::vector<edge*>::iterator it = E.begin(); it != E.end(); it++)
+	{
+		if(*it != NULL)
+			delete(*it);
+	}
+
+	E.clear();
+	T.clear();
+}

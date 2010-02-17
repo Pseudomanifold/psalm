@@ -6,6 +6,7 @@
 #ifndef __T_EDGE_HASH_H__
 #define __T_EDGE_HASH_H__
 
+#include <vector>
 #include <ext/hash_map>
 
 #include "edge.h"
@@ -29,6 +30,8 @@ class t_edge_hash
 		edge* get(size_t e);
 
 		size_t size();
+
+		void destroy();
 
 	private:
 		std::vector<edge*>		E;

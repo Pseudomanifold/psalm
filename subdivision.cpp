@@ -145,10 +145,11 @@ void keyboard_callback(unsigned char key, int x, int y)
 		case '\t':
 			draw_lines = !draw_lines;
 			break;
-		
+
 		case 'q':
+			glutDestroyWindow(glutGetWindow());
 			exit(0);
-			break;	
+			break;
 
 		default:
 			break;

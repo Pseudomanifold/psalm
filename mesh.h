@@ -24,6 +24,9 @@
 class mesh
 {
 	public:
+		mesh();
+		~mesh();
+
 		bool load_ply(const char* filename);
 		bool save_ply(const char* filename);
 
@@ -32,6 +35,7 @@ class mesh
 		void subdivide_catmull_clark();
 
 		void draw();
+		void destroy();
 
 	private:
 		t_edge_hash	edge_table;
