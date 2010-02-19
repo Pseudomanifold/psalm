@@ -8,9 +8,10 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+
 #include <ctime>
 #include <cmath>
-#include <climits>
+#include <cassert>
 
 #include "mesh.h"
 
@@ -323,16 +324,16 @@ void mesh::draw()
 	glEnd();
 
 	glColor3f(1.0, 1.0, 1.0);
-	glBegin(GL_TRIANGLES);
 	for(size_t i = 0; i < F.size(); i++)
 	{
+		glBegin(GL_POLYGON);
 		for(size_t j = 0; j < F[i].num_vertices(); j++)
 		{
 			const v3ctor& p = F[i].get_vertex(j)->get_position();
 			glVertex3f(p[0], p[1], p[2]);
 		}
+		glEnd();
 	}
-	glEnd();
 }
 
 /*!
@@ -486,24 +487,29 @@ void mesh::add_face(vector<size_t> vertices)
 		{
 			face_table.set_f2(edge.e, face_index);
 			edge.e->set_g(g);
+
+			V[u]->add_face(g);
 		}
-		
+
 		// New edge; update first adjacent face and adjacent vertices
 		else
 		{
 		//	if(face_table.get(result.e).f2 < SIZE_T_MAX && face_table.get(result.e).f2 > 0)
 		//		cout << "WTF 1?n";
-	
+
 		//	if(face_table.get(result.e).f1 < SIZE_T_MAX && face_table.get(result.e).f1 > 0)
 		//		cout << "WTF 2?\n";
 
 			face_table.set_f1(edge.e, face_index);
 			face_table.set_f2(edge.e, SIZE_T_MAX);	// TODO: Better place this in the constructor.
 
+			cout << "?\n";
 			edge.e->set_f(g);
 
 			V[u]->add_edge(edge.e);
 			V[v]->add_edge(edge.e);
+
+			V[u]->add_face(g); // FIXME: Make g the new f ;-) 
 		}
 
 		// Set next start vertex; the orientation should be correct
@@ -792,6 +798,140 @@ void mesh::subdivide_loop()
 
 void mesh::subdivide_doo_sabin()
 {
+	// FIXME
+	mesh M_;
+
+	// Create new points
+	for(size_t i = 0; i < F.size(); i++)
+	{
+		// Find centroid of face
+		v3ctor centroid;
+		for(size_t j = 0; j < F[i].num_vertices(); j++)
+		{
+			const vertex* v = F[i].get_vertex(j);
+			centroid += v->get_position();
+		}
+		centroid *= 1.0/F[i].num_vertices();
+
+		// For a fixed vertex of the face, find the two edges that are
+		// incident on this vertex and calculate their midpoints.
+		for(size_t j = 0; j < F[i].num_vertices(); j++)
+		{
+			const vertex* v = F[i].get_vertex(j);
+
+			const edge* e1 = NULL;
+			const edge* e2 = NULL;
+			for(size_t k = 0; k < F[i].num_edges(); k++)
+			{
+				if(	F[i].get_edge(k).e->get_u() == v ||
+					F[i].get_edge(k).e->get_v() == v)
+				{
+					if(e1 == NULL)
+						e1 = F[i].get_edge(k).e;
+					else
+					{
+						e2 = F[i].get_edge(k).e;
+						break;
+					}
+				}
+			}
+
+			assert(e1 != NULL && e2 != NULL);
+
+			// Calculate midpoints of the edges and the position of
+			// face vertex
+
+			v3ctor midpoint1;
+			v3ctor midpoint2;
+
+			midpoint1 = (e1->get_u()->get_position()+e1->get_v()->get_position())/2;
+			midpoint2 = (e2->get_u()->get_position()+e2->get_v()->get_position())/2;
+
+			v3ctor v_f = (midpoint1+midpoint2+centroid+v->get_position())/4;
+
+			// Add new vertex to the face. The lookup using the
+			// vertex's ID is necessary because the face only
+			// supplies const pointers.
+
+			// FIXME: Need a better interface for the "add_vertex" function
+
+			vertex* face_vertex = M_.add_vertex(v_f[0], v_f[1], v_f[2]);
+			F[i].add_face_vertex(face_vertex);
+			G[i]->add_face_vertex(face_vertex); // FIXME: Need to remove F
+		}
+	}
+
+	// Create new F-faces by connecting the appropriate vertex points
+	// (generated above) of the face
+	for(size_t i = 0; i < F.size(); i++)
+	{
+		// Since the vertex points are visited in the order of the old
+		// vertices, this step is orientation-preserving
+
+		vector<size_t> vertices; // FIXME: Use pointers.
+		for(size_t j = 0; j < F[i].num_vertices(); j++)
+			vertices.push_back(F[i].get_face_vertex(j)->get_id());
+
+		M_.add_face(vertices);
+	}
+
+	// Create quadrilateral E-faces
+	for(size_t i = 0; i < edge_table.size(); i++)
+	{
+		vector<size_t> vertices; // FIXME: Use pointers.
+		edge* e = edge_table.get(i);
+
+		/*
+			The situation is as follows:
+
+			---------- v ----------
+			|          |          |
+			|    F     |     G    |
+			|          |          |
+			|	   |          |
+			---------- u ----------
+
+			Since F is the first face that we encountered when
+			traversing the edge in its natural direction, we know
+			that the orientation is preserved if the corresponding
+			face points are connected like:
+
+			u_F -- u_G -- v_G -- v_F
+
+		*/
+
+		assert(e->get_f() != NULL && e->get_g() != NULL);
+
+		const vertex* v1 = find_face_vertex(e->get_f(), e->get_u());
+		const vertex* v2 = find_face_vertex(e->get_g(), e->get_u());
+		const vertex* v3 = find_face_vertex(e->get_g(), e->get_v());
+		const vertex* v4 = find_face_vertex(e->get_f(), e->get_v());
+
+		// FIXME: Need a better interface for this.
+
+		vertices.push_back(v1->get_id());
+		vertices.push_back(v2->get_id());
+		vertices.push_back(v3->get_id());
+		vertices.push_back(v4->get_id());
+
+		M_.add_face(vertices);
+	}
+
+	// Create V-faces by connecting the face vertices of all faces that are
+	// adjacent to a fixed vertex.
+	for(size_t i = 0; i < V.size(); i++)
+	{
+		vector<size_t> vertices;
+		for(size_t j = 0; j < V[i]->num_adjacent_faces(); j++)
+		{
+			cout << (find_face_vertex(V[i]->get_face(j), V[i])->get_id()) << "\n";
+			vertices.push_back(find_face_vertex(V[i]->get_face(j), V[i])->get_id());
+		}
+
+		M_.add_face(vertices);
+	}
+
+	this->replace_with(M_);
 }
 
 /*!
@@ -803,9 +943,9 @@ void mesh::subdivide_catmull_clark()
 }
 
 /*!
-*	 Given an edge and a triangular face (where the edge is supposed to be
-*	 part of the face), return the remaining vertex of the face. This
-*	 function is used for Loop subdivision.
+*	Given an edge and a triangular face (where the edge is supposed to be
+*	part of the face), return the remaining vertex of the face. This
+*	function is used for Loop subdivision.
 *
 *	@param e Edge
 *	@param f Face that is adjacent to the edge. The face is supposed to
@@ -834,4 +974,27 @@ const vertex* mesh::find_remaining_vertex(const edge* e, const face* f)
 	}
 
 	return(result);
+}
+
+/*!
+*	Given a vertex and a face (of which the vertex is assumed to be a
+*	part), find the corresponding face vertex and return a pointer to it.
+*
+*	@param f Face
+*	@param v Vertex, which is assumed to be a part of the face.
+*
+*	@return Pointer to the face vertex that corresponds to vertex v in the
+*	face.
+*/
+
+const vertex* mesh::find_face_vertex(const face* f, const vertex* v)
+{
+	for(size_t i = 0; i < f->num_vertices(); i++)
+	{
+		// TODO: Speed could be increased by using lookup tables that map the "old" id to the "new id"
+		if(f->get_vertex(i)->get_id() == v->get_id())
+			return(f->get_face_vertex(i));
+	}
+
+	return(NULL);
 }

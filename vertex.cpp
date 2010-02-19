@@ -86,3 +86,31 @@ size_t vertex::valency() const
 {
 	return(E.size());
 }
+
+/*!
+*	Adds an adjacent face to the vertex.
+*/
+
+void vertex::add_face(const face* f)
+{
+	F.push_back(f);
+}
+
+/*!
+*	Returns an adjacent face of the vertex.
+*/
+
+const face* vertex::get_face(size_t i)
+{
+	// FIXME: Check range?
+	return(F[i]);
+}
+
+/*!
+*	Returns the number of adjacent faces for the current vertex.
+*/
+
+size_t vertex::num_adjacent_faces() const
+{
+	return(F.size());
+}

@@ -136,7 +136,11 @@ void keyboard_callback(unsigned char key, int x, int y)
 //		
 		case 'l':
 			scene_mesh.subdivide_loop();
-			break;	
+			break;
+
+		case 'd':
+			scene_mesh.subdivide_doo_sabin();
+			break;
 
 		case 'r':
 			scene_mesh.load_ply(input.c_str());

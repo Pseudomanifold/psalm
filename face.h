@@ -19,6 +19,7 @@ class face
 	public:
 		void add_edge(const directed_edge& edge);
 		void add_vertex(vertex* v);
+		void add_face_vertex(vertex* v);
 
 		directed_edge* find_edge(const size_t& e, size_t& pos);
 
@@ -26,11 +27,17 @@ class face
 		size_t num_vertices() const;
 
 		const vertex* get_vertex(size_t i) const;
+		const vertex* get_face_vertex(size_t i) const;
 		directed_edge& get_edge(size_t i); // FIXME: Need to check whether this can be made constant
+
+
+		vertex* face_point; // FIXME: Make this private?
 
 	private:
 		std::vector<directed_edge> E;
 		std::vector<const vertex*> V;
+
+		std::vector<vertex*> V_F;
 };
 
 #endif

@@ -90,3 +90,22 @@ size_t face::num_edges() const
 {
 	return(E.size());
 }
+
+/*!
+*	Stores a new face vertex that corresponds to a vertex in the mesh.
+*/
+
+void face::add_face_vertex(vertex* v)
+{
+	V_F.push_back(v);
+}
+
+/*!
+*	Returns a face vertex that corresponds to a vertex in the mesh.
+*/
+
+const vertex* face::get_face_vertex(size_t i) const
+{
+	// FIXME: Check range? Check ID?
+	return(V_F[i]);
+}
