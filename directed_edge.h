@@ -19,6 +19,7 @@ class directed_edge
 	public:
 		edge* e;
 		bool inverted;
+		bool new_edge;
 };
 
 #endif

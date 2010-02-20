@@ -375,7 +375,6 @@ void mesh::destroy()
 
 mesh& mesh::operator=(const mesh& M)
 {
-	cout << "?\n";
 	this->destroy();
 
 	for(vector<vertex*>::const_iterator it = M.V.begin(); it != M.V.end(); it++)
@@ -488,6 +487,7 @@ void mesh::add_face(vector<size_t> vertices)
 			face_table.set_f2(edge.e, face_index);
 			edge.e->set_g(g);
 
+			//V[u]->add_edge(edge.e);
 			V[u]->add_face(g);
 		}
 
@@ -500,14 +500,23 @@ void mesh::add_face(vector<size_t> vertices)
 		//	if(face_table.get(result.e).f1 < SIZE_T_MAX && face_table.get(result.e).f1 > 0)
 		//		cout << "WTF 2?\n";
 
+
 			face_table.set_f1(edge.e, face_index);
 			face_table.set_f2(edge.e, SIZE_T_MAX);	// TODO: Better place this in the constructor.
 
-			cout << "?\n";
-			edge.e->set_f(g);
 
-			V[u]->add_edge(edge.e);
-			V[v]->add_edge(edge.e);
+			// FIXME: This is ugly...and probably wrong?
+			if(edge.new_edge)
+			{
+				edge.e->set_f(g);
+				V[u]->add_edge(edge.e);
+				// TODO: Check whether it's ok to do this...or if it
+				// can be removed and done for the edge.inverted ==
+				// true case
+				V[v]->add_edge(edge.e);
+			}
+			else
+				edge.e->set_g(g);
 
 			V[u]->add_face(g); // FIXME: Make g the new f ;-) 
 		}
@@ -900,6 +909,7 @@ void mesh::subdivide_doo_sabin()
 
 		*/
 
+		// FIXME: Check when/why this can be violated
 		assert(e->get_f() != NULL && e->get_g() != NULL);
 
 		const vertex* v1 = find_face_vertex(e->get_f(), e->get_u());
@@ -921,12 +931,20 @@ void mesh::subdivide_doo_sabin()
 	// adjacent to a fixed vertex.
 	for(size_t i = 0; i < V.size(); i++)
 	{
+		assert(V[i]->num_adjacent_faces() > 0);
+
 		vector<size_t> vertices;
-		for(size_t j = 0; j < V[i]->num_adjacent_faces(); j++)
+		vertices.push_back(find_face_vertex(V[i]->get_face(0), V[i])->get_id());
+
+		for(size_t j = 1; j < V[i]->num_adjacent_faces(); j++)
 		{
-			cout << (find_face_vertex(V[i]->get_face(j), V[i])->get_id()) << "\n";
+			//cout << (find_face_vertex(V[i]->get_face(j), V[i])->get_id()) << "\n";
 			vertices.push_back(find_face_vertex(V[i]->get_face(j), V[i])->get_id());
 		}
+
+		// FIXME:
+		// function could be removed?
+		//sort_faces(V[i]);
 
 		M_.add_face(vertices);
 	}
@@ -997,4 +1015,98 @@ const vertex* mesh::find_face_vertex(const face* f, const vertex* v)
 	}
 
 	return(NULL);
+}
+
+/*!
+*	Given a vertex sort all the vertex's adjacent  faces in
+*	counter-clockwise order around the vertex.
+*
+*	@param v Vertex
+*	@return Sorted vector of faces.
+*/
+
+vector<const face*> mesh::sort_faces(vertex* v)
+{
+	vector<const face*> res;
+	vector<const edge*> edges;
+
+	cout << "SORTING: " << v->num_adjacent_faces() << "\n";
+	for(size_t i = 0; i < v->num_adjacent_faces(); i++)
+	{
+		const face* f  = v->get_face(i);
+		const edge* e1 = NULL;
+		const edge* e2 = NULL;
+
+		// Find the two incident edges that belong to the same face
+
+		for(size_t j = 0; j < v->valency(); j++)
+		{
+			if(e1 == NULL)
+			{
+				e1 = v->get_edge(j);
+				e2 = NULL;
+			}
+			else
+				e2 = v->get_edge(j);
+
+			// e1 and e2 not yet set
+			if(e1 != NULL && e2 == NULL)
+			{
+				// e1 not found; reset it to NULL so that it
+				// will be filled with the next edge in the
+				// following iteration of the loop
+				if(!(e1->get_f() == f || e1->get_g() == f)) // FIXME: Don't compare pointers!
+					e1 = NULL;
+			}
+			else if(e1 != NULL && e2 != NULL)
+			{
+				// e2 found; break the loop
+				if(e2->get_f() == f || e2->get_g() == f)
+					break;
+			}
+		}
+
+		assert(e1 != NULL && e2 != NULL);
+
+		// Now e1 and e2 are both incident edges for an adjacent face
+		// of v. Only one of these edges will be included in the vector
+		// of edges.
+
+		if(find(edges.begin(), edges.end(), e1) == edges.end())
+			edges.push_back(e1);
+		else
+			edges.push_back(e2);
+	}
+
+	// Now for each face that is adjacent to vertex v, only _one_
+	// representative edge has been included in the edge vector
+
+	cout << "FOUND " << edges.size() << " REPRESENTATIVE EDGES\n";
+
+	v3ctor previous;
+	v3ctor current;
+	if(edges[0]->get_u() == v)
+		previous = (edges[0]->get_v()->get_position()-v->get_position());
+	else
+		previous = (edges[0]->get_u()->get_position()-v->get_position());
+
+	for(size_t i = 1; i < edges.size(); i++)
+	{
+		if(edges[i]->get_u() == v)
+			current = (edges[i]->get_v()->get_position()-v->get_position());
+		else
+			current = (edges[i]->get_u()->get_position()-v->get_position());
+
+		cout << "ANGLE: " << acos(current*previous/(double)(current.length()*previous.length())) << "\n";
+
+		previous = current;
+	}
+
+	if(edges[0]->get_u() == v)
+		current = (edges[0]->get_v()->get_position()-v->get_position());
+	else
+		current = (edges[0]->get_u()->get_position()-v->get_position());
+	cout << "ANGLE: " << acos(current*previous/(double)(current.length()*previous.length())) << "\n";
+
+	return(res);
 }

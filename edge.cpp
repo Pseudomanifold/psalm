@@ -6,6 +6,9 @@
 #include <cassert>
 #include "edge.h"
 
+// FIXME: DEBUG!
+#include <iostream>
+
 /*!
 *	Default constructor that creates and invalid edge.
 */
@@ -70,8 +73,16 @@ const vertex* edge::get_v() const
 
 void edge::set_f(const face* f)
 {
-	assert(g == NULL && this->f == NULL);
-	this->f = f;
+	// FIXME
+//	std::cout << "set_f(" << u->get_id() << "," << v->get_id() << ")\n";
+//	assert(g == NULL && this->f == NULL);
+//	this->f = f;
+	if(this->f == NULL)
+		this->f = f;
+	else if(this->g == NULL)
+		this->g = f;
+	else
+		std::cout << "set_f: EDGE ALREADY SET\n";
 }
 
 /*!
@@ -80,8 +91,16 @@ void edge::set_f(const face* f)
 
 void edge::set_g(const face* g)
 {
-	assert(f != NULL && this->g == NULL);
-	this->g = g;
+	// FIXME
+//	std::cout << "set_g(" << u->get_id() << "," << v->get_id() << ")\n";
+//	assert(f != NULL && this->g == NULL);
+//	this->g = g;
+	if(this->g == NULL)
+		this->g = g;
+	else if(this->f == NULL)
+		this->f = g;
+	else
+		std::cout << "set_g: EDGE ALREADY SET?\n";
 }
 
 /*!

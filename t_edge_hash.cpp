@@ -65,6 +65,7 @@ directed_edge t_edge_hash::add(edge& e)
 
 		result.e = new_edge;
 		result.inverted = false;
+		result.new_edge = true;
 	}
 	else
 	{
@@ -75,6 +76,7 @@ directed_edge t_edge_hash::add(edge& e)
 		else
 			result.inverted = false;
 
+		result.new_edge = false;
 		result.e = it->second;
 	}
 

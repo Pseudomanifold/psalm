@@ -56,6 +56,8 @@ class mesh
 
 		const vertex* find_remaining_vertex(const edge* e, const face* f);
 		const vertex* find_face_vertex(const face* f, const vertex* v);
+
+		std::vector<const face*> sort_faces(vertex* v);
 };
 
 #endif
