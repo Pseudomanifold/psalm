@@ -326,6 +326,19 @@ void mesh::draw()
 	glColor3f(1.0, 1.0, 1.0);
 	for(size_t i = 0; i < F.size(); i++)
 	{
+		// FIXME: Remove once debugging is done
+		// 1 == F-face
+		// 2 == E-face
+		// 3 == V-face
+		if(F[i].type == 1)
+			glColor3f(1.0, 0.0, 0.0);
+		else if(F[i].type == 2)
+			glColor3f(0.0, 1.0, 0.0);
+		else if(F[i].type == 3)
+			glColor3f(0.0, 0.0, 1.0);
+		else
+			glColor3f(1.0, 1.0, 1.0);
+
 		glBegin(GL_POLYGON);
 		for(size_t j = 0; j < F[i].num_vertices(); j++)
 		{
@@ -429,7 +442,7 @@ mesh& mesh::replace_with(mesh& M)
 	return(*this);
 }
 
-void mesh::add_face(vector<size_t> vertices)
+void mesh::add_face(vector<size_t> vertices, size_t type)
 {
 	size_t u = 0;
 	size_t v = 0;
@@ -525,6 +538,10 @@ void mesh::add_face(vector<size_t> vertices)
 		// here
 		u = v;
 	}
+
+	// FIXME: Remove!
+	f.type = type;
+	g->type = type;
 
 	G.push_back(g);
 	F.push_back(f);
@@ -881,7 +898,8 @@ void mesh::subdivide_doo_sabin()
 		for(size_t j = 0; j < F[i].num_vertices(); j++)
 			vertices.push_back(F[i].get_face_vertex(j)->get_id());
 
-		M_.add_face(vertices);
+		// FIXME: 1 == F-face
+		M_.add_face(vertices, 1);
 	}
 
 	// Create quadrilateral E-faces
@@ -924,7 +942,8 @@ void mesh::subdivide_doo_sabin()
 		vertices.push_back(v3->get_id());
 		vertices.push_back(v4->get_id());
 
-		M_.add_face(vertices);
+		// FIXME: 2 == E-face
+		M_.add_face(vertices, 2);
 	}
 
 	// Create V-faces by connecting the face vertices of all faces that are
@@ -933,20 +952,23 @@ void mesh::subdivide_doo_sabin()
 	{
 		assert(V[i]->num_adjacent_faces() > 0);
 
-		vector<size_t> vertices;
-		vertices.push_back(find_face_vertex(V[i]->get_face(0), V[i])->get_id());
-
-		for(size_t j = 1; j < V[i]->num_adjacent_faces(); j++)
-		{
-			//cout << (find_face_vertex(V[i]->get_face(j), V[i])->get_id()) << "\n";
-			vertices.push_back(find_face_vertex(V[i]->get_face(j), V[i])->get_id());
-		}
+		cout << V[i]->num_adjacent_faces() << "\n";
 
 		// FIXME:
 		// function could be removed?
-		//sort_faces(V[i]);
+		vector<const face*> faces = sort_faces(V[i]);
 
-		M_.add_face(vertices);
+		vector<size_t> vertices;
+		for(size_t j = 0; j < V[i]->num_adjacent_faces(); j++)
+		{
+			//cout << (find_face_vertex(V[i]->get_face(j), V[i])->get_id()) << "\n";
+			//vertices.push_back(find_face_vertex(V[i]->get_face(j), V[i])->get_id());
+			vertices.push_back(find_face_vertex(faces[j], V[i])->get_id());
+		}
+
+
+		// FIXME: 3 == V-face
+		M_.add_face(vertices, 3);
 	}
 
 	this->replace_with(M_);
@@ -1018,7 +1040,7 @@ const vertex* mesh::find_face_vertex(const face* f, const vertex* v)
 }
 
 /*!
-*	Given a vertex sort all the vertex's adjacent  faces in
+*	Given a vertex, sort all the vertex's adjacent faces in
 *	counter-clockwise order around the vertex.
 *
 *	@param v Vertex
@@ -1030,7 +1052,7 @@ vector<const face*> mesh::sort_faces(vertex* v)
 	vector<const face*> res;
 	vector<const edge*> edges;
 
-	cout << "SORTING: " << v->num_adjacent_faces() << "\n";
+	//cout << "SORTING: " << v->num_adjacent_faces() << "\n";
 	for(size_t i = 0; i < v->num_adjacent_faces(); i++)
 	{
 		const face* f  = v->get_face(i);
@@ -1076,37 +1098,76 @@ vector<const face*> mesh::sort_faces(vertex* v)
 			edges.push_back(e1);
 		else
 			edges.push_back(e2);
+
+		res.push_back(f);
 	}
 
 	// Now for each face that is adjacent to vertex v, only _one_
 	// representative edge has been included in the edge vector
 
-	cout << "FOUND " << edges.size() << " REPRESENTATIVE EDGES\n";
+	//cout << "FOUND " << edges.size() << " REPRESENTATIVE EDGES\n";
 
-	v3ctor previous;
-	v3ctor current;
-	if(edges[0]->get_u() == v)
-		previous = (edges[0]->get_v()->get_position()-v->get_position());
-	else
-		previous = (edges[0]->get_u()->get_position()-v->get_position());
+	// Sort vector of edges until the edges belong to _adjacent_ faces.
 
-	for(size_t i = 1; i < edges.size(); i++)
+	for(size_t i = 0; i < edges.size(); i++)
 	{
-		if(edges[i]->get_u() == v)
-			current = (edges[i]->get_v()->get_position()-v->get_position());
-		else
-			current = (edges[i]->get_u()->get_position()-v->get_position());
-
-		cout << "ANGLE: " << acos(current*previous/(double)(current.length()*previous.length())) << "\n";
-
-		previous = current;
+		for(size_t j = i+1; j < edges.size(); j++)
+		{
+			// TODO: Optimize
+			if(	edges[j]->get_f() == edges[i]->get_f() ||
+				edges[j]->get_g() == edges[i]->get_g() ||
+				edges[j]->get_f() == edges[i]->get_g() ||
+				edges[j]->get_g() == edges[i]->get_f())
+			{
+				swap(edges[i+1], edges[j]);
+				swap(res[i+1], res[j]); // swap the faces that correspond to the edges
+				break;
+			}
+		}
 	}
 
-	if(edges[0]->get_u() == v)
-		current = (edges[0]->get_v()->get_position()-v->get_position());
-	else
-		current = (edges[0]->get_u()->get_position()-v->get_position());
-	cout << "ANGLE: " << acos(current*previous/(double)(current.length()*previous.length())) << "\n";
+//	v3ctor previous;
+//	v3ctor current;
+//	if(edges[0]->get_u() == v)
+//		previous = (edges[0]->get_v()->get_position()-v->get_position());
+//	else
+//		previous = (edges[0]->get_u()->get_position()-v->get_position());
+//
+//	double angle = 0.0;
+//	for(size_t i = 1; i < edges.size(); i++)
+//	{
+//		if(edges[i]->get_u() == v)
+//			current = (edges[i]->get_v()->get_position()-v->get_position());
+//		else
+//			current = (edges[i]->get_u()->get_position()-v->get_position());
+//
+//		angle = acos(current*previous/(double)(current.length()*previous.length())); 
+//		if(current*previous < 0)
+//			angle -= M_PI;
+//		else
+//			angle += M_PI;
+//
+//		angle *= (180.0/M_PI);
+//
+//		cout << "ANGLE: " <<  angle << "\n";
+//
+//		previous = current;
+//	}
+//
+//	if(edges[0]->get_u() == v)
+//		current = (edges[0]->get_v()->get_position()-v->get_position());
+//	else
+//		current = (edges[0]->get_u()->get_position()-v->get_position());
+//	
+//	angle = acos(current*previous/(double)(current.length()*previous.length())); 
+//	if(current*previous < 0)
+//		angle -= M_PI;
+//	else
+//		angle += M_PI;
+//
+//	angle *= (180.0/M_PI);
+//
+//	cout << "ANGLE: " <<  angle << "\n";
 
 	return(res);
 }

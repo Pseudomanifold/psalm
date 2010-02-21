@@ -30,8 +30,9 @@ class face
 		const vertex* get_face_vertex(size_t i) const;
 		directed_edge& get_edge(size_t i); // FIXME: Need to check whether this can be made constant
 
-
 		vertex* face_point; // FIXME: Make this private?
+
+		size_t type; // FIXME: Remove once debugging is done!
 
 	private:
 		std::vector<directed_edge> E;
