@@ -923,7 +923,7 @@ void mesh::subdivide_doo_sabin()
 			that the orientation is preserved if the corresponding
 			face points are connected like:
 
-			u_F -- u_G -- v_G -- v_F
+			u_F -- u_G -- v_G -- v_F -- u_F
 
 		*/
 
@@ -1125,6 +1125,13 @@ vector<const face*> mesh::sort_faces(vertex* v)
 			}
 		}
 	}
+
+	// FIXME: Just a test.
+
+	// Check whether orientation is CW or CCW
+	if(	edges[0]->get_u() == v && res[0] == edges[0]->get_f() ||
+		edges[0]->get_v() == v && res[0] == edges[0]->get_g())
+		reverse(res.begin(), res.end());
 
 //	v3ctor previous;
 //	v3ctor current;
