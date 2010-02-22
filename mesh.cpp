@@ -339,13 +339,31 @@ void mesh::draw()
 		else
 			glColor3f(1.0, 1.0, 1.0);
 
-		glBegin(GL_POLYGON);
+		v3ctor midpoint;
+		// FIXME
+		//glBegin(GL_POLYGON);
 		for(size_t j = 0; j < F[i].num_vertices(); j++)
 		{
 			const v3ctor& p = F[i].get_vertex(j)->get_position();
-			glVertex3f(p[0], p[1], p[2]);
+			//glVertex3f(p[0], p[1], p[2]);
+			midpoint += p;
 		}
-		glEnd();
+		//glEnd();
+
+		midpoint /= F[i].num_vertices();
+	//	glPushAttrib(GL_DEPTH_TEST);
+	//	glDisable(GL_DEPTH_TEST);
+		glPushMatrix();
+		glColor3f(0.0, 1.0, 1.0);
+		glTranslatef(midpoint[0], midpoint[1], midpoint[2]);
+		ostringstream converter;
+		converter << F[i].get_id();
+		glRasterPos2f(0, 0);
+		for(unsigned int i = 0; i < converter.str().size(); i++)
+			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, converter.str()[i]);
+		glPopMatrix();
+	//	glPopAttrib();
+
 	}
 }
 
@@ -542,6 +560,9 @@ void mesh::add_face(vector<size_t> vertices, size_t type)
 	// FIXME: Remove!
 	f.type = type;
 	g->type = type;
+
+	g->set_id(G.size());
+	f.set_id(F.size());
 
 	G.push_back(g);
 	F.push_back(f);
@@ -1047,134 +1068,87 @@ const vertex* mesh::find_face_vertex(const face* f, const vertex* v)
 *	@return Sorted vector of faces.
 */
 
-vector<const face*> mesh::sort_faces(vertex* v)
+vector<const face*> mesh::sort_faces(const vertex* v) const
 {
-	vector<const face*> res;
+	vector<const face*> faces;
 	vector<const edge*> edges;
 
-	//cout << "SORTING: " << v->num_adjacent_faces() << "\n";
-	for(size_t i = 0; i < v->num_adjacent_faces(); i++)
-	{
-		const face* f  = v->get_face(i);
-		const edge* e1 = NULL;
-		const edge* e2 = NULL;
+	for(size_t i = 0; i < v->valency(); i++)
+		edges.push_back(v->get_edge(i));
 
-		// Find the two incident edges that belong to the same face
+	/*
+		The vector of edges is sorted by the following considerations:
 
-		for(size_t j = 0; j < v->valency(); j++)
-		{
-			if(e1 == NULL)
-			{
-				e1 = v->get_edge(j);
-				e2 = NULL;
-			}
-			else
-				e2 = v->get_edge(j);
+			(1)	All incident edges of the vertex are known
+			(2)	By using the adjacent faces of an edge, a list of
+				adjacent faces can be built:
+				(2.1)	Start with any edge
+				(2.2)	Search for any other edge which shares
+					any face with the start edge. If the edge is
+					found, store it after the start edge and repeat
+					the process with the new edge.
 
-			// e1 and e2 not yet set
-			if(e1 != NULL && e2 == NULL)
-			{
-				// e1 not found; reset it to NULL so that it
-				// will be filled with the next edge in the
-				// following iteration of the loop
-				if(!(e1->get_f() == f || e1->get_g() == f)) // FIXME: Don't compare pointers!
-					e1 = NULL;
-			}
-			else if(e1 != NULL && e2 != NULL)
-			{
-				// e2 found; break the loop
-				if(e2->get_f() == f || e2->get_g() == f)
-					break;
-			}
-		}
-
-		assert(e1 != NULL && e2 != NULL);
-
-		// Now e1 and e2 are both incident edges for an adjacent face
-		// of v. Only one of these edges will be included in the vector
-		// of edges.
-
-		if(find(edges.begin(), edges.end(), e1) == edges.end())
-			edges.push_back(e1);
-		else
-			edges.push_back(e2);
-
-		res.push_back(f);
-	}
-
-	// Now for each face that is adjacent to vertex v, only _one_
-	// representative edge has been included in the edge vector
-
-	//cout << "FOUND " << edges.size() << " REPRESENTATIVE EDGES\n";
-
-	// Sort vector of edges until the edges belong to _adjacent_ faces.
+		This works because there are only two edges which share one
+		face. So the next edge that is found will _not_ point to any
+		face that has already been processed (i.e., that will _not_ be
+		touched by the algorithm anymore).
+	*/
 
 	for(size_t i = 0; i < edges.size(); i++)
 	{
 		for(size_t j = i+1; j < edges.size(); j++)
 		{
-			// TODO: Optimize
 			if(	edges[j]->get_f() == edges[i]->get_f() ||
 				edges[j]->get_g() == edges[i]->get_g() ||
 				edges[j]->get_f() == edges[i]->get_g() ||
 				edges[j]->get_g() == edges[i]->get_f())
 			{
-				swap(edges[i+1], edges[j]);
-				swap(res[i+1], res[j]); // swap the faces that correspond to the edges
+				swap(edges[j], edges[i+1]);
 				break;
 			}
 		}
 	}
 
-	// FIXME: Just a test.
+	/*
+		From the sorted edges, the faces can be extracted in sorted
+		order by checking which faces of the edges coincide: If edges
+		e1 and e2 have adjacent faces (f1,f2), (f2,f3), f3 will be
+		added to the face vector. The face vector has to be initialized
+		with one face, which would be missing otherwise.
+	*/
 
-	// Check whether orientation is CW or CCW
-	if(	edges[0]->get_u() == v && res[0] == edges[0]->get_f() ||
-		edges[0]->get_v() == v && res[0] == edges[0]->get_g())
-		reverse(res.begin(), res.end());
+	faces.push_back(edges[0]->get_f());
+	for(size_t i = 1; i < edges.size(); i++)
+	{
+		if(	edges[i]->get_f() == edges[i-1]->get_f() ||
+			edges[i]->get_f() == edges[i-1]->get_g())
+			faces.push_back(edges[i]->get_g());
+		else
+			faces.push_back(edges[i]->get_f());
+	}
 
-//	v3ctor previous;
-//	v3ctor current;
-//	if(edges[0]->get_u() == v)
-//		previous = (edges[0]->get_v()->get_position()-v->get_position());
-//	else
-//		previous = (edges[0]->get_u()->get_position()-v->get_position());
-//
-//	double angle = 0.0;
-//	for(size_t i = 1; i < edges.size(); i++)
-//	{
-//		if(edges[i]->get_u() == v)
-//			current = (edges[i]->get_v()->get_position()-v->get_position());
-//		else
-//			current = (edges[i]->get_u()->get_position()-v->get_position());
-//
-//		angle = acos(current*previous/(double)(current.length()*previous.length())); 
-//		if(current*previous < 0)
-//			angle -= M_PI;
-//		else
-//			angle += M_PI;
-//
-//		angle *= (180.0/M_PI);
-//
-//		cout << "ANGLE: " <<  angle << "\n";
-//
-//		previous = current;
-//	}
-//
-//	if(edges[0]->get_u() == v)
-//		current = (edges[0]->get_v()->get_position()-v->get_position());
-//	else
-//		current = (edges[0]->get_u()->get_position()-v->get_position());
-//	
-//	angle = acos(current*previous/(double)(current.length()*previous.length())); 
-//	if(current*previous < 0)
-//		angle -= M_PI;
-//	else
-//		angle += M_PI;
-//
-//	angle *= (180.0/M_PI);
-//
-//	cout << "ANGLE: " <<  angle << "\n";
 
-	return(res);
+	// Check whether orientation is CW or CCW by enumerating all relevant
+	// configurations.
+
+	bool revert = false;
+	if(edges[0]->get_u() == v)
+	{
+		if(faces[0] == edges[0]->get_f() && faces[1] == edges[0]->get_g())
+				revert = true;
+		else if(faces[1] != edges[0]->get_f())
+				revert = true;
+	}
+	else
+	{
+		if(faces[0] == edges[0]->get_g() && faces[1] == edges[0]->get_f())
+				revert = true;
+		else if(faces[1] != edges[0]->get_g())
+				revert = true;
+	}
+
+	if(revert)
+		reverse(faces.begin(), faces.end());
+
+	return(faces);
 }

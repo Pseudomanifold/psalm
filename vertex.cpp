@@ -72,7 +72,7 @@ void vertex::add_edge(const edge* e)
 *	Returns pointer to incident edge.
 */
 
-const edge* vertex::get_edge(size_t i)
+const edge* vertex::get_edge(size_t i) const
 {
 	// TODO: Check invalid range?
 	return(E[i]);
@@ -100,7 +100,7 @@ void vertex::add_face(const face* f)
 *	Returns an adjacent face of the vertex.
 */
 
-const face* vertex::get_face(size_t i)
+const face* vertex::get_face(size_t i) const
 {
 	// FIXME: Check range?
 	return(F[i]);

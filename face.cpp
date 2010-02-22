@@ -109,3 +109,21 @@ const vertex* face::get_face_vertex(size_t i) const
 	// FIXME: Check range? Check ID?
 	return(V_F[i]);
 }
+
+/*!
+*	Sets ID of the face.
+*/
+
+void face::set_id(size_t id)
+{
+	this->id = id;
+}
+
+/*!
+*	Returns face ID.
+*/
+
+size_t face::get_id() const
+{
+	return(id);
+}

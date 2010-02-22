@@ -26,6 +26,9 @@ class face
 		size_t num_edges() const;
 		size_t num_vertices() const;
 
+		void set_id(size_t id);
+		size_t get_id() const;
+
 		const vertex* get_vertex(size_t i) const;
 		const vertex* get_face_vertex(size_t i) const;
 		directed_edge& get_edge(size_t i); // FIXME: Need to check whether this can be made constant
@@ -39,6 +42,8 @@ class face
 		std::vector<const vertex*> V;
 
 		std::vector<vertex*> V_F;
+
+		size_t id;
 };
 
 #endif

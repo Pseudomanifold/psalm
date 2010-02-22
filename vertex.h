@@ -30,10 +30,10 @@ class vertex
 		vertex* vertex_point; // FIXME: Make this private?
 
 		void add_edge(const edge* e);
-		const edge* get_edge(size_t i);
+		const edge* get_edge(size_t i) const;
 
 		void add_face(const face* f);
-		const face* get_face(size_t i);
+		const face* get_face(size_t i) const;
 
 		size_t get_id() const;
 		size_t valency() const;
