@@ -33,8 +33,6 @@ class t_edge_hash
 
 		void destroy(bool free_memory = true);
 
-		//t_edge_hash& operator=(const t_edge_hash& e);
-
 	private:
 		std::vector<edge*>		E;
 		std::hash_map<size_t, edge*>	T;

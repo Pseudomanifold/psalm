@@ -5,6 +5,7 @@
 
 #include <GL/glut.h>
 
+#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <iomanip>
@@ -18,7 +19,7 @@
 using namespace std;
 
 /*!
-*	Default constructor. Not used at the moment.
+*	Default constructor.
 */
 
 mesh::mesh()

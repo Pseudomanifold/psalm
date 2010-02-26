@@ -25,18 +25,11 @@ directed_edge t_edge_hash::add(edge& e)
 {
 	directed_edge result;
 
-	// Calculate ID of edge. This maps the lower half of N^2 to N.
-//	size_t n = 178975;
-//	size_t k;
-//	if(e.u >= e.v)
-//		k = (e.v+1)*n+(e.u+1)-n;
-//	else
-//		k = (e.u+1)*n+(e.v+1)-n;
-
 	/*
-		Calculate ID of edge by using the Cantor pairing function.
-
-		TODO: Check whether this works.
+		Calculate ID of edge by using the Cantor pairing function. If
+		necessary, the IDs of the edge's vertices are swapped so that
+		k1 will always be the less or equal to k2. This is done in
+		order to provide a natural sorting order for the edges.
 	*/
 
 	size_t k1, k2;
@@ -89,8 +82,10 @@ directed_edge t_edge_hash::add(edge& e)
 
 edge* t_edge_hash::get(size_t e)
 {
-	// TODO: Handle invalid ranges
-	return(E[e]);
+	if(e >= E.size())
+		return(NULL);
+	else
+		return(E[e]);
 }
 
 /*!
@@ -114,32 +109,3 @@ void t_edge_hash::destroy(bool free_memory)
 	E.clear();
 	T.clear();
 }
-
-/*!
-*	Assignment operator for edge tables. Instead of performing a _copy_ of
-*	pointers, which will inevitably lead to serious errors, the pointer
-*	_data_ is duplicated.
-*
-*	@param	edge_table	Edge table to assign to the current edge table.
-*	@return			Reference to current edge table.
-*/
-
-//t_edge_hash& t_edge_hash::operator=(const t_edge_hash& edge_table)
-//{
-//	this->destroy();
-//
-//	edge* e;
-//	for(std::hash_map<size_t, edge*>::const_iterator it = edge_table.T.begin(); it != edge_table.T.end(); it++)
-//	{
-//		e = new edge;
-//		*e = *(it->second);
-//
-//		// FIXME: Need to check whether the order of elements is
-//		// relevant here.
-//
-//		T[it->first] = e;
-//		E.push_back(e);
-//	}
-//
-//	return(*this);
-//}

@@ -6,8 +6,6 @@
 #ifndef __EDGE_H__
 #define __EDGE_H__
 
-#include <iostream>
-
 #include "vertex.h"
 #include "face.h"
 
@@ -33,8 +31,6 @@ class edge
 		const face* get_g() const;
 
 		vertex* edge_point; // FIXME: Make this private?
-
-		bool operator<(const edge& b) const;
 
 	private:
 		const vertex* u;	///< Pointer to start vertex

@@ -3,11 +3,9 @@
 *	@brief	Functions and implementations for edge class
 */
 
+#include <iostream>
 #include <cassert>
 #include "edge.h"
-
-// FIXME: DEBUG!
-#include <iostream>
 
 /*!
 *	Default constructor that creates and invalid edge.
@@ -22,8 +20,8 @@ edge::edge()
 /*!
 *	Constructor that creates a new edge (u,v).
 *
-*	@param	u Pointer to start vertex
-*	@param	v Pointer to end vertex
+*	@param u Pointer to start vertex
+*	@param v Pointer to end vertex
 */
 
 edge::edge(const vertex* u, const vertex* v)
@@ -34,8 +32,8 @@ edge::edge(const vertex* u, const vertex* v)
 /*!
 *	Sets start and end vertex of the edge.
 *
-*	@param	u Pointer to start vertex
-*	@param	v Pointer to end vertex
+*	@param u Pointer to start vertex
+*	@param v Pointer to end vertex
 */
 
 void edge::set(const vertex* u, const vertex* v)
@@ -69,6 +67,10 @@ const vertex* edge::get_v() const
 
 /*!
 *	Sets pointer to first adjacent face.
+*
+*	@param f Pointer to face
+*	@warning The function does not check if the current edge is really a
+*	part of the face.
 */
 
 void edge::set_f(const face* f)
@@ -80,13 +82,25 @@ void edge::set_f(const face* f)
 	if(this->f == NULL)
 		this->f = f;
 	else if(this->g == NULL)
+	{
+		std::cerr	<< "["	<< u->get_id() << ","
+					<< v->get_id() << "].set_f: Face f already set, setting face g.\n";
+
 		this->g = f;
+	}
 	else
-		std::cout << "set_f: EDGE ALREADY SET\n";
+	{
+		std::cerr	<< "["	<< u->get_id() << ","
+					<< v->get_id() << "].set_f: Both faces already set. Don't know what to do.\n";
+	}
 }
 
 /*!
 *	Sets pointer to second adjacent face.
+*
+*	@param g Pointer to face
+*	@warning The function does not check if the current edge is really a
+*	part of the face.
 */
 
 void edge::set_g(const face* g)
@@ -98,9 +112,17 @@ void edge::set_g(const face* g)
 	if(this->g == NULL)
 		this->g = g;
 	else if(this->f == NULL)
+	{
+		std::cerr	<< "["	<< u->get_id() << ","
+					<< v->get_id() << "].set_g: Face g already set, setting face f.\n";
+
 		this->f = g;
+	}
 	else
-		std::cout << "set_g: EDGE ALREADY SET?\n";
+	{
+		std::cerr	<< "["	<< u->get_id() << ","
+					<< v->get_id() << "].set_g: Both faces already set. Don't know what to do.\n";
+	}
 }
 
 /*!
@@ -119,22 +141,4 @@ const face* edge::get_f() const
 const face* edge::get_g() const
 {
 	return(g);
-}
-
-/*!
-*	Comparison operator for edges: Weak ordering by index of the vertices
-*	is applied, hence (u,v) < (u',v') if u < u' or (u == u' and v < v').
-*
-*	@param	b Edge to compare current edge with.
-*	@return	true if current edge is smaller than b, else false.
-*/
-
-bool edge::operator<(const edge& b) const
-{
-	if(u->get_id() < b.u->get_id())
-		return(true);
-	else if(u->get_id() == b.u->get_id())
-		return(v->get_id() < b.v->get_id());
-
-	return(false);
 }

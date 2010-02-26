@@ -3,11 +3,10 @@
 *	@brief	Vertex class
 */
 
-#ifndef VERTEX_H
-#define VERTEX_H
+#ifndef __VERTEX_H__
+#define __VERTEX_H__
 
 #include <vector>
-
 #include "v3ctor.h"
 
 class edge; // forward declaration to break up circular dependency
