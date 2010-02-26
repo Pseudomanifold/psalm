@@ -1001,6 +1001,134 @@ void mesh::subdivide_doo_sabin()
 
 void mesh::subdivide_catmull_clark()
 {
+	// FIXME
+	mesh M_;
+
+	// Create face points
+	for(size_t i = 0; i < G.size(); i++)
+	{
+		v3ctor centroid;
+		for(size_t j = 0; j < G[i]->num_vertices(); j++)
+			centroid += G[i]->get_vertex(j)->get_position();
+
+		centroid /= G[i]->num_vertices();
+
+		// FIXME: Better interface
+		G[i]->face_point = M_.add_vertex(centroid[0], centroid[1], centroid[2]);
+	}
+
+	// Create edge points
+	for(size_t i = 0; i < edge_table.size(); i++)
+	{
+		edge* e = edge_table.get(i);
+		v3ctor edge_point = (	e->get_u()->get_position()+
+					e->get_v()->get_position()+
+					e->get_f()->face_point->get_position()+
+					e->get_g()->face_point->get_position())*0.25;
+
+		// FIXME: Better interface
+		e->edge_point = M_.add_vertex(edge_point[0], edge_point[1], edge_point[2]);
+	}
+
+	// Create vertex points
+	for(size_t i = 0; i < V.size(); i++)
+	{
+		// This follows the original terminology as described by
+		// Catmull and Clark
+
+		v3ctor Q;
+		v3ctor R;
+		v3ctor S;
+
+		size_t n = V[i]->valency();
+		assert(n >= 3);
+
+		// Q is the average of the new face points of all faces
+		// adjacent to the old vertex point
+		for(size_t j = 0; j < V[i]->num_adjacent_faces(); j++)
+			Q += V[i]->get_face(j)->face_point->get_position();
+
+		Q /= V[i]->num_adjacent_faces();
+
+		// R is the average of the midpoints of all old edges incident
+		// on the current vertex
+		for(size_t j = 0; j < n; j++)
+		{
+			const edge* e = V[i]->get_edge(j);
+			R += (e->get_u()->get_position()+e->get_v()->get_position())*0.5;
+		}
+
+		R /= n;
+
+		// S is the current vertex
+		S = V[i]->get_position();
+
+		// FIXME: Better interface
+		v3ctor vertex_point =(Q+R*2+S*(n-3))/n;
+		V[i]->vertex_point = M_.add_vertex(vertex_point[0], vertex_point[1], vertex_point[2]);
+	}
+
+	/*
+		Create new topology of the mesh by connecting
+
+			vertex -- edge -- face -- edge
+
+		points.
+	*/
+
+	for(size_t i = 0; i < V.size(); i++)
+	{
+		for(size_t j = 0; j < V[i]->num_adjacent_faces(); j++)
+		{
+			const face* f = V[i]->get_face(j);
+
+			// Find the two incident edges of the current vertex
+			// that are also part of the current adjacent face
+
+			const edge* e1 = NULL;
+			const edge* e2 = NULL;
+
+			for(size_t k = 0; k < V[i]->valency(); k++)
+			{
+				const edge* e = V[i]->get_edge(k);
+				if(e->get_f() == f || e->get_g() == f)
+				{
+					if(e1 == NULL)
+						e1 = e;
+					else
+					{
+						e2 = e;
+						break;
+					}
+				}
+			}
+
+			/*
+				Check which edge needs to be used first in
+				order to orient the new face properly. The
+				rationale behind this is to ensure that e1 is
+				the _first_ edge that needs to be visited in
+				order to get CCW orientation.
+			*/
+
+			if(	(e1->get_u()->get_id() == V[i]->get_id() && e1->get_g() == f) ||
+				(e1->get_v()->get_id() == V[i]->get_id() && e1->get_f() == f) ||
+				(e2->get_u()->get_id() == V[i]->get_id() && e2->get_g() == f) ||
+				(e2->get_u()->get_id() == V[i]->get_id() && e2->get_g() == f))
+				swap(e1, e2);
+
+			// FIXME: Better interface
+			vector<size_t> vertices;
+			vertices.push_back(V[i]->vertex_point->get_id());
+			vertices.push_back(e1->edge_point->get_id());
+			vertices.push_back(f->face_point->get_id());
+			vertices.push_back(e2->edge_point->get_id());
+
+			M_.add_face(vertices);
+		}
+	}
+
+	this->replace_with(M_);
 }
 
 /*!

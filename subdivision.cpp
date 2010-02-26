@@ -1,6 +1,6 @@
 /*!
-*	@file 	subdivision.cpp
-*	@brief 	Main file for demo program for Subdivision Surfaces 
+*	@file	subdivision.cpp
+*	@brief	Main file for demo program for Subdivision Surfaces
 */
 
 #include <iostream>
@@ -130,10 +130,10 @@ void keyboard_callback(unsigned char key, int x, int y)
 			scene_mesh.save_ply("subdivision.ply");
 			break;
 
-//		case 'c':
-//			scene_mesh.subdivide_catmull_clark();
-//			break;
-//		
+		case 'c':
+			scene_mesh.subdivide_catmull_clark();
+			break;
+
 		case 'l':
 			scene_mesh.subdivide_loop();
 			break;
