@@ -378,7 +378,6 @@ mesh& mesh::replace_with(mesh& M)
 	this->V = M.V;
 	this->F = M.F;
 	this->edge_table = M.edge_table;
-	this->face_table = M.face_table;
 
 	M.V.clear();
 	M.F.clear();

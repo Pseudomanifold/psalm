@@ -13,7 +13,6 @@
 #include "edge.h"
 #include "face.h"
 
-#include "t_face.h"
 #include "t_edge_hash.h"
 
 /*!
@@ -42,7 +41,6 @@ class mesh
 
 	private:
 		t_edge_hash	edge_table;
-		t_face		face_table;
 
 		std::vector<vertex*>	V;
 		std::vector<face*>	F;
