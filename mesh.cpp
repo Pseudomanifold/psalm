@@ -390,7 +390,7 @@ mesh& mesh::replace_with(mesh& M)
 *	FIXME: Document me.
 */
 
-void mesh::add_face(vector<size_t> vertices, size_t type)
+void mesh::add_face(vector<size_t> vertices)
 {
 	size_t u = 0;
 	size_t v = 0;
@@ -820,8 +820,7 @@ void mesh::subdivide_doo_sabin()
 		for(size_t j = 0; j < F[i]->num_vertices(); j++)
 			vertices.push_back(F[i]->get_face_vertex(j)->get_id());
 
-		// FIXME: 1 == F-face
-		M_.add_face(vertices, 1);
+		M_.add_face(vertices);
 	}
 
 	// Create quadrilateral E-faces
@@ -864,8 +863,7 @@ void mesh::subdivide_doo_sabin()
 		vertices.push_back(v3->get_id());
 		vertices.push_back(v4->get_id());
 
-		// FIXME: 2 == E-face
-		M_.add_face(vertices, 2);
+		M_.add_face(vertices);
 	}
 
 	// Create V-faces by connecting the face vertices of all faces that are
@@ -888,9 +886,7 @@ void mesh::subdivide_doo_sabin()
 			vertices.push_back(find_face_vertex(faces[j], V[i])->get_id());
 		}
 
-
-		// FIXME: 3 == V-face
-		M_.add_face(vertices, 3);
+		M_.add_face(vertices);
 	}
 
 	this->replace_with(M_);
