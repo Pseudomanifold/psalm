@@ -9,6 +9,8 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <algorithm>
+#include <string>
 
 #include <ctime>
 #include <cmath>
@@ -17,6 +19,13 @@
 #include "mesh.h"
 
 using namespace std;
+
+// Initialization of some static member variables
+
+const short mesh::TYPE_EXT = 0;
+const short mesh::TYPE_PLY = 1;
+const short mesh::TYPE_OBJ = 2;
+const short mesh::TYPE_OFF = 3;
 
 /*!
 *	Default constructor.
@@ -34,6 +43,115 @@ mesh::mesh()
 mesh::~mesh()
 {
 	destroy();
+}
+
+/*!
+*	Tries to load a data file (presumably one that contains mesh data) that
+*	the user specified. The type of the file is determined by the following
+*	process:
+*
+*	1)	If the user did not specify a type, the file is identified by
+*		its extension.
+*	2)	If this identification fails and the user did not specify a
+*		file type, the function tries to load a .PLY file.
+*	3)	If the user did specify a file type, the function will call the
+*		appropriate function to load a mesh of the desired type.
+*
+*	@param filename Filename of data file
+*	@param type	Type of file to load. By default, the file type is
+*	guessed by the file extension.
+*
+*	@return	true if the mesh could be loaded, else false
+*/
+
+bool mesh::load(const string& filename, const short type)
+{
+	// Try to identify the file type by the extension
+	if(filename.length() >= 4 && type == TYPE_EXT)
+	{
+		string extension = filename.substr(filename.length()-4);
+		transform(extension.begin(), extension.end(), extension.begin(), (int(*)(int)) tolower);
+
+		if(extension == ".ply")
+			return(load_ply(filename.c_str()));
+		else if(extension == ".obj")
+			return(load_obj(filename.c_str()));
+		else if(extension == ".off")
+			return(load_off(filename.c_str()));
+
+		// Unknown extension, so we fall back to PLY files (see below)
+	}
+	else if(type != TYPE_EXT)
+	{
+		switch(type)
+		{
+			case TYPE_PLY:
+				return(load_ply(filename.c_str()));
+			case TYPE_OBJ:
+				return(load_obj(filename.c_str()));
+			case TYPE_OFF:
+				return(load_off(filename.c_str()));
+		}
+	}
+
+	// last resort
+	return(load_ply(filename.c_str()));
+}
+
+/*!
+*	Tries to save the current mesh data to a file that has been specified
+*	by the user. The type of the file is determined by the following
+*	process:
+*
+*	1)	If the user did not specify a type, the file is identified by
+*		its extension.
+*	2)	If this identification fails and the user did not specify a
+*		file type, the function tries to save a .PLY file.
+*	3)	If the user did specify a file type, the function will call the
+*		appropriate function to save a mesh of the desired type.
+*
+*	@param filename Filename for storing the current mesh
+*	@param type	Type of file to load. By default, the file type is
+*	guessed by the file extension.
+*
+*	@warning The data file will be overwritten if it exists. The user will
+*	not be notified of this.
+*
+*	@return	true if the mesh could be stored, else false.
+*/
+
+bool mesh::save(const string& filename, const short type)
+{
+	// Try to identify the file type by the extension
+	if(filename.length() >= 4 && type == TYPE_EXT)
+	{
+		string extension = filename.substr(filename.length()-4);
+		transform(extension.begin(), extension.end(), extension.begin(), (int(*)(int)) tolower);
+
+		if(extension == ".ply")
+			return(save_ply(filename.c_str()));
+		else if(extension == ".obj")
+			return(save_obj(filename.c_str()));
+		else if(extension == ".off")
+			return(save_off(filename.c_str()));
+
+		// Unknown extension, so we fall back to PLY files (see below)
+	}
+	else if(type != TYPE_EXT)
+	{
+		switch(type)
+		{
+			case TYPE_PLY:
+				return(save_ply(filename.c_str()));
+			case TYPE_OBJ:
+				return(save_obj(filename.c_str()));
+			case TYPE_OFF:
+				return(save_off(filename.c_str()));
+		}
+	}
+
+	// last resort
+	return(save_ply(filename.c_str()));
 }
 
 /*!
