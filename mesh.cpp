@@ -277,11 +277,11 @@ bool mesh::save_ply(const char* filename)
 	// write face list (separated by spaces)
 	for(size_t i = 0; i < F.size(); i++)
 	{
-		out << F[i].num_vertices() << " ";
-		for(size_t j = 0; j < F[i].num_vertices(); j++)
+		out << F[i]->num_vertices() << " ";
+		for(size_t j = 0; j < F[i]->num_vertices(); j++)
 		{
-			out << F[i].get_vertex(j)->get_id();
-			if(j < F[i].num_vertices()-1)
+			out << F[i]->get_vertex(j)->get_id();
+			if(j < F[i]->num_vertices()-1)
 				out << " ";
 		}
 
@@ -323,9 +323,9 @@ void mesh::draw()
 	for(size_t i = 0; i < F.size(); i++)
 	{
 		glBegin(GL_POLYGON);
-		for(size_t j = 0; j < F[i].num_vertices(); j++)
+		for(size_t j = 0; j < F[i]->num_vertices(); j++)
 		{
-			const v3ctor& p = F[i].get_vertex(j)->get_position();
+			const v3ctor& p = F[i]->get_vertex(j)->get_position();
 			glVertex3f(p[0], p[1], p[2]);
 		}
 		glEnd();
@@ -373,32 +373,30 @@ mesh& mesh::replace_with(mesh& M)
 	this->destroy();
 	this->V = M.V;
 	this->F = M.F;
-	this->G = M.G;
 	this->edge_table = M.edge_table;
 	this->face_table = M.face_table;
 
 	M.V.clear();
 	M.F.clear();
-	M.G.clear();
 	M.edge_table.destroy(false);
 
 	return(*this);
 }
 
+/*!
+*	FIXME: Document me.
+*/
+
 void mesh::add_face(vector<size_t> vertices, size_t type)
 {
 	size_t u = 0;
 	size_t v = 0;
-	size_t face_index = F.size();
 
 	if(vertices.size() == 0)
 		return;
 
-	face f;
+	face* f = new face;
 	edge e;
-
-	// FIXME: Need to delete old code.
-	face* g = new face;
 
 	u = vertices[0];
 	for(size_t i = 1; i <= vertices.size(); i++)
@@ -417,17 +415,11 @@ void mesh::add_face(vector<size_t> vertices, size_t type)
 
 		// Add vertex to face; only the first vertex of the edge needs
 		// to be considered here
-		//f.V.push_back(u);
-		f.add_vertex(get_vertex(u));
-		g->add_vertex(get_vertex(u));
+		f->add_vertex(get_vertex(u));
 
 		// Add it to list of edges for face
 		directed_edge edge = edge_table.add(e);
-		f.add_edge(edge);
-		g->add_edge(edge);
-
-		// FIXME: Need to remove the old code concerning edge
-		// updates (face_table.set_f1 etc.).
+		f->add_edge(edge);
 
 		/*
 			GIANT FIXME: We are assuming that the edges are ordered
@@ -440,31 +432,19 @@ void mesh::add_face(vector<size_t> vertices, size_t type)
 		// Edge already known; update second adjacent face
 		if(edge.inverted)
 		{
-			face_table.set_f2(edge.e, face_index);
-			edge.e->set_g(g);
-
+			edge.e->set_g(f);
 			//V[u]->add_edge(edge.e);
-			V[u]->add_face(g);
+			V[u]->add_face(f);
 		}
 
-		// New edge; update first adjacent face and adjacent vertices
+		// (Possibly) new edge; update first adjacent face and adjacent
+		// vertices
 		else
 		{
-		//	if(face_table.get(result.e).f2 < SIZE_T_MAX && face_table.get(result.e).f2 > 0)
-		//		cout << "WTF 1?n";
-
-		//	if(face_table.get(result.e).f1 < SIZE_T_MAX && face_table.get(result.e).f1 > 0)
-		//		cout << "WTF 2?\n";
-
-
-			face_table.set_f1(edge.e, face_index);
-			face_table.set_f2(edge.e, SIZE_T_MAX);	// TODO: Better place this in the constructor.
-
-
 			// FIXME: This is ugly...and probably wrong?
 			if(edge.new_edge)
 			{
-				edge.e->set_f(g);
+				edge.e->set_f(f);
 				V[u]->add_edge(edge.e);
 				// TODO: Check whether it's ok to do this...or if it
 				// can be removed and done for the edge.inverted ==
@@ -472,9 +452,9 @@ void mesh::add_face(vector<size_t> vertices, size_t type)
 				V[v]->add_edge(edge.e);
 			}
 			else
-				edge.e->set_g(g);
+				edge.e->set_g(f);
 
-			V[u]->add_face(g); // FIXME: Make g the new f ;-)
+			V[u]->add_face(f);
 		}
 
 		// Set next start vertex; the orientation should be correct
@@ -482,10 +462,7 @@ void mesh::add_face(vector<size_t> vertices, size_t type)
 		u = v;
 	}
 
-	g->set_id(G.size());
-	f.set_id(F.size());
-
-	G.push_back(g);
+	f->set_id(F.size());
 	F.push_back(f);
 }
 
@@ -606,7 +583,7 @@ void mesh::subdivide_loop()
 	for(size_t i = 0; i < F.size(); i++)
 	{
 		// ...go through all vertices of the face
-		for(size_t j = 0; j < F[i].num_vertices(); j++)
+		for(size_t j = 0; j < F[i]->num_vertices(); j++)
 		{
 			/*
 				F[i].V[j] is the current vertex of a face. We
@@ -614,7 +591,7 @@ void mesh::subdivide_loop()
 				the face. This yields one new triangle.
 			*/
 
-			size_t n = F[i].num_edges(); // number of edges in face
+			size_t n = F[i]->num_edges(); // number of edges in face
 			bool assigned_first_edge = false;
 
 			directed_edge d_e1; // first adjacent edge (for vertex & face)
@@ -688,9 +665,9 @@ void mesh::subdivide_loop()
 			// TODO: Optimize!
 			for(size_t k = 0; k < n; k++)
 			{
-				directed_edge d_edge  = F[i].get_edge(k);
-				if(	d_edge.e->get_u()->get_id() == F[i].get_vertex(j)->get_id() ||
-					d_edge.e->get_v()->get_id() == F[i].get_vertex(j)->get_id())
+				directed_edge d_edge = F[i]->get_edge(k);
+				if(	d_edge.e->get_u()->get_id() == F[i]->get_vertex(j)->get_id() ||
+					d_edge.e->get_v()->get_id() == F[i]->get_vertex(j)->get_id())
 				{
 					if(!assigned_first_edge)
 					{
@@ -706,7 +683,7 @@ void mesh::subdivide_loop()
 			}
 
 
-			const vertex* v1 = F[i].get_vertex(j)->vertex_point;
+			const vertex* v1 = F[i]->get_vertex(j)->vertex_point;
 			const vertex* v2 = d_e1.e->edge_point;
 			const vertex* v3 = d_e2.e->edge_point;
 
@@ -723,8 +700,8 @@ void mesh::subdivide_loop()
 			// the edge _or_ the edge is inverted and the current
 			// vertex is equal to the vertex v (end vertex) of the
 			// edge.
-			if(	(d_e1.e->get_u()->get_id() == F[i].get_vertex(j)->get_id() && d_e1.inverted == false) ||
-				(d_e1.e->get_v()->get_id() == F[i].get_vertex(j)->get_id() && d_e1.inverted))
+			if(	(d_e1.e->get_u()->get_id() == F[i]->get_vertex(j)->get_id() && d_e1.inverted == false) ||
+				(d_e1.e->get_v()->get_id() == F[i]->get_vertex(j)->get_id() && d_e1.inverted))
 			{
 				vertices.push_back(v2->get_id());
 				vertices.push_back(v3->get_id());
@@ -735,6 +712,7 @@ void mesh::subdivide_loop()
 				vertices.push_back(v2->get_id());
 			}
 
+			// FIXME: Need a better interface for this.
 			M_.add_face(vertices);
 		}
 
@@ -743,8 +721,8 @@ void mesh::subdivide_loop()
 		// face, the order in which the edge points are set will be
 		// correct.
 		vector<size_t> vertices;
-		for(size_t j = 0; j < F[i].num_edges(); j++)
-			vertices.push_back(F[i].get_edge(j).e->edge_point->get_id());
+		for(size_t j = 0; j < F[i]->num_edges(); j++)
+			vertices.push_back(F[i]->get_edge(j).e->edge_point->get_id());
 
 		M_.add_face(vertices);
 	}
@@ -774,31 +752,31 @@ void mesh::subdivide_doo_sabin()
 	{
 		// Find centroid of face
 		v3ctor centroid;
-		for(size_t j = 0; j < F[i].num_vertices(); j++)
+		for(size_t j = 0; j < F[i]->num_vertices(); j++)
 		{
-			const vertex* v = F[i].get_vertex(j);
+			const vertex* v = F[i]->get_vertex(j);
 			centroid += v->get_position();
 		}
-		centroid *= 1.0/F[i].num_vertices();
+		centroid *= 1.0/F[i]->num_vertices();
 
 		// For a fixed vertex of the face, find the two edges that are
 		// incident on this vertex and calculate their midpoints.
-		for(size_t j = 0; j < F[i].num_vertices(); j++)
+		for(size_t j = 0; j < F[i]->num_vertices(); j++)
 		{
-			const vertex* v = F[i].get_vertex(j);
+			const vertex* v = F[i]->get_vertex(j);
 
 			const edge* e1 = NULL;
 			const edge* e2 = NULL;
-			for(size_t k = 0; k < F[i].num_edges(); k++)
+			for(size_t k = 0; k < F[i]->num_edges(); k++)
 			{
-				if(	F[i].get_edge(k).e->get_u() == v ||
-					F[i].get_edge(k).e->get_v() == v)
+				if(	F[i]->get_edge(k).e->get_u() == v ||
+					F[i]->get_edge(k).e->get_v() == v)
 				{
 					if(e1 == NULL)
-						e1 = F[i].get_edge(k).e;
+						e1 = F[i]->get_edge(k).e;
 					else
 					{
-						e2 = F[i].get_edge(k).e;
+						e2 = F[i]->get_edge(k).e;
 						break;
 					}
 				}
@@ -824,8 +802,7 @@ void mesh::subdivide_doo_sabin()
 			// FIXME: Need a better interface for the "add_vertex" function
 
 			vertex* face_vertex = M_.add_vertex(v_f[0], v_f[1], v_f[2]);
-			F[i].add_face_vertex(face_vertex);
-			G[i]->add_face_vertex(face_vertex); // FIXME: Need to remove F
+			F[i]->add_face_vertex(face_vertex);
 		}
 	}
 
@@ -837,8 +814,8 @@ void mesh::subdivide_doo_sabin()
 		// vertices, this step is orientation-preserving
 
 		vector<size_t> vertices; // FIXME: Use pointers.
-		for(size_t j = 0; j < F[i].num_vertices(); j++)
-			vertices.push_back(F[i].get_face_vertex(j)->get_id());
+		for(size_t j = 0; j < F[i]->num_vertices(); j++)
+			vertices.push_back(F[i]->get_face_vertex(j)->get_id());
 
 		// FIXME: 1 == F-face
 		M_.add_face(vertices, 1);
@@ -926,16 +903,16 @@ void mesh::subdivide_catmull_clark()
 	mesh M_;
 
 	// Create face points
-	for(size_t i = 0; i < G.size(); i++)
+	for(size_t i = 0; i < F.size(); i++)
 	{
 		v3ctor centroid;
-		for(size_t j = 0; j < G[i]->num_vertices(); j++)
-			centroid += G[i]->get_vertex(j)->get_position();
+		for(size_t j = 0; j < F[i]->num_vertices(); j++)
+			centroid += F[i]->get_vertex(j)->get_position();
 
-		centroid /= G[i]->num_vertices();
+		centroid /= F[i]->num_vertices();
 
 		// FIXME: Better interface
-		G[i]->face_point = M_.add_vertex(centroid[0], centroid[1], centroid[2]);
+		F[i]->face_point = M_.add_vertex(centroid[0], centroid[1], centroid[2]);
 	}
 
 	// Create edge points

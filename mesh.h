@@ -45,8 +45,7 @@ class mesh
 		t_face		face_table;
 
 		std::vector<vertex*>	V;
-		std::vector<face>	F;
-		std::vector<face*>	G; // FIXME: Need to remove old version.
+		std::vector<face*>	F;
 
 		vertex* get_vertex(size_t id);
 		edge* get_edge(size_t e);
