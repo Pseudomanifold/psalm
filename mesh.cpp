@@ -235,8 +235,9 @@ bool mesh::load_ply(const char* filename)
 	}
 
 	clock_t end = clock();
-
 	cout << "...finished in " << (end-start)/static_cast<double>(CLOCKS_PER_SEC) << "s\n";
+
+	in.close();
 	return(true);
 }
 
@@ -289,6 +290,8 @@ bool mesh::save_ply(const char* filename)
 	}
 
 	cout << "...finished.\n";
+
+	out.close();
 	return(true);
 }
 
@@ -385,6 +388,7 @@ bool mesh::load_obj(const char* filename)
 		converter.clear();
 	}
 
+	in.close();
 	return(true);
 }
 
@@ -422,6 +426,162 @@ bool mesh::save_obj(const char* filename)
 		out << "\n";
 	}
 
+	out.close();
+	return(true);
+}
+
+/*!
+*	Loads a mesh from an ASCII Geomview .OFF (object file format) file.
+*
+*	@param	filename Mesh filename
+*	@return	true if the mesh could be loaded, else false
+*/
+
+bool mesh::load_off(const char* filename)
+{
+	ifstream in(filename);
+	if(in.fail())
+		return(false);
+
+	string line;
+	istringstream converter;
+
+	/*
+		Read "header", i.e.,
+
+			OFF
+			num_vertices num_faces num_edges
+
+		where num_edges is ignored.
+	*/
+
+	getline(in, line);
+	if(line != "OFF")
+	{
+		cerr << "Error: \"" << filename << "\" is not an .OFF file.\n";
+		return(false);
+	}
+
+	size_t num_vertices, num_faces, num_edges;
+	size_t cur_line_num = 0; // count line numbers (after header)
+
+	getline(in, line);
+	converter.str(line);
+	converter >> num_vertices >> num_faces >> num_edges;
+
+	if(converter.fail())
+	{
+		cerr << "Error: Unable to parse vertex, face, and edge numbers from \"" << line << "\"\n";
+		return(false);
+	}
+
+	converter.clear();
+	line.clear();
+
+	// These are specify the only keywords of the .OBJ file that the parse
+	// is going to understand
+
+	while(!getline(in, line).eof())
+	{
+		converter.str(line);
+
+		if(cur_line_num < num_vertices)
+		{
+			double x, y, z;
+			converter >> x >> y >> z;
+
+			if(converter.fail())
+			{
+				cerr << "Error: Unable to parse vertex data from line \"" << line << "\"\n";
+				return(false);
+			}
+
+			add_vertex(x,y,z);
+		}
+		else if((cur_line_num-num_vertices) < num_faces)
+		{
+			size_t k	= 0;
+			size_t index	= 0;
+
+			converter >> k;
+
+			vector<size_t> vertices;
+			for(size_t i = 0; i < k; i++)
+			{
+				converter >> index;
+				if(converter.fail())
+				{
+					cerr << "Error: Unexpected end of face data in line \"" << line << "\"\n";
+					return(false);
+				}
+
+				if(index >= V.size())
+				{
+					cerr << "Error: Index " << index << "in line \"" << line << "\" is out of bounds.\n";
+					return(false);
+				}
+
+				vertices.push_back(index);
+			}
+
+			add_face(vertices);
+		}
+		else
+		{
+			cerr << "Error: Unexpected data line \"" << line << "\"\n";
+			return(false);
+		}
+
+		cur_line_num++;
+
+		converter.clear();
+		line.clear();
+	}
+
+	in.close();
+	return(true);
+}
+
+/*!
+*	Saves the currently loaded mesh to an ASCII Geomview .OFF file.
+*
+*	@param	filename File for storing the mesh
+*	@return	true if the mesh could be stored, else false.
+*/
+
+bool mesh::save_off(const char* filename)
+{
+	ofstream out(filename);
+	if(out.fail())
+		return(false);
+
+	out	<< "OFF\n"
+		<< V.size() << " " << F.size() << " " << "0\n"; // For programs that actually interpret edge data,
+								// the last parameter should be changed
+
+	for(vector<vertex*>::const_iterator it = V.begin(); it != V.end(); it++)
+	{
+		v3ctor position = (*it)->get_position();
+		out	<< position[0] << " "
+			<< position[1] << " "
+			<< position[2] << "\n";
+	}
+
+	for(vector<face*>::const_iterator it = F.begin(); it != F.end(); it++)
+	{
+		out	<< (*it)->num_vertices()
+			<< " ";
+
+		for(size_t i = 0; i < (*it)->num_vertices(); i++)
+		{
+			out << (*it)->get_vertex(i)->get_id();
+			if(i < (*it)->num_vertices()-1)
+				out << " ";
+		}
+		out << "\n";
+	}
+
+	out.close();
 	return(true);
 }
 

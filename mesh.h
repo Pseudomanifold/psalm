@@ -32,6 +32,9 @@ class mesh
 		bool load_obj(const char* filename);
 		bool save_obj(const char* filename);
 
+		bool load_off(const char* filename);
+		bool save_off(const char* filename);
+
 		void subdivide_loop();
 		void subdivide_doo_sabin();
 		void subdivide_catmull_clark();
