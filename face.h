@@ -35,8 +35,6 @@ class face
 
 		vertex* face_point; // FIXME: Make this private?
 
-		size_t type; // FIXME: Remove once debugging is done!
-
 	private:
 		std::vector<directed_edge> E;
 		std::vector<const vertex*> V;

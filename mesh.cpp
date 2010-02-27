@@ -50,12 +50,12 @@ bool mesh::load_ply(const char* filename)
 		return(false);
 
 	string data;
-	
+
 	// Read the headers: Only ASCII format is accepted, but the version is
 	// ignored
 
 	cout << "Parsing PLY header...\n";
-		
+
 	getline(in, data);
 	if(data != "ply")
 	{
@@ -83,18 +83,18 @@ bool mesh::load_ply(const char* filename)
 		for vertex data.
 	*/
 
-	size_t num_vertices 	= 0;
-	size_t num_faces 	= 0;
+	size_t num_vertices	= 0;
+	size_t num_faces	= 0;
 
 	const short MODE_PARSE_HEADER			= 0;
-	const short MODE_PARSE_VERTEX_PROPERTIES 	= 1;
-	const short MODE_PARSE_FACE_PROPERTIES	 	= 2;
-	
+	const short MODE_PARSE_VERTEX_PROPERTIES	= 1;
+	const short MODE_PARSE_FACE_PROPERTIES		= 2;
+
 	short mode = MODE_PARSE_HEADER;
-	while(!in.eof()) 
+	while(!in.eof())
 	{
 		getline(in, data);
-		
+
 		/*
 			Lines contaning "comment" or "obj_info" are skipped.
 			Not sure whether obj_info is allowed to appear at all.
@@ -136,7 +136,7 @@ bool mesh::load_ply(const char* filename)
 						return(false);
 					}
 
-					cout << "* Number of faces: " << num_faces << "\n"; 
+					cout << "* Number of faces: " << num_faces << "\n";
 
 					mode = MODE_PARSE_FACE_PROPERTIES;
 				}
@@ -145,9 +145,9 @@ bool mesh::load_ply(const char* filename)
 					cerr << "Error: Got \"" << data << "\", expected \"property\"\n";
 					return(false);
 				}
-				
+
 				break;
-			
+
 			case MODE_PARSE_FACE_PROPERTIES:
 
 				if(data.find("property list") == string::npos)
@@ -177,17 +177,17 @@ bool mesh::load_ply(const char* filename)
 					}
 
 					cout << "* Number of vertices: " << num_vertices << "\n";
-					
+
 					mode = MODE_PARSE_VERTEX_PROPERTIES;
 				}
 				else
 				{
-					cerr 	<< "Got \"" << data 
+					cerr	<< "Got \"" << data
 						<< "\", but expected \"element vertex\" "
 						<< "or \"element face\"\n";
 					return(false);
 				}
-				
+
 				break;
 
 			default:
@@ -196,11 +196,11 @@ bool mesh::load_ply(const char* filename)
 	}
 
 	cout << "Reading vertex and edge data...\n";
-	
+
 	clock_t start = clock();
 
-	size_t line 	= 0;
-	size_t k 	= 0; // number of vertices for face
+	size_t line	= 0;
+	size_t k	= 0; // number of vertices for face
 
 	double x, y, z;
 	while(!in.eof())
@@ -219,7 +219,7 @@ bool mesh::load_ply(const char* filename)
 
 			// Store vertices of face in proper order and add a new
 			// face.
-			
+
 			vector<size_t> vertices;
 			size_t v = 0;
 			for(size_t i = 0; i < k; i++)
@@ -235,7 +235,7 @@ bool mesh::load_ply(const char* filename)
 	}
 
 	clock_t end = clock();
-	
+
 	cout << "...finished in " << (end-start)/static_cast<double>(CLOCKS_PER_SEC) << "s\n";
 	return(true);
 }
@@ -314,11 +314,6 @@ void mesh::draw()
 	{
 		edge* e = edge_table.get(i);
 
-		//vertex* v1 = e.u;
-		//vertex* v2 = e.v;
-		//vertex& v1 = get_vertex(e.u);
-		//vertex& v2 = get_vertex(e.v);
-
 		glVertex3f(e->get_u()->get_position()[0], e->get_u()->get_position()[1], e->get_u()->get_position()[2]);
 		glVertex3f(e->get_v()->get_position()[0], e->get_v()->get_position()[1], e->get_v()->get_position()[2]);
 	}
@@ -327,44 +322,13 @@ void mesh::draw()
 	glColor3f(1.0, 1.0, 1.0);
 	for(size_t i = 0; i < F.size(); i++)
 	{
-		// FIXME: Remove once debugging is done
-		// 1 == F-face
-		// 2 == E-face
-		// 3 == V-face
-		if(F[i].type == 1)
-			glColor3f(1.0, 0.0, 0.0);
-		else if(F[i].type == 2)
-			glColor3f(0.0, 1.0, 0.0);
-		else if(F[i].type == 3)
-			glColor3f(0.0, 0.0, 1.0);
-		else
-			glColor3f(1.0, 1.0, 1.0);
-
-		v3ctor midpoint;
-		// FIXME
-		//glBegin(GL_POLYGON);
+		glBegin(GL_POLYGON);
 		for(size_t j = 0; j < F[i].num_vertices(); j++)
 		{
 			const v3ctor& p = F[i].get_vertex(j)->get_position();
-			//glVertex3f(p[0], p[1], p[2]);
-			midpoint += p;
+			glVertex3f(p[0], p[1], p[2]);
 		}
-		//glEnd();
-
-		midpoint /= F[i].num_vertices();
-	//	glPushAttrib(GL_DEPTH_TEST);
-	//	glDisable(GL_DEPTH_TEST);
-		glPushMatrix();
-		glColor3f(0.0, 1.0, 1.0);
-		glTranslatef(midpoint[0], midpoint[1], midpoint[2]);
-		ostringstream converter;
-		converter << F[i].get_id();
-		glRasterPos2f(0, 0);
-		for(unsigned int i = 0; i < converter.str().size(); i++)
-			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, converter.str()[i]);
-		glPopMatrix();
-	//	glPopAttrib();
-
+		glEnd();
 	}
 }
 
@@ -394,46 +358,6 @@ void mesh::destroy()
 	cout << "* Removed face data\n";
 
 	F.clear();
-}
-
-/*!
-*	Assignment operator for meshes. Instead of performing a _copy_ of
-*	pointers, which will inevitably lead to serious errors, the pointer
-*	_data_ is duplicated.
-*
-*	@param	M Mesh data to assign to the current mesh.
-*	@return Reference to current mesh.
-*/
-
-mesh& mesh::operator=(const mesh& M)
-{
-	this->destroy();
-
-	for(vector<vertex*>::const_iterator it = M.V.begin(); it != M.V.end(); it++)
-	{
-		vertex* v = new vertex;
-		*v = *(*it);
-
-		// UPDATE EDGES...
-		// ...UPDATES EDGE POINTERS...
-
-		V.push_back(v);
-	}
-
-	this->edge_table	= M.edge_table;
-	this->face_table	= M.face_table;
-	this->F			= M.F;
-
-	// FIXME: Need to remove old version.
-	for(vector<face*>::const_iterator it = M.G.begin(); it != M.G.end(); it++)
-	{
-		face* f = new face;
-		*f = *(*it);
-
-		G.push_back(f);
-	}
-
-	return(*this);
 }
 
 /*!
@@ -550,17 +474,13 @@ void mesh::add_face(vector<size_t> vertices, size_t type)
 			else
 				edge.e->set_g(g);
 
-			V[u]->add_face(g); // FIXME: Make g the new f ;-) 
+			V[u]->add_face(g); // FIXME: Make g the new f ;-)
 		}
 
 		// Set next start vertex; the orientation should be correct
 		// here
 		u = v;
 	}
-
-	// FIXME: Remove!
-	f.type = type;
-	g->type = type;
 
 	g->set_id(G.size());
 	f.set_id(F.size());
@@ -704,7 +624,7 @@ void mesh::subdivide_loop()
 	//		for(size_t k = 0; k < n; k++)
 	//		{
 	//			const edge& e = edge_table.get(F[i].E[k].e);
-	//			
+	//
 	//			// Vertex is start vertex of edge
 	//			if(e.u == F[i].V[j])
 	//			{
@@ -762,7 +682,7 @@ void mesh::subdivide_loop()
 	//		if(	(edge_table.get(e1).u != F[i].V[j] && edge_table.get(e1).v != F[i].V[j]) ||
 	//			(edge_table.get(e2).u != F[i].V[j] && edge_table.get(e2).v != F[i].V[j]))
 	//			cout << "Error in mesh.\n";
-	
+
 			// brute-force search for the two edges
 			//
 			// TODO: Optimize!
@@ -835,8 +755,8 @@ void mesh::subdivide_loop()
 //	cout << "[E_t,F_t]\t= " << edge_table.size() << "," << face_table.T.size() << "\n";
 //	cout << "[V,F]\t\t= " << V.size() << "," << F.size() << "\n";
 //
-//	cout 	<< "Loop subdivision step finished:\n"
-//		<< "* Number of vertices: " 	<< V.size() << "\n"
+//	cout	<< "Loop subdivision step finished:\n"
+//		<< "* Number of vertices: "	<< V.size() << "\n"
 //		<< "* Number of faces: "	<< F.size() << "\n";
 }
 
