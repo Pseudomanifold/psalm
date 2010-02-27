@@ -354,10 +354,14 @@ void mesh::destroy()
 	edge_table.destroy();
 	cout << "* Removed edge data\n";
 
-	face_table.destroy();
-	cout << "* Removed face data\n";
+	for(vector<face*>::iterator it = F.begin(); it != F.end(); it++)
+	{
+		if(*it != NULL)
+			delete(*it);
+	}
 
 	F.clear();
+	cout << "* Removed face data\n";
 }
 
 /*!
