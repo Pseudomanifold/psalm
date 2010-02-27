@@ -29,6 +29,9 @@ class mesh
 		bool load_ply(const char* filename);
 		bool save_ply(const char* filename);
 
+		bool load_obj(const char* filename);
+		bool save_obj(const char* filename);
+
 		void subdivide_loop();
 		void subdivide_doo_sabin();
 		void subdivide_catmull_clark();
@@ -48,7 +51,7 @@ class mesh
 		vertex* get_vertex(size_t id);
 		edge* get_edge(size_t e);
 
-		void add_face(std::vector<size_t> vertices);
+		void add_face(const std::vector<size_t>& vertices);
 		vertex* add_vertex(double x, double y, double z);
 
 		const vertex* find_remaining_vertex(const edge* e, const face* f);

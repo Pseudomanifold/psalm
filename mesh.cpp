@@ -46,7 +46,7 @@ mesh::~mesh()
 bool mesh::load_ply(const char* filename)
 {
 	ifstream in(filename);
-	if(in.bad())
+	if(in.fail())
 		return(false);
 
 	string data;
@@ -293,6 +293,139 @@ bool mesh::save_ply(const char* filename)
 }
 
 /*!
+*	Loads a mesh from a Wavefront OBJ file. Almost all possible information
+*	from the .OBJ file will be ignored gracefully because the program is
+*	only interested in the raw geometrical data.
+*
+*	@param	filename Mesh filename
+*	@return	true if the mesh could be loaded, else false
+*/
+
+bool mesh::load_obj(const char* filename)
+{
+	ifstream in(filename);
+	if(in.fail())
+		return(false);
+
+	string line;
+	string keyword;
+	istringstream converter;
+
+	// These are specify the only keywords of the .OBJ file that the parse
+	// is going to understand
+
+	const string OBJ_KEY_VERTEX	= "v";
+	const string OBJ_KEY_FACE	= "f";
+
+	while(!getline(in, line).eof())
+	{
+		converter.str(line);
+		converter >> keyword;
+
+		if(keyword == OBJ_KEY_VERTEX)
+		{
+			double x, y, z;
+			converter >> x >> y >> z;
+
+			if(converter.fail())
+			{
+				cerr << "Error: Unable to parse vertex data from line \"" << line << "\"\n";
+				return(false);
+			}
+
+			add_vertex(x,y,z);
+		}
+		else if(keyword == OBJ_KEY_FACE)
+		{
+			// Check whether it is a triplet data string
+			if(line.find_first_of('/') != string::npos)
+			{
+				cout << "TRIPLET\n";
+			}
+			else
+			{
+				vector<size_t> vertices;
+
+				long index = 0;
+				while(!converter.eof())
+				{
+					index = 0;
+					converter >> index;
+
+					if(index == 0)
+					{
+						cerr	<< "Error: Unable to parse face data from line \""
+							<< line << "\"\n";
+						return(false);
+					}
+
+					// Handle backwards references...
+					else if(index < 0)
+					{
+						// ...and check the range
+						if((V.size()+index) >= 0)
+							vertices.push_back(V.size()+index);
+						else
+						{
+							cerr	<< "Error: Invalid backwards vertex reference in line \""
+								<< line << "\"\n";
+							return(false);
+						}
+					}
+					else
+						vertices.push_back(index-1); // Real men 0-index their variables.
+				}
+
+				add_face(vertices);
+			}
+		}
+
+		keyword.clear();
+		line.clear();
+		converter.clear();
+	}
+
+	return(true);
+}
+
+/*!
+*	Saves the currently loaded mesh to a Wavefront OBJ file. Only raw
+*	geometrical data will be written.
+*
+*	@param	filename File for storing the mesh
+*	@return	true if the mesh could be stored, else false.
+*/
+
+bool mesh::save_obj(const char* filename)
+{
+	ofstream out(filename);
+	if(out.fail())
+		return(false);
+
+	for(vector<vertex*>::const_iterator it = V.begin(); it != V.end(); it++)
+	{
+		v3ctor position = (*it)->get_position();
+		out << "v "	<< position[0] << " "
+				<< position[1] << " "
+				<< position[2] << "\n";
+	}
+
+	for(vector<face*>::const_iterator it = F.begin(); it != F.end(); it++)
+	{
+		out << "f ";
+		for(size_t i = 0; i < (*it)->num_vertices(); i++)
+		{
+			out << ((*it)->get_vertex(i)->get_id()+1); // OBJ is 1-indexed, not 0-indexed
+			if(i < (*it)->num_vertices()-1)
+				out << " ";
+		}
+		out << "\n";
+	}
+
+	return(true);
+}
+
+/*!
 * Draws the mesh using standard OpenGL drawing routines.
 */
 
@@ -390,7 +523,7 @@ mesh& mesh::replace_with(mesh& M)
 *	FIXME: Document me.
 */
 
-void mesh::add_face(vector<size_t> vertices)
+void mesh::add_face(const vector<size_t>& vertices)
 {
 	size_t u = 0;
 	size_t v = 0;
