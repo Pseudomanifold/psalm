@@ -73,7 +73,7 @@ void init_scene(void)
 
 	glPointSize(5.0);
 
-	scene_mesh.load_ply(input.c_str());
+	scene_mesh.load(input.c_str());
 
 	gluLookAt(	0.0, 1.0, 2.0,
 		      	0.0, 0.0,-1.0,
@@ -127,7 +127,7 @@ void keyboard_callback(unsigned char key, int x, int y)
 	switch(tolower(key))
 	{
 		case 'e':
-			scene_mesh.save_ply("subdivision.ply");
+			scene_mesh.save("subdivided_"+input);
 			break;
 
 		case 'c':
@@ -143,7 +143,7 @@ void keyboard_callback(unsigned char key, int x, int y)
 			break;
 
 		case 'r':
-			scene_mesh.load_ply(input.c_str());
+			scene_mesh.load(input.c_str());
 			break;
 
 		case '\t':
