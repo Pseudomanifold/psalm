@@ -69,7 +69,7 @@ size_t vertex::get_id() const
 *	@warning The edge is not checked for consistency.
 */
 
-void vertex::add_edge(const edge* e)
+void vertex::add_edge(edge* e)
 {
 	E.push_back(e);
 }
@@ -78,7 +78,7 @@ void vertex::add_edge(const edge* e)
 *	Returns a pointer to incident edge.
 */
 
-const edge* vertex::get_edge(size_t i) const
+edge* vertex::get_edge(size_t i)
 {
 	if(i >= E.size())
 		return(NULL);

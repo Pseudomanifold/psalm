@@ -95,7 +95,7 @@ void face::add_face_vertex(vertex* v)
 *	Returns a face vertex that corresponds to a vertex in the mesh.
 */
 
-const vertex* face::get_face_vertex(size_t i) const
+vertex* face::get_face_vertex(size_t i)
 {
 	if(i >= V_F.size())
 		return(NULL);

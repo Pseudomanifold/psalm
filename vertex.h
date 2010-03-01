@@ -28,8 +28,8 @@ class vertex
 
 		vertex* vertex_point; // FIXME: Make this private?
 
-		void add_edge(const edge* e);
-		const edge* get_edge(size_t i) const;
+		void add_edge(edge* e);
+		edge* get_edge(size_t i);
 
 		void add_face(const face* f);
 		const face* get_face(size_t i) const;
@@ -39,7 +39,7 @@ class vertex
 		size_t num_adjacent_faces() const;
 
 	private:
-		std::vector<const edge*> E;
+		std::vector<edge*> E;
 		std::vector<const face*> F;
 
 		v3ctor p;

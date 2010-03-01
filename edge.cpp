@@ -73,7 +73,7 @@ const vertex* edge::get_v() const
 *	part of the face.
 */
 
-void edge::set_f(const face* f)
+void edge::set_f(face* f)
 {
 	// FIXME
 //	std::cout << "set_f(" << u->get_id() << "," << v->get_id() << ")\n";
@@ -103,7 +103,7 @@ void edge::set_f(const face* f)
 *	part of the face.
 */
 
-void edge::set_g(const face* g)
+void edge::set_g(face* g)
 {
 	// FIXME
 //	std::cout << "set_g(" << u->get_id() << "," << v->get_id() << ")\n";
@@ -129,6 +129,11 @@ void edge::set_g(const face* g)
 *	Returns pointer to first adjacent face.
 */
 
+face* edge::get_f()
+{
+	return(f);
+}
+
 const face* edge::get_f() const
 {
 	return(f);
@@ -137,6 +142,11 @@ const face* edge::get_f() const
 /*!
 *	Returns pointer to second adjacent face.
 */
+
+face* edge::get_g()
+{
+	return(g);
+}
 
 const face* edge::get_g() const
 {

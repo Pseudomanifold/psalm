@@ -30,7 +30,7 @@ class face
 		size_t get_id() const;
 
 		const vertex* get_vertex(size_t i) const;
-		const vertex* get_face_vertex(size_t i) const;
+		vertex* get_face_vertex(size_t i);
 		directed_edge& get_edge(size_t i); // FIXME: Need to check whether this can be made constant
 
 		vertex* face_point; // FIXME: Make this private?

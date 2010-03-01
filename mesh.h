@@ -48,13 +48,18 @@ class mesh
 		vertex* get_vertex(size_t id);
 
 		void add_face(const std::vector<size_t>& vertices);
+		void add_face(std::vector<vertex*> vertices);
+
+		inline void add_face(vertex* v1, vertex* v2, vertex* v3);
+		inline void add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4);
+
 		directed_edge add_edge(const vertex* u, const vertex* v);
 		vertex* add_vertex(double x, double y, double z);
 
 		const vertex* find_remaining_vertex(const edge* e, const face* f);
-		const vertex* find_face_vertex(const face* f, const vertex* v);
+		vertex* find_face_vertex(face* f, const vertex* v);
 
-		std::vector<const face*> sort_faces(const vertex* v) const;
+		std::vector<face*> sort_faces(vertex* v);
 
 		bool load_ply(const char* filename);
 		bool load_obj(const char* filename);
