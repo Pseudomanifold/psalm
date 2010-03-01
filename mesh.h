@@ -54,7 +54,9 @@ class mesh
 		inline void add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4);
 
 		directed_edge add_edge(const vertex* u, const vertex* v);
+
 		vertex* add_vertex(double x, double y, double z);
+		vertex* add_vertex(const v3ctor& pos);
 
 		const vertex* find_remaining_vertex(const edge* e, const face* f);
 		vertex* find_face_vertex(face* f, const vertex* v);

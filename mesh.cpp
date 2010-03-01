@@ -338,12 +338,12 @@ bool mesh::load_ply(const char* filename)
 			// Store vertices of face in proper order and add a new
 			// face.
 
-			vector<size_t> vertices;
+			vector<vertex*> vertices;
 			size_t v = 0;
 			for(size_t i = 0; i < k; i++)
 			{
 				in >> v;
-				vertices.push_back(v);
+				vertices.push_back(get_vertex(v));
 			}
 
 			add_face(vertices);
@@ -461,11 +461,11 @@ bool mesh::load_obj(const char* filename)
 			// Check whether it is a triplet data string
 			if(line.find_first_of('/') != string::npos)
 			{
-				cout << "TRIPLET\n";
+				// FIXME: NYI
 			}
 			else
 			{
-				vector<size_t> vertices;
+				vector<vertex*> vertices;
 
 				long index = 0;
 				while(!converter.eof())
@@ -485,7 +485,7 @@ bool mesh::load_obj(const char* filename)
 					{
 						// ...and check the range
 						if((V.size()+index) >= 0)
-							vertices.push_back(V.size()+index);
+							vertices.push_back(get_vertex(V.size()+index));
 						else
 						{
 							cerr	<< "Error: Invalid backwards vertex reference in line \""
@@ -494,7 +494,7 @@ bool mesh::load_obj(const char* filename)
 						}
 					}
 					else
-						vertices.push_back(index-1); // Real men 0-index their variables.
+						vertices.push_back(get_vertex(index-1)); // Real men 0-index their variables.
 				}
 
 				add_face(vertices);
@@ -623,7 +623,7 @@ bool mesh::load_off(const char* filename)
 
 			converter >> k;
 
-			vector<size_t> vertices;
+			vector<vertex*> vertices;
 			for(size_t i = 0; i < k; i++)
 			{
 				converter >> index;
@@ -639,7 +639,7 @@ bool mesh::load_off(const char* filename)
 					return(false);
 				}
 
-				vertices.push_back(index);
+				vertices.push_back(get_vertex(index));
 			}
 
 			add_face(vertices);
@@ -807,84 +807,17 @@ mesh& mesh::replace_with(mesh& M)
 }
 
 /*!
-*	FIXME: Document me.
+*	Given a vector of pointers to vertices, where the vertices are assumed
+*	to be in counterclockwise order, construct a face and add it to the
+*	mesh.
+*
+*	@param vertices Vector of vertices for face. The vertices are connected
+*	in the order they appear in the vector. A last edge from the last
+*	vertex to the first vertex is added.
+*
+*	@warning The orientation of the vertices around the face is _not_
+*	checked, but left as a task for the calling function.
 */
-
-void mesh::add_face(const vector<size_t>& vertices)
-{
-	size_t u = 0;
-	size_t v = 0;
-
-	if(vertices.size() == 0)
-		return;
-
-	face* f = new face;
-
-	u = vertices[0];
-	for(size_t i = 1; i <= vertices.size(); i++)
-	{
-		// Handle last vertex; should be the edge v--u
-		if(i == vertices.size())
-		{
-			u = vertices[i-1];
-			v = vertices[0];
-		}
-		// Normal case
-		else
-			v = vertices[i];
-
-		// Add vertex to face; only the first vertex of the edge needs
-		// to be considered here
-		f->add_vertex(get_vertex(u));
-
-		// Add it to list of edges for face
-		directed_edge edge = add_edge(get_vertex(u), get_vertex(v));
-		f->add_edge(edge);
-
-		/*
-			GIANT FIXME: We are assuming that the edges are ordered
-			properly. Hence, an edge is supposed to appear only
-			_once_ in a fixed direction. If this is not the case,
-			the lookup below will _fail_ or an already stored face
-			might be overwritten!
-		*/
-
-		// Edge already known; update second adjacent face
-		if(edge.inverted)
-		{
-			edge.e->set_g(f);
-			//V[u]->add_edge(edge.e);
-			V[u]->add_face(f);
-		}
-
-		// (Possibly) new edge; update first adjacent face and adjacent
-		// vertices
-		else
-		{
-			// FIXME: This is ugly...and probably wrong?
-			if(edge.new_edge)
-			{
-				edge.e->set_f(f);
-				V[u]->add_edge(edge.e);
-				// TODO: Check whether it's ok to do this...or if it
-				// can be removed and done for the edge.inverted ==
-				// true case
-				V[v]->add_edge(edge.e);
-			}
-			else
-				edge.e->set_g(f);
-
-			V[u]->add_face(f);
-		}
-
-		// Set next start vertex; the orientation should be correct
-		// here
-		u = v;
-	}
-
-	f->set_id(F.size());
-	F.push_back(f);
-}
 
 void mesh::add_face(std::vector<vertex*> vertices)
 {
@@ -902,7 +835,7 @@ void mesh::add_face(std::vector<vertex*> vertices)
 	for(it = vertices.begin(); it != vertices.end(); it++)
 	{
 		// Handle last vertex; should be the edge v--u
-		if(it == (vertices.end()-1))
+		if((it+1) == vertices.end())
 		{
 			u = *it;
 			v = *vertices.begin();
@@ -1110,6 +1043,9 @@ vertex* mesh::get_vertex(size_t id)
 *	@param y y position of vertex
 *	@param z z position of vertex
 *
+*	@warning The vertices are not checked for duplicates because this
+*	function is assumed to be called from internal methods only.
+*
 *	@return Pointer to new vertex. The pointer remains valid during the
 *	lifecycle of the mesh.
 */
@@ -1120,6 +1056,23 @@ vertex* mesh::add_vertex(double x, double y, double z)
 	V.push_back(v);
 
 	return(v);
+}
+
+/*!
+*	Adds a vertex to the mesh. The vertex ID is assigned automatically.
+*
+*	@param pos Position of the new vertex
+*
+*	@warning The vertices are not checked for duplicates because this
+*	function is assumed to be called from internal methods only.
+*
+*	@return Pointer to new vertex. The pointer remains valid during the
+*	lifecycle of the mesh.
+*/
+
+vertex* mesh::add_vertex(const v3ctor& pos)
+{
+	return(add_vertex(pos[0], pos[1], pos[2]));
 }
 
 /*!
@@ -1163,9 +1116,7 @@ void mesh::subdivide_loop()
 		vertex_point *= s;
 		vertex_point += V[i]->get_position()*(1.0-n*s);
 
-		// FIXME: Provide interface of add_vertex that accepts v3ctor
-		// variables and not just coordinates
-		V[i]->vertex_point = M.add_vertex(vertex_point[0], vertex_point[1], vertex_point[2]);
+		V[i]->vertex_point = M.add_vertex(vertex_point);
 	}
 
 	// Create edge points
@@ -1185,9 +1136,7 @@ void mesh::subdivide_loop()
 		edge_point =	(e->get_u()->get_position()+e->get_v()->get_position())*0.375+
 				(v1->get_position()+v2->get_position())*0.125;
 
-		// FIXME: Provide interface of add_vertex that accepts v3ctor
-		// variables and not just coordinates
-		e->edge_point = M.add_vertex(edge_point[0], edge_point[1], edge_point[2]);
+		e->edge_point = M.add_vertex(edge_point);
 	}
 
 	// Create topology for new mesh
@@ -1400,15 +1349,13 @@ void mesh::subdivide_doo_sabin()
 			midpoint1 = (e1->get_u()->get_position()+e1->get_v()->get_position())/2;
 			midpoint2 = (e2->get_u()->get_position()+e2->get_v()->get_position())/2;
 
-			v3ctor v_f = (midpoint1+midpoint2+centroid+v->get_position())/4;
+			v3ctor face_vertex_position = (midpoint1+midpoint2+centroid+v->get_position())/4;
 
 			// Add new vertex to the face. The lookup using the
 			// vertex's ID is necessary because the face only
 			// supplies const pointers.
 
-			// FIXME: Need a better interface for the "add_vertex" function
-
-			vertex* face_vertex = M.add_vertex(v_f[0], v_f[1], v_f[2]);
+			vertex* face_vertex = M.add_vertex(face_vertex_position);
 			F[i]->add_face_vertex(face_vertex);
 		}
 	}
@@ -1500,8 +1447,7 @@ void mesh::subdivide_catmull_clark()
 
 		centroid /= F[i]->num_vertices();
 
-		// FIXME: Better interface
-		F[i]->face_point = M.add_vertex(centroid[0], centroid[1], centroid[2]);
+		F[i]->face_point = M.add_vertex(centroid);
 	}
 
 	// Create edge points
@@ -1513,8 +1459,7 @@ void mesh::subdivide_catmull_clark()
 					e->get_f()->face_point->get_position()+
 					e->get_g()->face_point->get_position())*0.25;
 
-		// FIXME: Better interface
-		e->edge_point = M.add_vertex(edge_point[0], edge_point[1], edge_point[2]);
+		e->edge_point = M.add_vertex(edge_point);
 	}
 
 	// Create vertex points
@@ -1550,9 +1495,8 @@ void mesh::subdivide_catmull_clark()
 		// S is the current vertex
 		S = V[i]->get_position();
 
-		// FIXME: Better interface
 		v3ctor vertex_point =(Q+R*2+S*(n-3))/n;
-		V[i]->vertex_point = M.add_vertex(vertex_point[0], vertex_point[1], vertex_point[2]);
+		V[i]->vertex_point = M.add_vertex(vertex_point);
 	}
 
 	/*
@@ -1675,8 +1619,8 @@ vertex* mesh::find_face_vertex(face* f, const vertex* v)
 *	Given a vertex, sort all the vertex's adjacent faces in
 *	counterclockwise order around the vertex.
 *
-*	@param v Vertex
-*	@return Sorted vector of faces.
+*	@param v Pointer to vertex
+*	@return Sorted vector of faces
 */
 
 vector<face*> mesh::sort_faces(vertex* v)
