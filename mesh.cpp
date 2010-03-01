@@ -957,24 +957,27 @@ directed_edge mesh::add_edge(const vertex* u, const vertex* v)
 }
 
 /*!
-*	Returns vertex for a certain ID. The ID is supposed to be the number of
-*	the vertex, starting from 0.
+*	Given a vertex ID, return the appropriate vertex. This function is
+*	meant to serve as an interface for any vertex queries, regardless of
+*	what storage container the mesh uses.
+*
+*	@param	Vertex ID, which is supposed to be set on allocating/creating a
+*	new vertex.
+*
+*	@return If the ID is correct, a pointer to the corresponding vertex is
+*	returned. Else, a NULL pointer will be rereturned.
 */
 
 vertex* mesh::get_vertex(size_t id)
 {
-	/*
-		TODO:
-			- Check for invalid ranges
-			- Is it a good idea to assume that the ID is the place
-			  of the vertex?
-	*/
-
-	return(V[id]);
+	if(id >= V.size())
+		return(NULL);
+	else
+		return(V[id]);
 }
 
 /*!
-*	Adds a vertex to the mesh. Vertex ID is assigned automatically.
+*	Adds a vertex to the mesh. The vertex ID is assigned automatically.
 *
 *	@param x x position of vertex
 *	@param y y position of vertex
@@ -993,23 +996,23 @@ vertex* mesh::add_vertex(double x, double y, double z)
 }
 
 /*!
-*	Performs one Loop subdivision step on the current mesh.
+*	Performs one step of Loop subdivision on the current mesh, thereby
+*	replacing it with the refined mesh.
 */
 
 void mesh::subdivide_loop()
 {
-	// FIXME
-	mesh M_;
+	mesh N;
 
 	// Construct vertex points
-	vertex v;
 	for(size_t i = 0; i < V.size(); i++)
 	{
 		// Find neighbours
 
 		size_t n = V[i]->valency();
-
 		v3ctor vertex_point;
+
+		// TODO: Could also be done using iterators.
 		for(size_t j = 0; j < n; j++)
 		{
 			const edge* e = V[i]->get_edge(j);
@@ -1025,17 +1028,17 @@ void mesh::subdivide_loop()
 		}
 
 		double s = 0.0;
-	//	if(n > 3)
+		if(n > 3)
 			s = (1.0/n*(0.625-pow(0.375+0.25*cos(2*M_PI/n), 2)));
-	//	else
-	//		s = 0.1875;
+		else
+			s = 0.1875;
 
 		vertex_point *= s;
 		vertex_point += V[i]->get_position()*(1.0-n*s);
 
 		// FIXME: Provide interface of add_vertex that accepts v3ctor
 		// variables and not just coordinates
-		V[i]->vertex_point = M_.add_vertex(vertex_point[0], vertex_point[1], vertex_point[2]);
+		V[i]->vertex_point = N.add_vertex(vertex_point[0], vertex_point[1], vertex_point[2]);
 	}
 
 	// Create edge points
@@ -1048,20 +1051,16 @@ void mesh::subdivide_loop()
 		const vertex* v1 = find_remaining_vertex(e, e->get_f());
 		const vertex* v2 = find_remaining_vertex(e, e->get_g());
 
-		if(v1 == NULL)
-			cout << "v1 == NULL\n";
-		if(v2 == NULL)
-			cout << "v2 == NULL\n";
-
 		// TODO: Need special case when v2 is NULL (edge is on
 		// boundary).
+		assert(v1 != NULL && v2 != NULL);
 
 		edge_point =	(e->get_u()->get_position()+e->get_v()->get_position())*0.375+
 				(v1->get_position()+v2->get_position())*0.125;
 
 		// FIXME: Provide interface of add_vertex that accepts v3ctor
 		// variables and not just coordinates
-		e->edge_point = M_.add_vertex(edge_point[0], edge_point[1], edge_point[2]);
+		e->edge_point = N.add_vertex(edge_point[0], edge_point[1], edge_point[2]);
 	}
 
 	// Create topology for new mesh
@@ -1167,7 +1166,6 @@ void mesh::subdivide_loop()
 				}
 			}
 
-
 			const vertex* v1 = F[i]->get_vertex(j)->vertex_point;
 			const vertex* v2 = d_e1.e->edge_point;
 			const vertex* v3 = d_e2.e->edge_point;
@@ -1198,7 +1196,7 @@ void mesh::subdivide_loop()
 			}
 
 			// FIXME: Need a better interface for this.
-			M_.add_face(vertices);
+			N.add_face(vertices);
 		}
 
 		// Create face from all three edge points of the face; since
@@ -1209,18 +1207,10 @@ void mesh::subdivide_loop()
 		for(size_t j = 0; j < F[i]->num_edges(); j++)
 			vertices.push_back(F[i]->get_edge(j).e->edge_point->get_id());
 
-		M_.add_face(vertices);
+		N.add_face(vertices);
 	}
 
-	// FIXME: Make this more elegant. Perhaps a "replace" function?
-	this->replace_with(M_);
-
-//	cout << "[E_t,F_t]\t= " << edge_table.size() << "," << face_table.T.size() << "\n";
-//	cout << "[V,F]\t\t= " << V.size() << "," << F.size() << "\n";
-//
-//	cout	<< "Loop subdivision step finished:\n"
-//		<< "* Number of vertices: "	<< V.size() << "\n"
-//		<< "* Number of faces: "	<< F.size() << "\n";
+	this->replace_with(N);
 }
 
 /*!
