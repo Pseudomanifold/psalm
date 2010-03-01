@@ -4,7 +4,7 @@ LIBS        = -L /usr/X11/lib -L /usr/local/lib
 INCLUDES    = -I /usr/local/include
 LDFLAGS     = -lglut -lGL -lGLU 
 
-MYOBJECTS   = subdivision.o v3ctor.o mesh.o face.o vertex.o edge.o t_edge_hash.o zpr.o
+MYOBJECTS   = subdivision.o v3ctor.o mesh.o face.o vertex.o edge.o zpr.o
 BIN         = subdivision
 
 $(BIN): $(MYOBJECTS) Makefile

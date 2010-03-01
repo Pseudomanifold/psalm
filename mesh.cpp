@@ -721,12 +721,14 @@ void mesh::draw()
 
 	glColor3f(0.0, 1.0, 0.0);
 	glBegin(GL_LINES);
-	for(size_t i = 0; i < edge_table.size(); i++)
+	for(vector<edge*>::iterator e = E.begin(); e != E.end(); e++)
 	{
-		edge* e = edge_table.get(i);
-
-		glVertex3f(e->get_u()->get_position()[0], e->get_u()->get_position()[1], e->get_u()->get_position()[2]);
-		glVertex3f(e->get_v()->get_position()[0], e->get_v()->get_position()[1], e->get_v()->get_position()[2]);
+		glVertex3f(	(*e)->get_u()->get_position()[0],
+				(*e)->get_u()->get_position()[1],
+				(*e)->get_u()->get_position()[2]);
+		glVertex3f(	(*e)->get_v()->get_position()[0],
+				(*e)->get_v()->get_position()[1],
+				(*e)->get_v()->get_position()[2]);
 	}
 	glEnd();
 
@@ -762,7 +764,13 @@ void mesh::destroy()
 	V.clear();
 	cout << "* Removed vertex data\n";
 
-	edge_table.destroy();
+	for(vector<edge*>::iterator it = E.begin(); it != E.end(); it++)
+	{
+		if(*it != NULL)
+			delete(*it);
+	}
+
+	E.clear();
 	cout << "* Removed edge data\n";
 
 	for(vector<face*>::iterator it = F.begin(); it != F.end(); it++)
@@ -788,12 +796,13 @@ mesh& mesh::replace_with(mesh& M)
 	this->destroy();
 	this->V = M.V;
 	this->F = M.F;
-	this->edge_table = M.edge_table;
+	this->E = M.E;
+	this->E_M = M.E_M;
 
 	M.V.clear();
 	M.F.clear();
-	M.edge_table.destroy(false);
-
+	M.E.clear();
+	M.E_M.clear();
 	return(*this);
 }
 
@@ -810,7 +819,6 @@ void mesh::add_face(const vector<size_t>& vertices)
 		return;
 
 	face* f = new face;
-	edge e;
 
 	u = vertices[0];
 	for(size_t i = 1; i <= vertices.size(); i++)
@@ -825,14 +833,12 @@ void mesh::add_face(const vector<size_t>& vertices)
 		else
 			v = vertices[i];
 
-		e.set(get_vertex(u), get_vertex(v));
-
 		// Add vertex to face; only the first vertex of the edge needs
 		// to be considered here
 		f->add_vertex(get_vertex(u));
 
 		// Add it to list of edges for face
-		directed_edge edge = edge_table.add(e);
+		directed_edge edge = add_edge(get_vertex(u), get_vertex(v));
 		f->add_edge(edge);
 
 		/*
@@ -881,6 +887,76 @@ void mesh::add_face(const vector<size_t>& vertices)
 }
 
 /*!
+*	Tries to add an edge to the current mesh. The edge is described by
+*	pointers to its start and end vertices.
+*
+*	@param u Pointer to start vertex
+*	@param v Pointer to end vertex
+*
+*	@return A directed edge, i.e., an edge with a certain start and end
+*	vertex and a flag whether the edge has been inverted or not. If the
+*	edge has been inverted, start and end vertex change their meaning. This
+*	is required because from the point of the medge, edge (u,v) and edge
+*	(v,u) are _the same_. In order to store only an edge only one time, the
+*	mesh checks whether the edge already exists.
+*/
+
+directed_edge mesh::add_edge(const vertex* u, const vertex* v)
+{
+	directed_edge result;
+
+	/*
+		Calculate ID of edge by using the Cantor pairing function. If
+		necessary, the IDs of the edge's vertices are swapped so that
+		k1 will always be the less or equal to k2. This is done in
+		order to provide a natural sorting order for the edges.
+	*/
+
+	size_t k1, k2;
+	if(u->get_id() < v->get_id())
+	{
+		k1 = u->get_id();
+		k2 = v->get_id();
+	}
+	else
+	{
+		k1 = v->get_id();
+		k2 = u->get_id();
+	}
+
+	size_t k = static_cast<size_t>(0.5*(k1+k2)*(k1+k2+1)+k2);
+
+	// Check whether edge exists
+	std::tr1::unordered_map<size_t, edge*>::iterator it;
+	if((it = E_M.find(k)) == E_M.end())
+	{
+		// Edge not found, create an edge from the _original_ edge and
+		// add it to the map
+		edge* new_edge = new edge(u, v);
+		E.push_back(new_edge);
+		E_M[k] = new_edge;
+
+		result.e = new_edge;
+		result.inverted = false;
+		result.new_edge = true;
+	}
+	else
+	{
+		// Edge has been found, check whether the proper direction has
+		// been stored.
+		if(it->second->get_u()->get_id() != u->get_id())
+			result.inverted = true;
+		else
+			result.inverted = false;
+
+		result.new_edge = false;
+		result.e = it->second;
+	}
+
+	return(result);
+}
+
+/*!
 *	Returns vertex for a certain ID. The ID is supposed to be the number of
 *	the vertex, starting from 0.
 */
@@ -895,11 +971,6 @@ vertex* mesh::get_vertex(size_t id)
 	*/
 
 	return(V[id]);
-}
-
-edge* mesh::get_edge(size_t e)
-{
-	return(edge_table.get(e));
 }
 
 /*!
@@ -968,10 +1039,10 @@ void mesh::subdivide_loop()
 	}
 
 	// Create edge points
-	for(size_t i = 0; i < edge_table.size(); i++)
+	for(vector<edge*>::iterator it = E.begin(); it != E.end(); it++)
 	{
 		v3ctor edge_point;
-		edge* e = edge_table.get(i);
+		edge* e = *it;
 
 		// Find remaining vertices of the adjacent faces of the edge
 		const vertex* v1 = find_remaining_vertex(e, e->get_f());
@@ -1235,10 +1306,10 @@ void mesh::subdivide_doo_sabin()
 	}
 
 	// Create quadrilateral E-faces
-	for(size_t i = 0; i < edge_table.size(); i++)
+	for(vector<edge*>::iterator it = E.begin(); it != E.end(); it++)
 	{
 		vector<size_t> vertices; // FIXME: Use pointers.
-		edge* e = edge_table.get(i);
+		edge* e = *it;
 
 		/*
 			The situation is as follows:
@@ -1326,9 +1397,9 @@ void mesh::subdivide_catmull_clark()
 	}
 
 	// Create edge points
-	for(size_t i = 0; i < edge_table.size(); i++)
+	for(vector<edge*>::iterator it = E.begin(); it != E.end(); it++)
 	{
-		edge* e = edge_table.get(i);
+		edge* e = *it;
 		v3ctor edge_point = (	e->get_u()->get_position()+
 					e->get_v()->get_position()+
 					e->get_f()->face_point->get_position()+

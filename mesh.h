@@ -8,13 +8,12 @@
 
 #include <vector>
 #include <string>
+#include <tr1/unordered_map>
 
 #include "vertex.h"
+#include "directed_edge.h"
 #include "edge.h"
 #include "face.h"
-
-#include "t_edge_hash.h"
-
 /*!
 *	@class mesh
 *	@brief Represents a mesh
@@ -40,15 +39,16 @@ class mesh
 		mesh& replace_with(mesh& M);
 
 	private:
-		t_edge_hash	edge_table;
-
 		std::vector<vertex*>	V;
+		std::vector<edge*>	E;
 		std::vector<face*>	F;
 
+		std::tr1::unordered_map<size_t, edge*> E_M;
+
 		vertex* get_vertex(size_t id);
-		edge* get_edge(size_t e);
 
 		void add_face(const std::vector<size_t>& vertices);
+		directed_edge add_edge(const vertex* u, const vertex* v);
 		vertex* add_vertex(double x, double y, double z);
 
 		const vertex* find_remaining_vertex(const edge* e, const face* f);
