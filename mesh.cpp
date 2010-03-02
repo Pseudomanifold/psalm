@@ -133,6 +133,9 @@ bool mesh::load(const string& filename, const short type)
 }
 
 /*!
+*
+*	FIXME: Description needs to be updated.
+*
 *	Tries to save the current mesh data to a file that has been specified
 *	by the user. The type of the file is determined by the following
 *	process:
@@ -156,36 +159,63 @@ bool mesh::load(const string& filename, const short type)
 
 bool mesh::save(const string& filename, const short type)
 {
-	// Try to identify the file type by the extension
+	short result = STATUS_UNDEFINED;
+
+	ofstream out;
+	out.open(filename.c_str());
+
+	// Filename given, data type identification by extension
 	if(filename.length() >= 4 && type == TYPE_EXT)
 	{
 		string extension = filename.substr(filename.length()-4);
 		transform(extension.begin(), extension.end(), extension.begin(), (int(*)(int)) tolower);
 
 		if(extension == ".ply")
-			return(save_ply(filename.c_str()));
+			result = (save_ply(out) ? STATUS_OK : STATUS_ERROR);
 		else if(extension == ".obj")
-			return(save_obj(filename.c_str()));
+			result = (save_obj(out) ? STATUS_OK : STATUS_ERROR);
 		else if(extension == ".off")
-			return(save_off(filename.c_str()));
+			result = (save_off(out) ? STATUS_OK : STATUS_ERROR);
 
 		// Unknown extension, so we fall back to PLY files (see below)
 	}
+
+	// Data type specified
 	else if(type != TYPE_EXT)
 	{
+		// Check whether file name has been specified. If no file name
+		// has been specified, use standard output to write data.
+
+		ostream& output_stream = ((filename.length() > 0) ? out : cout);
+
 		switch(type)
 		{
 			case TYPE_PLY:
-				return(save_ply(filename.c_str()));
+				result = (save_ply(output_stream) ? STATUS_OK : STATUS_ERROR);
+				break;
+
 			case TYPE_OBJ:
-				return(save_obj(filename.c_str()));
+				result = (save_obj(output_stream) ? STATUS_OK : STATUS_ERROR);
+				break;
+
 			case TYPE_OFF:
-				return(save_off(filename.c_str()));
+				result = (save_off(output_stream) ? STATUS_OK : STATUS_ERROR);
+				break;
 		}
 	}
 
-	// last resort
-	return(save_ply(filename.c_str()));
+	// Last resort: If a nonempty filename has been specified, try to
+	// write a PLY file. Else, try to write a PLY file to standard output.
+	if(result == STATUS_UNDEFINED)
+	{
+		if(filename.length() > 0)
+			result = (save_ply(out) ? STATUS_OK : STATUS_ERROR);
+		else
+			result = (save_ply(cout) ? STATUS_OK : STATUS_ERROR);
+	}
+
+	out.close();
+	return(result);
 }
 
 /*!
@@ -381,17 +411,14 @@ bool mesh::load_ply(istream& in)
 }
 
 /*!
-*	Saves the currently loaded mesh to a .PLY file.
+*	Saves the currently loaded mesh in PLY format.
 *
-*	@param	filename File for storing the mesh
+*	@param	out Stream for data output
 *	@return	true if the mesh could be stored, else false.
 */
 
-bool mesh::save_ply(const char* filename)
+bool mesh::save_ply(ostream& out)
 {
-	cout << "Exporting mesh to \"" << filename << "\"...\n";
-
-	ofstream out(filename);
 	if(!out.good())
 		return(false);
 
@@ -428,9 +455,6 @@ bool mesh::save_ply(const char* filename)
 		out << "\n";
 	}
 
-	cout << "...finished.\n";
-
-	out.close();
 	return(true);
 }
 
@@ -535,17 +559,16 @@ bool mesh::load_obj(istream &in)
 }
 
 /*!
-*	Saves the currently loaded mesh to a Wavefront OBJ file. Only raw
-*	geometrical data will be written.
+*	Saves the currently loaded mesh in Wavefront OBJ format. Only raw
+*	geometrical data will be output.
 *
-*	@param	filename File for storing the mesh
+*	@param	out Stream for data output
 *	@return	true if the mesh could be stored, else false.
 */
 
-bool mesh::save_obj(const char* filename)
+bool mesh::save_obj(ostream& out)
 {
-	ofstream out(filename);
-	if(out.fail())
+	if(!out.good())
 		return(false);
 
 	for(vector<vertex*>::const_iterator it = V.begin(); it != V.end(); it++)
@@ -568,7 +591,6 @@ bool mesh::save_obj(const char* filename)
 		out << "\n";
 	}
 
-	out.close();
 	return(true);
 }
 
@@ -689,16 +711,16 @@ bool mesh::load_off(istream& in)
 }
 
 /*!
-*	Saves the currently loaded mesh to an ASCII Geomview .OFF file.
+*	Saves the currently loaded mesh in ASCII Geomview object file format
+*	(OFF).
 *
-*	@param	filename File for storing the mesh
+*	@param	out Stream for data output
 *	@return	true if the mesh could be stored, else false.
 */
 
-bool mesh::save_off(const char* filename)
+bool mesh::save_off(ostream& out)
 {
-	ofstream out(filename);
-	if(out.fail())
+	if(!out.good())
 		return(false);
 
 	out	<< "OFF\n"
@@ -727,7 +749,6 @@ bool mesh::save_off(const char* filename)
 		out << "\n";
 	}
 
-	out.close();
 	return(true);
 }
 

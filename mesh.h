@@ -67,9 +67,9 @@ class mesh
 		bool load_obj(std::istream& in);
 		bool load_off(std::istream& in);
 
-		bool save_ply(const char* filename);
-		bool save_obj(const char* filename);
-		bool save_off(const char* filename);
+		bool save_ply(std::ostream& out);
+		bool save_obj(std::ostream& out);
+		bool save_off(std::ostream& out);
 
 		static const short TYPE_PLY;		//< Constant for reading/writing PLY files
 		static const short TYPE_OBJ;		//< Constant for reading/writing OBJ files
