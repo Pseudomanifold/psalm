@@ -63,18 +63,22 @@ class mesh
 
 		std::vector<face*> sort_faces(vertex* v);
 
-		bool load_ply(const char* filename);
-		bool load_obj(const char* filename);
-		bool load_off(const char* filename);
+		bool load_ply(std::istream& in);
+		bool load_obj(std::istream& in);
+		bool load_off(std::istream& in);
 
 		bool save_ply(const char* filename);
 		bool save_obj(const char* filename);
 		bool save_off(const char* filename);
 
-		static const short TYPE_PLY; //< Constant for reading/writing PLY files
-		static const short TYPE_OBJ; //< Constant for reading/writing OBJ files
-		static const short TYPE_OFF; //< Constant for reading/writing OFF files
-		static const short TYPE_EXT; //< Constant for reading/writing files by their extension
+		static const short TYPE_PLY;		//< Constant for reading/writing PLY files
+		static const short TYPE_OBJ;		//< Constant for reading/writing OBJ files
+		static const short TYPE_OFF;		//< Constant for reading/writing OFF files
+		static const short TYPE_EXT;		//< Constant for reading/writing files by their extension
+
+		static const short STATUS_OK;		//< Status constant signalling an operation worked
+		static const short STATUS_ERROR;	//< Status constant signalling an operation failed
+		static const short STATUS_UNDEFINED;	//< Status constant signalling no operation took place
 };
 
 #endif

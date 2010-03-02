@@ -22,10 +22,14 @@ using namespace std;
 
 // Initialization of some static member variables
 
-const short mesh::TYPE_EXT = 0;
-const short mesh::TYPE_PLY = 1;
-const short mesh::TYPE_OBJ = 2;
-const short mesh::TYPE_OFF = 3;
+const short mesh::TYPE_EXT		= 0;
+const short mesh::TYPE_PLY		= 1;
+const short mesh::TYPE_OBJ		= 2;
+const short mesh::TYPE_OFF		= 3;
+
+const short mesh::STATUS_OK		= 0;
+const short mesh::STATUS_ERROR		= 1;
+const short mesh::STATUS_UNDEFINED	= 2;
 
 /*!
 *	Default constructor.
@@ -46,6 +50,9 @@ mesh::~mesh()
 }
 
 /*!
+*
+*	FIXME: Description needs to be updated.
+*
 *	Tries to load a data file (presumably one that contains mesh data) that
 *	the user specified. The type of the file is determined by the following
 *	process:
@@ -66,36 +73,63 @@ mesh::~mesh()
 
 bool mesh::load(const string& filename, const short type)
 {
-	// Try to identify the file type by the extension
+	short result = STATUS_UNDEFINED;
+
+	ifstream in;
+	in.open(filename.c_str());
+
+	// Filename given, data type identification by extension
 	if(filename.length() >= 4 && type == TYPE_EXT)
 	{
 		string extension = filename.substr(filename.length()-4);
 		transform(extension.begin(), extension.end(), extension.begin(), (int(*)(int)) tolower);
 
+
 		if(extension == ".ply")
-			return(load_ply(filename.c_str()));
+			result = (load_ply(in) ? STATUS_OK : STATUS_ERROR);
 		else if(extension == ".obj")
-			return(load_obj(filename.c_str()));
+			result = (load_obj(in) ? STATUS_OK : STATUS_ERROR);
 		else if(extension == ".off")
-			return(load_off(filename.c_str()));
+			result = (load_off(in) ? STATUS_OK : STATUS_ERROR);
 
 		// Unknown extension, so we fall back to PLY files (see below)
 	}
+
+	// Data type specified
 	else if(type != TYPE_EXT)
 	{
+		// Check whether file name has been specified. If no file name
+		// has been specified, use standard input to read data.
+
+		istream& input_stream = ((filename.length() > 0) ? in : cin);
 		switch(type)
 		{
 			case TYPE_PLY:
-				return(load_ply(filename.c_str()));
+				result = (load_ply(input_stream) ? STATUS_OK : STATUS_ERROR);
+				break;
+
 			case TYPE_OBJ:
-				return(load_obj(filename.c_str()));
+				result = (load_obj(input_stream) ? STATUS_OK : STATUS_ERROR);
+				break;
+
 			case TYPE_OFF:
-				return(load_off(filename.c_str()));
+				result = (load_off(input_stream) ? STATUS_OK : STATUS_ERROR);
+				break;
 		}
 	}
 
-	// last resort
-	return(load_ply(filename.c_str()));
+	// Last resort: If a nonempty file name has been specified, try to
+	// parse a PLY file. Else, try to read a PLY file from standard input.
+	if(result == STATUS_UNDEFINED)
+	{
+		if(filename.length() > 0)
+			result = (load_ply(in) ? STATUS_OK : STATUS_ERROR);
+		else
+			result = (load_ply(cin) ? STATUS_OK : STATUS_ERROR);
+	}
+
+	in.close();
+	return(result);
 }
 
 /*!
@@ -155,16 +189,15 @@ bool mesh::save(const string& filename, const short type)
 }
 
 /*!
-*	Loads a mesh from a .PLY file.
+*	Tries to load mesh data in PLY format from an input stream.
 *
-*	@param	filename Mesh filename
+*	@param	in Input stream (file, standard input)
 *	@return	true if the mesh could be loaded, else false
 */
 
-bool mesh::load_ply(const char* filename)
+bool mesh::load_ply(istream& in)
 {
-	ifstream in(filename);
-	if(in.fail())
+	if(!in.good())
 		return(false);
 
 	string data;
@@ -172,20 +205,17 @@ bool mesh::load_ply(const char* filename)
 	// Read the headers: Only ASCII format is accepted, but the version is
 	// ignored
 
-	cout << "Parsing PLY header...\n";
-
 	getline(in, data);
 	if(data != "ply")
 	{
-		cerr << "Error: \"" << filename << "\" is not a PLY file.\n";
+		cerr << "Error: I am missing a \"ply\" header for the input data.\n";
 		return(false);
 	}
 
 	getline(in, data);
 	if(data.find("format ascii") == string::npos)
 	{
-		cerr << data;
-		cerr << "Error: \"" << filename << "\" is not an ASCII PLY file.\n";
+		cerr << "Error: Expected \"format ascii\", got \"" << data << "\" instead.\n";
 		return(false);
 	}
 
@@ -221,10 +251,7 @@ bool mesh::load_ply(const char* filename)
 			data.find("obj_info") != string::npos)
 			continue;
 		else if(data.find("end_header") != string::npos)
-		{
-			cout << "...finished parsing.\n";
 			break;
-		}
 
 		switch(mode)
 		{
@@ -250,17 +277,17 @@ bool mesh::load_ply(const char* filename)
 
 					if(num_faces == 0)
 					{
-						cerr << "Unable to read number of faces from PLY file.\n";
+						cerr	<< "Error: Can't parse number of faces from \""
+							<< data
+							<< "\".\n";
 						return(false);
 					}
-
-					cout << "* Number of faces: " << num_faces << "\n";
 
 					mode = MODE_PARSE_FACE_PROPERTIES;
 				}
 				else
 				{
-					cerr << "Error: Got \"" << data << "\", expected \"property\"\n";
+					cerr << "Error: Expected \"property\", but got \"" << data << "\" instead.\n";
 					return(false);
 				}
 
@@ -290,19 +317,21 @@ bool mesh::load_ply(const char* filename)
 
 					if(num_vertices == 0)
 					{
-						cerr << "Unable to read number of vertices from PLY file.\n";
+						cerr	<< "Error: Can't parse number of vertices from \""
+							<< data
+							<< "\".\n";
+
 						return(false);
 					}
-
-					cout << "* Number of vertices: " << num_vertices << "\n";
 
 					mode = MODE_PARSE_VERTEX_PROPERTIES;
 				}
 				else
 				{
-					cerr	<< "Got \"" << data
+					cerr	<< "Error: Got \""
+						<< data
 						<< "\", but expected \"element vertex\" "
-						<< "or \"element face\"\n";
+						<< "or \"element face\" instead. I cannot continue.\n";
 					return(false);
 				}
 
@@ -312,10 +341,6 @@ bool mesh::load_ply(const char* filename)
 				break;
 		}
 	}
-
-	cout << "Reading vertex and edge data...\n";
-
-	clock_t start = clock();
 
 	size_t line	= 0;
 	size_t k	= 0; // number of vertices for face
@@ -352,10 +377,6 @@ bool mesh::load_ply(const char* filename)
 		line++;
 	}
 
-	clock_t end = clock();
-	cout << "...finished in " << (end-start)/static_cast<double>(CLOCKS_PER_SEC) << "s\n";
-
-	in.close();
 	return(true);
 }
 
@@ -414,18 +435,17 @@ bool mesh::save_ply(const char* filename)
 }
 
 /*!
-*	Loads a mesh from a Wavefront OBJ file. Almost all possible information
-*	from the .OBJ file will be ignored gracefully because the program is
-*	only interested in the raw geometrical data.
+*	Loads a mesh in Wavefront OBJ format from an input stream. Almost all
+*	possible information from the input stream will be ignored gracefully
+*	because the program is only interested in the raw geometrical data.
 *
-*	@param	filename Mesh filename
+*	@param	in Input stream (file, standard input)
 *	@return	true if the mesh could be loaded, else false
 */
 
-bool mesh::load_obj(const char* filename)
+bool mesh::load_obj(istream &in)
 {
-	ifstream in(filename);
-	if(in.fail())
+	if(!in.good())
 		return(false);
 
 	string line;
@@ -450,7 +470,9 @@ bool mesh::load_obj(const char* filename)
 
 			if(converter.fail())
 			{
-				cerr << "Error: Unable to parse vertex data from line \"" << line << "\"\n";
+				cerr	<< "Error: I tried to parse vertex coordinates from line \""
+					<< line
+					<<" \" and failed.\n";
 				return(false);
 			}
 
@@ -475,8 +497,9 @@ bool mesh::load_obj(const char* filename)
 
 					if(index == 0)
 					{
-						cerr	<< "Error: Unable to parse face data from line \""
-							<< line << "\"\n";
+						cerr	<< "Error: I cannot parse face data from line \""
+							<< line
+							<< "\".\n";
 						return(false);
 					}
 
@@ -488,8 +511,10 @@ bool mesh::load_obj(const char* filename)
 							vertices.push_back(get_vertex(V.size()+index));
 						else
 						{
-							cerr	<< "Error: Invalid backwards vertex reference in line \""
-								<< line << "\"\n";
+							cerr	<< "Error: Invalid backwards vertex reference "
+								<< "in line \""
+								<< line
+								<< "\".\n";
 							return(false);
 						}
 					}
@@ -506,7 +531,6 @@ bool mesh::load_obj(const char* filename)
 		converter.clear();
 	}
 
-	in.close();
 	return(true);
 }
 
@@ -549,16 +573,15 @@ bool mesh::save_obj(const char* filename)
 }
 
 /*!
-*	Loads a mesh from an ASCII Geomview .OFF (object file format) file.
+*	Loads a mesh in ASCII Geomview format from an input stream.
 *
-*	@param	filename Mesh filename
+*	@param	in Input stream (file, standard input)
 *	@return	true if the mesh could be loaded, else false
 */
 
-bool mesh::load_off(const char* filename)
+bool mesh::load_off(istream& in)
 {
-	ifstream in(filename);
-	if(in.fail())
+	if(!in.good())
 		return(false);
 
 	string line;
@@ -576,7 +599,7 @@ bool mesh::load_off(const char* filename)
 	getline(in, line);
 	if(line != "OFF")
 	{
-		cerr << "Error: \"" << filename << "\" is not an .OFF file.\n";
+		cerr << "Error: I am missing a \"OFF\" header for the input data.\n";
 		return(false);
 	}
 
@@ -589,7 +612,7 @@ bool mesh::load_off(const char* filename)
 
 	if(converter.fail())
 	{
-		cerr << "Error: Unable to parse vertex, face, and edge numbers from \"" << line << "\"\n";
+		cerr << "Error: I cannot parse vertex, face, and edge numbers from \"" << line << "\"\n";
 		return(false);
 	}
 
@@ -610,7 +633,9 @@ bool mesh::load_off(const char* filename)
 
 			if(converter.fail())
 			{
-				cerr << "Error: Unable to parse vertex data from line \"" << line << "\"\n";
+				cerr	<< "Error: I tried to parse vertex coordinates from line \""
+					<< line
+					<<" \" and failed.\n";
 				return(false);
 			}
 
@@ -629,13 +654,17 @@ bool mesh::load_off(const char* filename)
 				converter >> index;
 				if(converter.fail())
 				{
-					cerr << "Error: Unexpected end of face data in line \"" << line << "\"\n";
+					cerr	<< "Error: Tried to parse face data in line \""
+						<< line
+						<< "\", but failed.\n";
 					return(false);
 				}
 
 				if(index >= V.size())
 				{
-					cerr << "Error: Index " << index << "in line \"" << line << "\" is out of bounds.\n";
+					cerr	<< "Error: Index " << index << "in line \""
+						<< line
+						<< "\" is out of bounds.\n";
 					return(false);
 				}
 
@@ -646,7 +675,7 @@ bool mesh::load_off(const char* filename)
 		}
 		else
 		{
-			cerr << "Error: Unexpected data line \"" << line << "\"\n";
+			cerr << "Error: Got an unexpected data line \"" << line << "\".\n";
 			return(false);
 		}
 
@@ -656,7 +685,6 @@ bool mesh::load_off(const char* filename)
 		line.clear();
 	}
 
-	in.close();
 	return(true);
 }
 
