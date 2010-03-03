@@ -830,17 +830,11 @@ void mesh::draw()
 
 void mesh::destroy()
 {
-	cout << "Cleaning up...\n";
-
-	cout << V.size() << "\n";
 	for(vector<vertex*>::iterator it = V.begin(); it != V.end(); it++)
 	{
 		if(*it != NULL)
 			delete(*it);
 	}
-
-	V.clear();
-	cout << "* Removed vertex data\n";
 
 	for(vector<edge*>::iterator it = E.begin(); it != E.end(); it++)
 	{
@@ -848,17 +842,15 @@ void mesh::destroy()
 			delete(*it);
 	}
 
-	E.clear();
-	cout << "* Removed edge data\n";
-
 	for(vector<face*>::iterator it = F.begin(); it != F.end(); it++)
 	{
 		if(*it != NULL)
 			delete(*it);
 	}
 
+	V.clear();
+	E.clear();
 	F.clear();
-	cout << "* Removed face data\n";
 
 	E_M.clear();
 }
