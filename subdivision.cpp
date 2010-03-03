@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
 	if(argc == 1)
 	{
 		cout << "Loading default mesh...\n";
-		input = "Cube.ply";
+		input = "";
 	}
 	else
 	{
