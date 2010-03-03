@@ -40,6 +40,11 @@ class mesh
 		mesh& operator=(const mesh& M);
 		void replace_with(mesh& M);
 
+		static const short TYPE_PLY;		//< Constant for reading/writing PLY files
+		static const short TYPE_OBJ;		//< Constant for reading/writing OBJ files
+		static const short TYPE_OFF;		//< Constant for reading/writing OFF files
+		static const short TYPE_EXT;		//< Constant for reading/writing files by their extension
+
 	private:
 		std::vector<vertex*>	V;
 		std::vector<edge*>	E;
@@ -72,11 +77,6 @@ class mesh
 		bool save_ply(std::ostream& out);
 		bool save_obj(std::ostream& out);
 		bool save_off(std::ostream& out);
-
-		static const short TYPE_PLY;		//< Constant for reading/writing PLY files
-		static const short TYPE_OBJ;		//< Constant for reading/writing OBJ files
-		static const short TYPE_OFF;		//< Constant for reading/writing OFF files
-		static const short TYPE_EXT;		//< Constant for reading/writing files by their extension
 
 		static const short STATUS_OK;		//< Status constant signalling an operation worked
 		static const short STATUS_ERROR;	//< Status constant signalling an operation failed

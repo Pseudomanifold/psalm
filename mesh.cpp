@@ -91,12 +91,15 @@ bool mesh::load(const std::string& filename, const short type)
 	ifstream in;
 	in.open(filename.c_str());
 
+	// FIXME: Need to check whether the file does exist
+	// at all...
+	this->destroy();
+
 	// Filename given, data type identification by extension
 	if(filename.length() >= 4 && type == TYPE_EXT)
 	{
 		string extension = filename.substr(filename.length()-4);
 		transform(extension.begin(), extension.end(), extension.begin(), (int(*)(int)) tolower);
-
 
 		if(extension == ".ply")
 			result = (load_ply(in) ? STATUS_OK : STATUS_ERROR);
@@ -856,6 +859,8 @@ void mesh::destroy()
 
 	F.clear();
 	cout << "* Removed face data\n";
+
+	E_M.clear();
 }
 
 /*!
