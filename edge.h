@@ -21,19 +21,28 @@ class edge
 		edge(const vertex* u, const vertex* v);
 
 		void set(const vertex* u, const vertex* v);
-		void set_f(face* f);
-		void set_g(face* g);
 
 		const vertex* get_u() const;
 		const vertex* get_v() const;
 
-		face* get_f();
-		face* get_g();
+		void set_f(face* f);
+		void set_g(face* g);
 
-		const face* get_f() const;
-		const face* get_g() const;
+		face*		get_f();
+		const face*	get_f() const;
+		face*		get_g();
+		const face*	get_g() const;
 
-		vertex* edge_point; // FIXME: Make this private?
+		/*!
+		*	@brief Pointer to edge point.
+		*
+		*	Pointer to edge point that corresponds to the current
+		*	edge.  This pointer is only set and read during
+		*	subdivision algorithms and must \e not be relied on
+		*	within other functions.
+		*/
+
+		vertex* edge_point;
 
 	private:
 		const vertex* u;	///< Pointer to start vertex

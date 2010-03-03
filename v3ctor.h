@@ -54,9 +54,9 @@ class v3ctor
 		v3ctor& operator= (const v3ctor& b);
 		v3ctor  operator| (const v3ctor& b) const;
 
-		double  operator*(const v3ctor& a) const;
-		double& operator[](short i);
-		const double& operator[](short i) const;
+		double		operator*(const v3ctor& a) const;
+		double&		operator[](short i);
+		const double&	operator[](short i) const;
 
 		v3ctor normalize() const;
 		double length() const;

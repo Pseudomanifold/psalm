@@ -50,28 +50,41 @@ mesh::~mesh()
 }
 
 /*!
-*
-*	FIXME: Description needs to be updated.
-*
-*	Tries to load a data file (presumably one that contains mesh data) that
-*	the user specified. The type of the file is determined by the following
+*	Tries to load data (presumably mesh data) that from an input source the
+*	user specified. The type of the data is determined by the following
 *	process:
 *
-*	1)	If the user did not specify a type, the file is identified by
-*		its extension.
-*	2)	If this identification fails and the user did not specify a
-*		file type, the function tries to load a .PLY file.
-*	3)	If the user did specify a file type, the function will call the
-*		appropriate function to load a mesh of the desired type.
+*	1)	If the user did not specify a type:
 *
-*	@param filename Filename of data file
-*	@param type	Type of file to load. By default, the file type is
-*	guessed by the file extension.
+*		1.1)	If the user specified a filename, the function tries to
+*		identify the file by its extension.
+*
+*			1.1.1)	If this identification fails, the function
+*			tries to load a PLY file.
+*
+*		1.2)	If the user did not specify a filename, the function
+*		tries to load PLY data from standard input.
+*
+*	2)	If the user specified a type:
+*
+*		2.1)	If the user specified a filename, the function tries to
+*		load the file with the appropriate type set, regardless of its
+*		extension.
+*
+*		2.2)	If the user did not specify a filename, the function
+*		tries to load data with the specified type from standard input.
+*
+*	@param filename Filename of data file. An empty filename signals that
+*	the function tries to read data from standard input.
+*
+*	@param type Type of mesh data to load. By default, the function tries
+*	to guess the data type using filename extensions (if the user specified
+*	a filename).
 *
 *	@return	true if the mesh could be loaded, else false
 */
 
-bool mesh::load(const string& filename, const short type)
+bool mesh::load(const std::string& filename, const short type)
 {
 	short result = STATUS_UNDEFINED;
 
@@ -133,23 +146,36 @@ bool mesh::load(const string& filename, const short type)
 }
 
 /*!
+*	Tries to save the current mesh data to a user-specified output (a file
+*	or an output stream).  The format of the mesh data is determined by the
+*	following process:
 *
-*	FIXME: Description needs to be updated.
+*	1)	If the user did not specify a type:
 *
-*	Tries to save the current mesh data to a file that has been specified
-*	by the user. The type of the file is determined by the following
-*	process:
+*		1.1)	If the user specified a filename, the function tries to
+*		identify the file by its extension.
 *
-*	1)	If the user did not specify a type, the file is identified by
-*		its extension.
-*	2)	If this identification fails and the user did not specify a
-*		file type, the function tries to save a .PLY file.
-*	3)	If the user did specify a file type, the function will call the
-*		appropriate function to save a mesh of the desired type.
+*			1.1.1)	If this identification fails, the function
+*			tries to save a PLY file.
 *
-*	@param filename Filename for storing the current mesh
-*	@param type	Type of file to load. By default, the file type is
-*	guessed by the file extension.
+*		1.2)	If the user did not specify a filename, the function
+*		tries to save PLY data to standard output.
+*
+*	2)	If the user specified a type:
+*
+*		2.1)	If the user specified a filename, the function tries to
+*		save the file with the appropriate type set, regardless of its
+*		extension.
+*
+*		2.2)	If the user did not specify a filename, the function
+*		tries to save data with the specified type to standard output.
+*
+*	@param filename Filename for storing the current mesh. An empty
+*	filename signals that standard output is to be used.
+*
+*	@param type Format in which to save the mesh data. By default, the
+*	function tries to guess the data type using filename extensions (if the
+*	user specified a filename).
 *
 *	@warning The data file will be overwritten if it exists. The user will
 *	not be notified of this.
@@ -157,7 +183,7 @@ bool mesh::load(const string& filename, const short type)
 *	@return	true if the mesh could be stored, else false.
 */
 
-bool mesh::save(const string& filename, const short type)
+bool mesh::save(const std::string& filename, const short type)
 {
 	short result = STATUS_UNDEFINED;
 
@@ -836,22 +862,36 @@ void mesh::destroy()
 *	Replaces the current mesh with another one. The other mesh will
 *	be deleted/cleared by this operation.
 *
-*	@param	M Mesh to replace current mesh with.
-*	@return	Reference to current mesh.
+*	@param	M Mesh to replace current mesh with
 */
 
-mesh& mesh::replace_with(mesh& M)
+void mesh::replace_with(mesh& M)
 {
-	this->destroy();
-	this->V = M.V;
-	this->F = M.F;
-	this->E = M.E;
-	this->E_M = M.E_M;
+	*this = M;
 
+	// Clear old mesh
 	M.V.clear();
 	M.F.clear();
 	M.E.clear();
 	M.E_M.clear();
+}
+
+/*!
+*	Assigns another mesh to the current mesh.
+*
+*	@param M Mesh to assign to the current mesh
+*	@return Reference to replaced mesh
+*/
+
+mesh& mesh::operator=(const mesh& M)
+{
+	this->destroy();
+
+	this->V		= M.V;
+	this->F		= M.F;
+	this->E		= M.E;
+	this->E_M	= M.E_M;
+
 	return(*this);
 }
 
@@ -942,7 +982,6 @@ void mesh::add_face(std::vector<vertex*> vertices)
 		u = v;
 	}
 
-	f->set_id(F.size());
 	F.push_back(f);
 }
 

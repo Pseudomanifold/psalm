@@ -6,6 +6,7 @@
 #ifndef __MESH_H__
 #define __MESH_H__
 
+#include <iostream>
 #include <vector>
 #include <string>
 #include <tr1/unordered_map>
@@ -14,6 +15,7 @@
 #include "directed_edge.h"
 #include "edge.h"
 #include "face.h"
+
 /*!
 *	@class mesh
 *	@brief Represents a mesh
@@ -36,7 +38,7 @@ class mesh
 		void destroy();
 
 		mesh& operator=(const mesh& M);
-		mesh& replace_with(mesh& M);
+		void replace_with(mesh& M);
 
 	private:
 		std::vector<vertex*>	V;

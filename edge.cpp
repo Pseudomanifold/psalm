@@ -48,7 +48,7 @@ void edge::set(const vertex* u, const vertex* v)
 }
 
 /*!
-*	Returns pointer to start vertex.
+*	@return Pointer to start vertex
 */
 
 const vertex* edge::get_u() const
@@ -57,7 +57,7 @@ const vertex* edge::get_u() const
 }
 
 /*!
-*	Returns pointer to end vertex.
+*	@return Pointer to end vertex
 */
 
 const vertex* edge::get_v() const
@@ -69,6 +69,7 @@ const vertex* edge::get_v() const
 *	Sets pointer to first adjacent face.
 *
 *	@param f Pointer to face
+*
 *	@warning The function does not check if the current edge is really a
 *	part of the face.
 */
@@ -99,6 +100,7 @@ void edge::set_f(face* f)
 *	Sets pointer to second adjacent face.
 *
 *	@param g Pointer to face
+*
 *	@warning The function does not check if the current edge is really a
 *	part of the face.
 */
@@ -126,7 +128,7 @@ void edge::set_g(face* g)
 }
 
 /*!
-*	Returns pointer to first adjacent face.
+*	@return Pointer to first adjacent face.
 */
 
 face* edge::get_f()
@@ -134,19 +136,27 @@ face* edge::get_f()
 	return(f);
 }
 
+/*!
+*	@return Constant pointer to first adjacent face
+*/
+
 const face* edge::get_f() const
 {
 	return(f);
 }
 
 /*!
-*	Returns pointer to second adjacent face.
+*	@return Pointer to second adjacent face
 */
 
 face* edge::get_g()
 {
 	return(g);
 }
+
+/*!
+*	@return Constant pointer to second adjacent face
+*/
 
 const face* edge::get_g() const
 {

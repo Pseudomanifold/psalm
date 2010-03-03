@@ -21,7 +21,8 @@ void face::add_edge(const directed_edge& result)
 }
 
 /*!
-*	Returns edge with a certain index.
+*	@param	i Index of edge
+*	@return Edge at specified index
 */
 
 directed_edge& face::get_edge(size_t i)
@@ -47,7 +48,8 @@ void face::add_vertex(vertex* v)
 }
 
 /*!
-*	Returns vertex with a certain index.
+*	@param i Index of vertex
+*	@return Vertex at specified index or NULL if the index is out of range.
 */
 
 const vertex* face::get_vertex(size_t i) const
@@ -59,7 +61,7 @@ const vertex* face::get_vertex(size_t i) const
 }
 
 /*!
-*	Returns number of vertices for face, i.e., whether the face is a
+*	@return Number of vertices for face, i.e., whether the face is a
 *	triangle, a quadrangle, ...
 */
 
@@ -69,7 +71,7 @@ size_t face::num_vertices() const
 }
 
 /*!
-*	Returns number of edges for face.
+*	@return Number of edges for face
 */
 
 size_t face::num_edges() const
@@ -92,7 +94,9 @@ void face::add_face_vertex(vertex* v)
 }
 
 /*!
-*	Returns a face vertex that corresponds to a vertex in the mesh.
+*	@param i Index of face vertex.
+*	@return Face vertex that corresponds to a vertex in the mesh or NULL if
+*	the index is out of range.
 */
 
 vertex* face::get_face_vertex(size_t i)
@@ -101,22 +105,4 @@ vertex* face::get_face_vertex(size_t i)
 		return(NULL);
 	else
 		return(V_F[i]);
-}
-
-/*!
-*	Sets ID of the face.
-*/
-
-void face::set_id(size_t id)
-{
-	this->id = id;
-}
-
-/*!
-*	Returns face ID.
-*/
-
-size_t face::get_id() const
-{
-	return(id);
 }

@@ -26,7 +26,16 @@ class vertex
 		void set(double x, double y, double z, size_t id);
 		const v3ctor& get_position() const;
 
-		vertex* vertex_point; // FIXME: Make this private?
+		/*!
+		*	@brief Pointer to vertex point.
+		*
+		*	Pointer to vertex point that corresponds to the current
+		*	edge. This pointer is only set and read during
+		*	subdivision algorithms and must \e not be relied on
+		*	within other functions.
+		*/
+
+		vertex* vertex_point;
 
 		void add_edge(edge* e);
 		edge* get_edge(size_t i);

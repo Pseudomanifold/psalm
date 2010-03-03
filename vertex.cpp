@@ -45,7 +45,7 @@ void vertex::set(double x, double y, double z, size_t id)
 }
 
 /*!
-*	Returns const reference to vertex position.
+*	@return Const reference to vertex position.
 */
 
 const v3ctor& vertex::get_position() const
@@ -54,7 +54,7 @@ const v3ctor& vertex::get_position() const
 }
 
 /*!
-*	Returns vertex ID.
+*	@return ID of the vertex
 */
 
 size_t vertex::get_id() const
@@ -74,8 +74,9 @@ void vertex::add_edge(edge* e)
 	E.push_back(e);
 }
 
-/*
-*	Returns a pointer to incident edge.
+/*!
+*	@param i Edge index
+*	@return Pointer to incident edge or NULL if the index is out of bounds.
 */
 
 edge* vertex::get_edge(size_t i)
@@ -87,7 +88,7 @@ edge* vertex::get_edge(size_t i)
 }
 
 /*!
-*	Returns the valency of the vertex, i.e., the number of incident edges.
+*	@return Valency of the vertex, i.e., the number of incident edges.
 */
 
 size_t vertex::valency() const
@@ -108,7 +109,10 @@ void vertex::add_face(const face* f)
 }
 
 /*!
-*	Returns a pointer to an adjacent face of the vertex.
+*	@param i Index of adjacent face
+*
+*	@return Pointer to an adjacent face of the vertex or NULL if the index
+*	is out of bounds.
 */
 
 const face* vertex::get_face(size_t i) const
@@ -120,7 +124,7 @@ const face* vertex::get_face(size_t i) const
 }
 
 /*!
-*	Returns the number of adjacent faces for the current vertex.
+*	@return Number of adjacent faces for the current vertex.
 */
 
 size_t vertex::num_adjacent_faces() const
