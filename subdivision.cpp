@@ -41,6 +41,8 @@ int main(int argc, char* argv[])
 	};
 
 	short type	= mesh::TYPE_EXT;
+	short algorithm	= mesh::ALG_CATMULL_CLARK; // FIXME: Needs to be chosen.
+
 	size_t steps	= 1;
 
 	int option = 0;
@@ -122,10 +124,7 @@ int main(int argc, char* argv[])
 	for(vector<string>::iterator it = files.begin(); it != files.end(); it++)
 	{
 		scene_mesh.load(*it, type);
-
-		// FIXME: Let algorithm be chosen
-		for(size_t i = 0; i < steps; i++)
-			scene_mesh.subdivide_catmull_clark();
+		scene_mesh.subdivide(algorithm, steps);
 
 		// If an output file has been set (even if it is empty), it
 		// will be used.
@@ -241,15 +240,15 @@ void keyboard_callback(unsigned char key, int x, int y)
 			break;
 
 		case 'c':
-			scene_mesh.subdivide_catmull_clark();
+			scene_mesh.subdivide(mesh::ALG_CATMULL_CLARK);
 			break;
 
 		case 'l':
-			scene_mesh.subdivide_loop();
+			scene_mesh.subdivide(mesh::ALG_LOOP);
 			break;
 
 		case 'd':
-			scene_mesh.subdivide_doo_sabin();
+			scene_mesh.subdivide(mesh::ALG_DOO_SABIN);
 			break;
 
 		case 'r':

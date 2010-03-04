@@ -31,6 +31,10 @@ const short mesh::STATUS_OK		= 0;
 const short mesh::STATUS_ERROR		= 1;
 const short mesh::STATUS_UNDEFINED	= 2;
 
+const short mesh::ALG_CATMULL_CLARK	= 0;
+const short mesh::ALG_DOO_SABIN		= 1;
+const short mesh::ALG_LOOP		= 2;
+
 /*!
 *	Default constructor.
 */
@@ -1158,6 +1162,40 @@ vertex* mesh::add_vertex(double x, double y, double z)
 vertex* mesh::add_vertex(const v3ctor& pos)
 {
 	return(add_vertex(pos[0], pos[1], pos[2]));
+}
+
+/*!
+*	Applies a subdivision algorithm to the current mesh.
+*
+*	@param algorithm	Defines which algorithm to use (Catmull-Clark
+*				if the user did not specify otherwise).
+*	@param steps		Number of subdivision steps (1 if the user did
+*				not specify otherwise).
+*/
+
+void mesh::subdivide(const short algorithm, const size_t steps)
+{
+	// Choose algorithm (if this is _not_ done via pointers, the for-loop
+	// would have to be duplicated or the algorithm check would have to be
+	// made for each iteration.
+	void (mesh::*subdivision_algorithm)(void) = NULL;
+	switch(algorithm)
+	{
+		case ALG_CATMULL_CLARK:
+			subdivision_algorithm = &mesh::subdivide_catmull_clark;
+			break;
+		case ALG_DOO_SABIN:
+			subdivision_algorithm = &mesh::subdivide_doo_sabin;
+			break;
+		case ALG_LOOP:
+			subdivision_algorithm = &mesh::subdivide_loop;
+			break;
+		default:
+			break;
+	};
+
+	for(size_t i = 0; i < steps; i++)
+		(this->*subdivision_algorithm)();
 }
 
 /*!

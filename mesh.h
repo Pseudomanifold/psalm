@@ -30,20 +30,21 @@ class mesh
 		bool load(const std::string& filename, const short type = TYPE_EXT);
 		bool save(const std::string& filename, const short type = TYPE_EXT);
 
-		void subdivide_loop();
-		void subdivide_doo_sabin();
-		void subdivide_catmull_clark();
-
+		void subdivide(const short algorithm = mesh::ALG_CATMULL_CLARK, const size_t steps = 1);
 		void draw();
 		void destroy();
 
 		mesh& operator=(const mesh& M);
 		void replace_with(mesh& M);
 
-		static const short TYPE_PLY;		//< Constant for reading/writing PLY files
-		static const short TYPE_OBJ;		//< Constant for reading/writing OBJ files
-		static const short TYPE_OFF;		//< Constant for reading/writing OFF files
-		static const short TYPE_EXT;		//< Constant for reading/writing files by their extension
+		static const short TYPE_PLY;		///< Constant for reading/writing PLY files
+		static const short TYPE_OBJ;		///< Constant for reading/writing OBJ files
+		static const short TYPE_OFF;		///< Constant for reading/writing OFF files
+		static const short TYPE_EXT;		///< Constant for reading/writing files by their extension
+
+		static const short ALG_CATMULL_CLARK;	///< Represents Catmull-Clark algorithm in subdivision method
+		static const short ALG_DOO_SABIN;	///< Represents Doo-Sabin algorithm in subdivision method
+		static const short ALG_LOOP;		///< Represents Loop algorithm in subdivision method
 
 	private:
 		std::vector<vertex*>	V;
@@ -69,6 +70,10 @@ class mesh
 		vertex* find_face_vertex(face* f, const vertex* v);
 
 		std::vector<face*> sort_faces(vertex* v);
+
+		void subdivide_loop();
+		void subdivide_doo_sabin();
+		void subdivide_catmull_clark();
 
 		bool load_ply(std::istream& in);
 		bool load_obj(std::istream& in);
