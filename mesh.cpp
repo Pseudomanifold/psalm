@@ -1073,10 +1073,14 @@ directed_edge mesh::add_edge(const vertex* u, const vertex* v)
 		k2 = u->get_id();
 	}
 
-	size_t k = static_cast<size_t>(0.5*(k1+k2)*(k1+k2+1)+k2);
+	//size_t k = static_cast<size_t>(0.5*(k1+k2)*(k1+k2+1)+k2);
+
+	ostringstream converter;
+	converter << k1 << "-" << k2;
+	string k = converter.str();
 
 	// Check whether edge exists
-	std::tr1::unordered_map<size_t, edge*>::iterator it;
+	std::tr1::unordered_map<std::string, edge*>::iterator it;
 	if((it = E_M.find(k)) == E_M.end())
 	{
 		// Edge not found, create an edge from the _original_ edge and
@@ -1195,7 +1199,11 @@ void mesh::subdivide(const short algorithm, const size_t steps)
 	};
 
 	for(size_t i = 0; i < steps; i++)
+	{
+		cout << "BEFORE: " << V.size() << "\n";
 		(this->*subdivision_algorithm)();
+		cout << "AFTER: " << V.size() << "\n";
+	}
 }
 
 /*!

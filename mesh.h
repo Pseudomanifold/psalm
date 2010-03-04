@@ -51,7 +51,7 @@ class mesh
 		std::vector<edge*>	E;
 		std::vector<face*>	F;
 
-		std::tr1::unordered_map<size_t, edge*> E_M;
+		std::tr1::unordered_map<std::string, edge*> E_M;
 
 		vertex* get_vertex(size_t id);
 
