@@ -76,24 +76,8 @@ const vertex* edge::get_v() const
 
 void edge::set_f(face* f)
 {
-	// FIXME
-//	std::cout << "set_f(" << u->get_id() << "," << v->get_id() << ")\n";
-//	assert(g == NULL && this->f == NULL);
-//	this->f = f;
-	if(this->f == NULL)
-		this->f = f;
-	else if(this->g == NULL)
-	{
-		std::cerr	<< "["	<< u->get_id() << ","
-					<< v->get_id() << "].set_f: Face f already set, setting face g.\n";
-
-		this->g = f;
-	}
-	else
-	{
-		std::cerr	<< "["	<< u->get_id() << ","
-					<< v->get_id() << "].set_f: Both faces already set. Don't know what to do.\n";
-	}
+	assert(g == NULL && this->f == NULL);
+	this->f = f;
 }
 
 /*!
@@ -107,24 +91,8 @@ void edge::set_f(face* f)
 
 void edge::set_g(face* g)
 {
-	// FIXME
-//	std::cout << "set_g(" << u->get_id() << "," << v->get_id() << ")\n";
-//	assert(f != NULL && this->g == NULL);
-//	this->g = g;
-	if(this->g == NULL)
-		this->g = g;
-	else if(this->f == NULL)
-	{
-		std::cerr	<< "["	<< u->get_id() << ","
-					<< v->get_id() << "].set_g: Face g already set, setting face f.\n";
-
-		this->f = g;
-	}
-	else
-	{
-		std::cerr	<< "["	<< u->get_id() << ","
-					<< v->get_id() << "].set_g: Both faces already set. Don't know what to do.\n";
-	}
+	assert(f != NULL && this->g == NULL);
+	this->g = g;
 }
 
 /*!

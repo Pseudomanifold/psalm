@@ -1055,10 +1055,13 @@ directed_edge mesh::add_edge(const vertex* u, const vertex* v)
 	directed_edge result;
 
 	/*
-		Calculate ID of edge by using the Cantor pairing function. If
-		necessary, the IDs of the edge's vertices are swapped so that
-		k1 will always be the less or equal to k2. This is done in
-		order to provide a natural sorting order for the edges.
+		The edge is assigned an ID string of the form "k1-k2", where k1
+		is the lower of the two indices.
+
+		Previously, the Cantor pairing function had been used, but this
+		yielded integer overflows with normal 32bit integers. Hence,
+		the std::string attempt is better suited to this task, although
+		it requires a conversion step.
 	*/
 
 	size_t k1, k2;
@@ -1072,8 +1075,6 @@ directed_edge mesh::add_edge(const vertex* u, const vertex* v)
 		k1 = v->get_id();
 		k2 = u->get_id();
 	}
-
-	//size_t k = static_cast<size_t>(0.5*(k1+k2)*(k1+k2+1)+k2);
 
 	ostringstream converter;
 	converter << k1 << "-" << k2;
@@ -1199,11 +1200,7 @@ void mesh::subdivide(const short algorithm, const size_t steps)
 	};
 
 	for(size_t i = 0; i < steps; i++)
-	{
-		cout << "BEFORE: " << V.size() << "\n";
 		(this->*subdivision_algorithm)();
-		cout << "AFTER: " << V.size() << "\n";
-	}
 }
 
 /*!
