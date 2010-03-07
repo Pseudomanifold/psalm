@@ -1810,24 +1810,19 @@ vector<face*> mesh::sort_faces(vertex* v)
 			faces.push_back(edges[i]->get_f());
 	}
 
-
 	// Check whether orientation is CW or CCW by enumerating all relevant
 	// configurations.
 
 	bool revert = false;
 	if(edges[0]->get_u() == v)
 	{
-		if(faces[0] == edges[0]->get_f() && faces[1] == edges[0]->get_g())
-				revert = true;
-		else if(faces[1] != edges[0]->get_f())
-				revert = true;
+		if(faces[1] == edges[0]->get_g())
+			revert = true;
 	}
 	else
 	{
-		if(faces[0] == edges[0]->get_g() && faces[1] == edges[0]->get_f())
-				revert = true;
-		else if(faces[1] != edges[0]->get_g())
-				revert = true;
+		if(faces[1] != edges[0]->get_g())
+			revert = true;
 	}
 
 	if(revert)
