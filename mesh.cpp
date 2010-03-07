@@ -1672,8 +1672,8 @@ void mesh::subdivide_catmull_clark()
 
 			if(	(e1->get_u()->get_id() == V[i]->get_id() && e1->get_g() == f) ||
 				(e1->get_v()->get_id() == V[i]->get_id() && e1->get_f() == f) ||
-				(e2->get_u()->get_id() == V[i]->get_id() && e2->get_g() == f) ||
-				(e2->get_u()->get_id() == V[i]->get_id() && e2->get_g() == f))
+				(e2->get_u()->get_id() == V[i]->get_id() && e2->get_f() == f) ||
+				(e2->get_v()->get_id() == V[i]->get_id() && e2->get_g() == f))
 				swap(e1, e2);
 
 			M.add_face(	V[i]->vertex_point,
