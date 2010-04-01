@@ -1285,69 +1285,6 @@ void mesh::subdivide_loop()
 			directed_edge d_e1; // first adjacent edge (for vertex & face)
 			directed_edge d_e2; // second adjacent edge (for vertex & face)
 
-	//		// ...find an edge that contains the current vertex
-	//		for(size_t k = 0; k < n; k++)
-	//		{
-	//			const edge& e = edge_table.get(F[i].E[k].e);
-	//
-	//			// Vertex is start vertex of edge
-	//			if(e.u == F[i].V[j])
-	//			{
-	//				/*
-	//					If our vertex is the start
-	//					vertex of the edge, and the
-	//					edge has been inverted, we need
-	//					to consider the next edge.
-	//					Situation: v--u--u--w.
-
-	//					If the edge has not been
-	//					inverted, we need to consider
-	//					the previous edge. Situation:
-	//					w--u--u--v
-
-	//					Just the other way round if the
-	//					vertex is the end vertex.
-	//				*/
-
-	//				//e1 = F[i].E[k].e;
-	//				e1 = k;
-	//				if(F[i].E[k].inverted)
-	//				{
-	//					//e2 = F[i].E[(k+1)%n].e;
-	//					e2 = (k+1)%n;
-	//				}
-	//				else
-	//				{
-	//					//e2 = F[i].E[(k-1)%n].e;
-	//					e2 = (k-1)%n;
-	//				}
-
-	//				break;
-	//			}
-	//			// Vertex is end vertex of edge
-	//			else if(e.v == F[i].V[j])
-	//			{
-	//				//e1 = F[i].E[k].e;
-	//				e1 = k;
-	//				if(F[i].E[k].inverted)
-	//				{
-	//					//e2 = F[i].E[(k-1)%n].e;
-	//					e2 = (k-1)%n;
-	//				}
-	//				else
-	//				{
-	//					//e2 = F[i].E[(k+1)%n].e;
-	//					e2 = (k+1)%n;
-	//				}
-
-	//				break;
-	//			}
-	//		}
-
-	//		if(	(edge_table.get(e1).u != F[i].V[j] && edge_table.get(e1).v != F[i].V[j]) ||
-	//			(edge_table.get(e2).u != F[i].V[j] && edge_table.get(e2).v != F[i].V[j]))
-	//			cout << "Error in mesh.\n";
-
 			// brute-force search for the two edges
 			//
 			// TODO: Optimize!
