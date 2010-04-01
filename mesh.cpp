@@ -1519,10 +1519,23 @@ void mesh::subdivide_catmull_clark()
 	for(vector<edge*>::iterator it = E.begin(); it != E.end(); it++)
 	{
 		edge* e = *it;
-		v3ctor edge_point = (	e->get_u()->get_position()+
+		v3ctor edge_point;
+
+		// Border/crease edge: Use midpoint of edge for the edge point
+		if(e->get_g() == NULL)
+		{
+			edge_point = (	e->get_u()->get_position()+
+					e->get_v()->get_position())*0.5;
+		}
+
+		// Normal edge
+		else
+		{
+			edge_point = (	e->get_u()->get_position()+
 					e->get_v()->get_position()+
 					e->get_f()->face_point->get_position()+
 					e->get_g()->face_point->get_position())*0.25;
+		}
 
 		e->edge_point = M.add_vertex(edge_point);
 	}
