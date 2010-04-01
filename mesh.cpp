@@ -1479,9 +1479,6 @@ void mesh::subdivide_doo_sabin()
 	// adjacent to a fixed vertex.
 	for(size_t i = 0; i < V.size(); i++)
 	{
-		// FIXME: Can this be handled better?
-		assert(V[i]->num_adjacent_faces() > 0);
-
 		// The faces need to be sorted in counterclockwise order around
 		// the vertex.
 		vector<face*> faces = sort_faces(V[i]);
