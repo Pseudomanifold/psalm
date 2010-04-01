@@ -1444,6 +1444,10 @@ void mesh::subdivide_doo_sabin()
 	{
 		edge* e = *it;
 
+		// Skip border edges--we cannot create any new faces here
+		if(e->get_g() == NULL)
+			continue;
+
 		/*
 			The situation is as follows:
 
@@ -1462,9 +1466,6 @@ void mesh::subdivide_doo_sabin()
 			u_F -- u_G -- v_G -- v_F -- u_F
 
 		*/
-
-		// FIXME: Check when/why this can be violated
-		assert(e->get_f() != NULL && e->get_g() != NULL);
 
 		vertex* v1 = find_face_vertex(e->get_f(), e->get_u());
 		vertex* v2 = find_face_vertex(e->get_g(), e->get_u());
@@ -1755,7 +1756,11 @@ vector<face*> mesh::sort_faces(vertex* v)
 	{
 		if(	edges[i]->get_f() == edges[i-1]->get_f() ||
 			edges[i]->get_f() == edges[i-1]->get_g())
-			faces.push_back(edges[i]->get_g());
+		{
+			// Border edges are simply ignored
+			if(edges[i]->get_g() != NULL)
+				faces.push_back(edges[i]->get_g());
+		}
 		else
 			faces.push_back(edges[i]->get_f());
 	}
