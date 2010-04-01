@@ -9,6 +9,7 @@
 #include <GL/glut.h>
 #include <unistd.h>
 #include <getopt.h>
+#include <libgen.h>
 
 #include "subdivision.h"
 #include "mesh.h"
@@ -20,12 +21,38 @@ mesh scene_mesh;
 string input;
 string output;
 
-bool draw_lines = true;
-
 void display_scene();
 void init_scene();
 void reshape_scene(int, int);
 void keyboard_callback(unsigned char, int, int);
+
+/*!
+*	Shows usage information for the program.
+*/
+
+void show_usage()
+{
+	cout	<< "psalm\n\n"
+		<< "Usage: psalm [arguments] [file...]\n\n"
+		<< "Arguments:\n\n"
+		<< "--algorithm <algorithm>\tSelect subdivision algorithm (default: Catmull-Clark)\n"
+		<< "-a\n"
+		<< "--type <type>\tSelect type of input data\n"
+		<< "-t\n"
+		<< "--output <file>\tSet output file\n"
+		<< "-o\n"
+		<< "--steps <n>\tSet nunmber of subdivision steps to perform (default: 0)\n"
+		<< "-n\n"
+		<< "--help\tShow this screen\n"
+		<< "-h\n\n";
+}
+
+/*!
+*	Handles user interaction.
+*
+*	@param argc Number of command-line arguments
+*	@param argv Vector of command-line arguments
+*/
 
 int main(int argc, char* argv[])
 {
@@ -34,6 +61,7 @@ int main(int argc, char* argv[])
 		{"output",	required_argument,	NULL,	'o'},
 		{"steps",	required_argument,	NULL,	'n'},
 		{"type",	required_argument,	NULL,	't'},
+		{"algorithm",	required_argument,	NULL,	'a'},
 
 		{"help",	no_argument,		NULL,	'h'},
 
@@ -41,12 +69,12 @@ int main(int argc, char* argv[])
 	};
 
 	short type	= mesh::TYPE_EXT;
-	short algorithm	= mesh::ALG_CATMULL_CLARK; // FIXME: Needs to be chosen.
+	short algorithm	= mesh::ALG_CATMULL_CLARK;
 
-	size_t steps	= 1;
+	size_t steps	= 0;
 
 	int option = 0;
-	while((option = getopt_long(argc, argv, "o:n:t:h", cmd_line_opts, NULL)) != -1)
+	while((option = getopt_long(argc, argv, "o:n:t:a:h", cmd_line_opts, NULL)) != -1)
 	{
 		switch(option)
 		{
@@ -66,7 +94,39 @@ int main(int argc, char* argv[])
 				else if(type_str == "off")
 					type = mesh::TYPE_OFF;
 				else
-					cerr << "WTF? UNKNOWN TYPE.\n"; // FIXME
+				{
+					cerr << "Error: \"" << type_str << "\" is an unknown mesh data type.\n";
+					show_usage();
+					return(-1);
+				}
+
+				break;
+			}
+
+			case 'a':
+			{
+				string algorithm_str = optarg;
+				transform(algorithm_str.begin(), algorithm_str.end(), algorithm_str.begin(), (int(*)(int)) tolower);
+
+				if(	algorithm_str == "catmull-clark"	||
+					algorithm_str == "catmull"		||
+					algorithm_str == "clark"		||
+					algorithm_str == "cc")
+					algorithm = mesh::ALG_CATMULL_CLARK;
+				else if(algorithm_str == "doo-sabin"		||
+					algorithm_str == "doo"			||
+					algorithm_str == "sabin"		||
+					algorithm_str == "ds")
+					algorithm = mesh::ALG_DOO_SABIN;
+				else if(algorithm_str == "loop"	||
+					algorithm_str == "l")
+					algorithm = mesh::ALG_LOOP;
+				else
+				{
+					cerr << "Error: \"" << algorithm_str << "\" is an unknown algorithm.\n";
+					show_usage();
+					return(-1);
+				}
 
 				break;
 			}
@@ -77,16 +137,17 @@ int main(int argc, char* argv[])
 				converter >> steps;
 				if(converter.fail())
 				{
-					// FIXME
-					cerr << "CONVERTER ERROR\n";
+					cerr << "Error: Unable to  convert \"" << optarg << "\" to a number.\n";
+					show_usage();
+					return(-1);
 				}
 				break;
 			}
 
 			case 'h':
 			case '?':
-				// NYI
-				break;
+				show_usage();
+				return(0);
 		}
 	}
 
@@ -100,8 +161,8 @@ int main(int argc, char* argv[])
 		files.push_back(argv[optind++]);
 		if(output.length() != 0 && files.size() > 1)
 		{
-			cerr << "WTF?\n"; // FIXME
-			return(0);
+			cerr << "Error: Output file specified, but more than one input file present.\n";
+			return(-1);
 		}
 	}
 
@@ -119,6 +180,10 @@ int main(int argc, char* argv[])
 	if(output.length() == 1 && output[0] == '-')
 		output = "";
 
+	// Try to read from STDIN if no input files have been specified
+	if(files.size() == 0)
+		files.push_back("");
+
 	// Apply subdivision algorithm to all files
 
 	for(vector<string>::iterator it = files.begin(); it != files.end(); it++)
@@ -135,8 +200,12 @@ int main(int argc, char* argv[])
 		// not empty, the output will be written to a file.
 		else if(it->length() > 0)
 		{
-			// FIXME: File name can be determined automatically
-			scene_mesh.save(*it+".subdivided", type);
+			size_t ext_pos = (*it).find_last_of(".");
+			if(ext_pos == string::npos)
+				scene_mesh.save(*it+".subdivided", type);
+			else
+				scene_mesh.save( (*it).substr(0, ext_pos) + "_subdivided"
+						+(*it).substr(ext_pos));
 		}
 
 		// If no output file has been set and the input file name is
@@ -149,14 +218,14 @@ int main(int argc, char* argv[])
 	glutInitWindowPosition(WIN_X, WIN_Y);
 	glutInitWindowSize(WIN_WIDTH, WIN_HEIGHT);
 
-	glutInitDisplayMode(	GLUT_RGBA 	| 
-				GLUT_DOUBLE 	|
+	glutInitDisplayMode(	GLUT_RGBA	|
+				GLUT_DOUBLE	|
 				GLUT_DEPTH);
-	
+
 	glutCreateWindow(WIN_TITLE);
 
 	init_scene();
-	
+
 	glutDisplayFunc(display_scene);
 	glutReshapeFunc(reshape_scene);
 	glutKeyboardFunc(keyboard_callback);
@@ -182,10 +251,8 @@ void init_scene(void)
 
 	glPointSize(5.0);
 
-	scene_mesh.load(input.c_str());
-
 	gluLookAt(	0.0, 1.0, 2.0,
-		      	0.0, 0.0,-1.0,
+			0.0, 0.0,-1.0,
 			0.0, 1.0, 0.0);
 
 }
@@ -235,10 +302,6 @@ void keyboard_callback(unsigned char key, int x, int y)
 {
 	switch(tolower(key))
 	{
-		case 'e':
-			scene_mesh.save("subdivided_"+input);
-			break;
-
 		case 'c':
 			scene_mesh.subdivide(mesh::ALG_CATMULL_CLARK);
 			break;
@@ -249,14 +312,6 @@ void keyboard_callback(unsigned char key, int x, int y)
 
 		case 'd':
 			scene_mesh.subdivide(mesh::ALG_DOO_SABIN);
-			break;
-
-		case 'r':
-			scene_mesh.load(input.c_str());
-			break;
-
-		case '\t':
-			draw_lines = !draw_lines;
 			break;
 
 		case 'q':
