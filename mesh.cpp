@@ -15,6 +15,7 @@
 #include <ctime>
 #include <cmath>
 #include <cassert>
+#include <cerrno>
 
 #include "mesh.h"
 
@@ -93,10 +94,21 @@ bool mesh::load(const std::string& filename, const short type)
 	short result = STATUS_UNDEFINED;
 
 	ifstream in;
-	in.open(filename.c_str());
+	if(filename.length() > 0)
+	{
+		errno = 0;
+		in.open(filename.c_str());
+		if(errno)
+		{
+			string error = strerror(errno);
+			cerr	<< "psalm: Could not load input file \""
+				<< filename << "\": "
+				<< error << "\n";
 
-	// FIXME: Need to check whether the file does exist
-	// at all...
+			return(false);
+		}
+	}
+
 	this->destroy();
 
 	// Filename given, data type identification by extension
@@ -195,7 +207,20 @@ bool mesh::save(const std::string& filename, const short type)
 	short result = STATUS_UNDEFINED;
 
 	ofstream out;
-	out.open(filename.c_str());
+	if(filename.length() > 0)
+	{
+		errno = 0;
+		out.open(filename.c_str());
+		if(errno)
+		{
+			string error = strerror(errno);
+			cerr	<< "psalm: Could not save to file \""
+				<< filename << "\": "
+				<< error << "\n";
+
+			return(false);
+		}
+	}
 
 	// Filename given, data type identification by extension
 	if(filename.length() >= 4 && type == TYPE_EXT)
@@ -271,14 +296,14 @@ bool mesh::load_ply(istream& in)
 	getline(in, data);
 	if(data != "ply")
 	{
-		cerr << "Error: I am missing a \"ply\" header for the input data.\n";
+		cerr << "psalm: I am missing a \"ply\" header for the input data.\n";
 		return(false);
 	}
 
 	getline(in, data);
 	if(data.find("format ascii") == string::npos)
 	{
-		cerr << "Error: Expected \"format ascii\", got \"" << data << "\" instead.\n";
+		cerr << "psalm: Expected \"format ascii\", got \"" << data << "\" instead.\n";
 		return(false);
 	}
 
@@ -340,7 +365,7 @@ bool mesh::load_ply(istream& in)
 
 					if(num_faces == 0)
 					{
-						cerr	<< "Error: Can't parse number of faces from \""
+						cerr	<< "psalm: Can't parse number of faces from \""
 							<< data
 							<< "\".\n";
 						return(false);
@@ -350,7 +375,7 @@ bool mesh::load_ply(istream& in)
 				}
 				else
 				{
-					cerr << "Error: Expected \"property\", but got \"" << data << "\" instead.\n";
+					cerr << "psalm: Expected \"property\", but got \"" << data << "\" instead.\n";
 					return(false);
 				}
 
@@ -380,7 +405,7 @@ bool mesh::load_ply(istream& in)
 
 					if(num_vertices == 0)
 					{
-						cerr	<< "Error: Can't parse number of vertices from \""
+						cerr	<< "psalm: Can't parse number of vertices from \""
 							<< data
 							<< "\".\n";
 
@@ -391,7 +416,7 @@ bool mesh::load_ply(istream& in)
 				}
 				else
 				{
-					cerr	<< "Error: Got \""
+					cerr	<< "psalm: Got \""
 						<< data
 						<< "\", but expected \"element vertex\" "
 						<< "or \"element face\" instead. I cannot continue.\n";
@@ -527,7 +552,7 @@ bool mesh::load_obj(istream &in)
 
 			if(converter.fail())
 			{
-				cerr	<< "Error: I tried to parse vertex coordinates from line \""
+				cerr	<< "psalm: I tried to parse vertex coordinates from line \""
 					<< line
 					<<" \" and failed.\n";
 				return(false);
@@ -554,7 +579,7 @@ bool mesh::load_obj(istream &in)
 
 					if(index == 0)
 					{
-						cerr	<< "Error: I cannot parse face data from line \""
+						cerr	<< "psalm: I cannot parse face data from line \""
 							<< line
 							<< "\".\n";
 						return(false);
@@ -568,7 +593,7 @@ bool mesh::load_obj(istream &in)
 							vertices.push_back(get_vertex(V.size()+index));
 						else
 						{
-							cerr	<< "Error: Invalid backwards vertex reference "
+							cerr	<< "psalm: Invalid backwards vertex reference "
 								<< "in line \""
 								<< line
 								<< "\".\n";
@@ -654,7 +679,7 @@ bool mesh::load_off(istream& in)
 	getline(in, line);
 	if(line != "OFF")
 	{
-		cerr << "Error: I am missing a \"OFF\" header for the input data.\n";
+		cerr << "psalm: I am missing a \"OFF\" header for the input data.\n";
 		return(false);
 	}
 
@@ -667,7 +692,7 @@ bool mesh::load_off(istream& in)
 
 	if(converter.fail())
 	{
-		cerr << "Error: I cannot parse vertex, face, and edge numbers from \"" << line << "\"\n";
+		cerr << "psalm: I cannot parse vertex, face, and edge numbers from \"" << line << "\"\n";
 		return(false);
 	}
 
@@ -688,7 +713,7 @@ bool mesh::load_off(istream& in)
 
 			if(converter.fail())
 			{
-				cerr	<< "Error: I tried to parse vertex coordinates from line \""
+				cerr	<< "psalm: I tried to parse vertex coordinates from line \""
 					<< line
 					<<" \" and failed.\n";
 				return(false);
@@ -709,7 +734,7 @@ bool mesh::load_off(istream& in)
 				converter >> index;
 				if(converter.fail())
 				{
-					cerr	<< "Error: Tried to parse face data in line \""
+					cerr	<< "psalm: Tried to parse face data in line \""
 						<< line
 						<< "\", but failed.\n";
 					return(false);
@@ -717,7 +742,7 @@ bool mesh::load_off(istream& in)
 
 				if(index >= V.size())
 				{
-					cerr	<< "Error: Index " << index << "in line \""
+					cerr	<< "psalm: Index " << index << "in line \""
 						<< line
 						<< "\" is out of bounds.\n";
 					return(false);
@@ -730,7 +755,7 @@ bool mesh::load_off(istream& in)
 		}
 		else
 		{
-			cerr << "Error: Got an unexpected data line \"" << line << "\".\n";
+			cerr << "psalm: Got an unexpected data line \"" << line << "\".\n";
 			return(false);
 		}
 
