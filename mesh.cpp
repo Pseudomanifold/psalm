@@ -1282,12 +1282,19 @@ void mesh::subdivide_loop()
 		const vertex* v1 = find_remaining_vertex(e, e->get_f());
 		const vertex* v2 = find_remaining_vertex(e, e->get_g());
 
-		// TODO: Need special case when v2 is NULL (edge is on
-		// boundary).
-		assert(v1 != NULL && v2 != NULL);
+		// Boundary edge: Use midpoint subdivision
+		if(v1 == NULL || v2 == NULL)
+		{
+			edge_point = (	(e->get_u()->get_position()+
+					 e->get_v()->get_position())*0.5);
+		}
 
-		edge_point =	(e->get_u()->get_position()+e->get_v()->get_position())*0.375+
-				(v1->get_position()+v2->get_position())*0.125;
+		// Normal edge
+		else
+		{
+			edge_point =	(e->get_u()->get_position()+e->get_v()->get_position())*0.375+
+					(v1->get_position()+v2->get_position())*0.125;
+		}
 
 		e->edge_point = M.add_vertex(edge_point);
 	}
