@@ -3,7 +3,6 @@
 *	@brief	Functions and implementations for edge class
 */
 
-#include <iostream>
 #include <cassert>
 #include "edge.h"
 
