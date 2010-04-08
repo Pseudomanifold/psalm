@@ -3,7 +3,7 @@ CCFLAGS     = -g -Wall -c -pedantic
 LIBS        = -L /usr/X11/lib -L /usr/local/lib
 INCLUDES    = -I /usr/local/include
 LDFLAGS     = -lglut -lGL -lGLU 
-MYOBJECTS   = psalm.o v3ctor.o mesh.o face.o vertex.o edge.o zpr.o
+MYOBJECTS   = psalm.o v3ctor.o mesh.o face.o vertex.o edge.o
 BIN         = psalm
 
 # Path to "meshlabserver" binary, which is used for creating test data.
