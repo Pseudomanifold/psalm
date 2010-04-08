@@ -1382,7 +1382,11 @@ void mesh::subdivide_loop()
 		// face, the order in which the edge points are set will be
 		// correct.
 
-		assert(F[i]->num_edges() == 3); // TODO: Replace with something nicer.
+		if(F[i]->num_edges() != 3)
+		{
+			cerr << "psalm: Input mesh contains non-triangular face. Loop's subdivision scheme is not applicable.\n";
+			return;
+		}
 
 		M.add_face(	F[i]->get_edge(0).e->edge_point,
 				F[i]->get_edge(1).e->edge_point,
