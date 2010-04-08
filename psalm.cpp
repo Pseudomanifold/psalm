@@ -7,7 +7,7 @@
 
 #include <GL/glut.h>
 
-#include "subdivision.h"
+#include "psalm.h"
 #include "mesh.h"
 #include "zpr.h"
 
