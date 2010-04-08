@@ -1,0 +1,137 @@
+{
+   libstdc++_01
+   Memcheck:Leak
+   fun:malloc
+   fun:pthread_mutexattr_init
+   fun:pthread_mutexattr_init
+   obj:/usr/lib/libstdc++.so.6
+   fun:pthread_once
+   fun:pthread_once
+   obj:/usr/lib/libstdc++.so.6
+   fun:__cxa_guard_acquire
+   obj:/usr/lib/libstdc++.so.6
+   fun:_ZNSt6localeC1Ev
+   fun:_ZNSt8ios_base4InitC1Ev
+   fun:_Z41__static_initialization_and_destruction_0ii
+}
+
+{
+   libstdc++_02
+   Memcheck:Leak
+   fun:calloc
+   obj:/lib/libthr.so.3
+   obj:/lib/libthr.so.3
+   fun:pthread_mutex_lock
+   fun:pthread_mutex_lock
+   fun:__cxa_guard_acquire
+   obj:/usr/lib/libstdc++.so.6
+   fun:_ZNSt6localeC1Ev
+   fun:_ZNSt8ios_base4InitC1Ev
+   fun:_Z41__static_initialization_and_destruction_0ii
+   fun:_GLOBAL__I__ZN4mesh8TYPE_EXTE
+   obj:/usr/home/bastian/Projekte/Subdivision Surfaces/psalm
+}
+
+{
+   libstdc++_03
+   Memcheck:Leak
+   fun:calloc
+   obj:/lib/libthr.so.3
+   obj:/lib/libthr.so.3
+   fun:pthread_mutex_lock
+   fun:pthread_mutex_lock
+   fun:_ZNSt6localeC1Ev
+   fun:_ZNSt8ios_base4InitC1Ev
+   fun:_Z41__static_initialization_and_destruction_0ii
+   fun:_GLOBAL__I__ZN4mesh8TYPE_EXTE
+   obj:/usr/home/bastian/Projekte/Subdivision Surfaces/psalm
+   obj:/usr/home/bastian/Projekte/Subdivision Surfaces/psalm
+   obj:*
+}
+
+{
+   libstdc++_04
+   Memcheck:Leak
+   fun:calloc
+   obj:/lib/libthr.so.3
+   obj:/lib/libthr.so.3
+   fun:pthread_mutex_lock
+   fun:pthread_mutex_lock
+   fun:_ZNSt8ios_base4InitC1Ev
+   fun:_Z41__static_initialization_and_destruction_0ii
+   fun:_GLOBAL__I__ZN4mesh8TYPE_EXTE
+   obj:/usr/home/bastian/Projekte/Subdivision Surfaces/psalm
+   obj:/usr/home/bastian/Projekte/Subdivision Surfaces/psalm
+   obj:*
+}
+
+{
+   libstdc++_05
+   Memcheck:Leak
+   fun:calloc
+   obj:/lib/libthr.so.3
+   obj:/lib/libthr.so.3
+   fun:pthread_mutex_lock
+   fun:pthread_mutex_lock
+   obj:/usr/lib/libstdc++.so.6
+   fun:_ZNSt6localeC1Ev
+   fun:_ZNSt8ios_base4InitC1Ev
+   fun:_Z41__static_initialization_and_destruction_0ii
+   fun:_GLOBAL__I__ZN4mesh8TYPE_EXTE
+   obj:/usr/home/bastian/Projekte/Subdivision Surfaces/psalm
+   obj:/usr/home/bastian/Projekte/Subdivision Surfaces/psalm
+}
+
+{
+   libthr_01
+   Memcheck:Leak
+   fun:calloc
+   obj:/lib/libthr.so.3
+   obj:/lib/libthr.so.3
+   fun:pthread_mutex_lock
+   fun:pthread_mutex_lock
+   fun:_ZNKSt7num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE6do_getES3_S3_RSt8ios_baseRSt12_Ios_IostateRd
+   fun:_ZNSi10_M_extractIdEERSiRT_
+   fun:_ZNSirsERd
+   fun:_ZN4mesh8load_plyERSi
+   fun:_ZN4mesh4loadERKSss
+   fun:main
+}
+
+{
+   libthr_02
+   Memcheck:Leak
+   fun:calloc
+   obj:/lib/libthr.so.3
+   obj:/lib/libthr.so.3
+   fun:pthread_mutex_lock
+   fun:pthread_mutex_lock
+   fun:_ZNSsD1Ev
+   fun:main
+}
+
+{
+   libthr_03
+   Memcheck:Leak
+   fun:calloc
+   obj:/lib/libthr.so.3
+   obj:/lib/libthr.so.3
+   fun:pthread_mutex_lock
+   fun:pthread_mutex_lock
+   fun:_ZNSt15basic_stringbufIcSt11char_traitsIcESaIcEED1Ev
+   fun:_ZNSt19basic_istringstreamIcSt11char_traitsIcESaIcEED1Ev
+   fun:main
+}
+
+{
+   libthr_04
+   Memcheck:Leak
+   fun:malloc
+   obj:/lib/libthr.so.3
+   obj:/lib/libthr.so.3
+   obj:/lib/libthr.so.3
+   obj:/lib/libthr.so.3
+   obj:/lib/libthr.so.3
+   obj:/libexec/ld-elf.so.1
+   obj:/libexec/ld-elf.so.1
+}
