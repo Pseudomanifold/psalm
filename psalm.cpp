@@ -1,8 +1,9 @@
 /*!
-	TODO: FIX DESCRIPTION
-
-*	@file	subdivision.cpp
-*	@brief	Main file for demo program for Subdivision Surfaces
+*	@file	psalm.cpp
+*	@brief	Main file for "psalm"
+*
+*	"psalm" (Pretty Subdivision ALgorithms on Meshes) is a CLI tool that
+*	implements the Doo-Sabin and Catmull-Clark subdivision schemes.
 */
 
 #include <iostream>
