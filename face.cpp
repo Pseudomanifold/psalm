@@ -3,33 +3,43 @@
 *	@brief	Functions for mesh faces
 */
 
+#include <stdexcept>
 #include "face.h"
 
 /*!
 *	Adds an edge to the face.
 *
 *	@param result Directed edge to add to face
+*
+*	@warning Edge is not checked for consistency, i.e., you can add edges
+*	that are not part of the face.
 */
 
 void face::add_edge(const directed_edge& result)
 {
-	// TODO: Check whether indices are valid
 	E.push_back(result);
 }
 
 /*!
-*	Returns edge with a certain index.
+*	@param	i Index of edge
+*	@return Edge at specified index
 */
 
 directed_edge& face::get_edge(size_t i)
 {
-	// TODO:
-	// Check for invalid ranges
-	return(E[i]);
+	if(i >= E.size())
+		throw std::out_of_range("face::get_edge(): Invalid edge index");
+	else
+		return(E[i]);
 }
 
 /*!
 *	Adds vertex to the face.
+*
+*	@param v Pointer to new vertex.
+*	@warning The vertex is not checked for consistency, i.e., you can add
+*	any vertex to the face (even vertices that are not part of the face at
+*	all).
 */
 
 void face::add_vertex(vertex* v)
@@ -38,42 +48,20 @@ void face::add_vertex(vertex* v)
 }
 
 /*!
-*	Returns vertex with a certain index.
+*	@param i Index of vertex
+*	@return Vertex at specified index or NULL if the index is out of range.
 */
 
 const vertex* face::get_vertex(size_t i) const
 {
-	// TODO:
-	// Check for invalid ranges
-	return(V[i]);
-}
-
-
-/*!
-*	Finds specified edge and returns edge_query structure (so that the
-*	orientation is known).
-*/
-
-directed_edge* face::find_edge(const size_t& e, size_t& pos)
-{
-	/*
-	for(size_t i = 0; i < E.size(); i++)
-	{
-		if(E[i].e == e)
-		{
-			pos = i;
-			return(E[i]);
-		}
-	}
-
-	return(E[0]);
-	*/
-
-	return(NULL);
+	if(i >= V.size())
+		return(NULL);
+	else
+		return(V[i]);
 }
 
 /*!
-*	Returns number of vertices for face, i.e., whether the face is a
+*	@return Number of vertices for face, i.e., whether the face is a
 *	triangle, a quadrangle, ...
 */
 
@@ -83,7 +71,7 @@ size_t face::num_vertices() const
 }
 
 /*!
-*	Returns number of edges for face.
+*	@return Number of edges for face
 */
 
 size_t face::num_edges() const
@@ -93,6 +81,11 @@ size_t face::num_edges() const
 
 /*!
 *	Stores a new face vertex that corresponds to a vertex in the mesh.
+*
+*	@param v Pointer to new vertex.
+*	@warning The new vertex cannot be checked for consistency, i.e., there
+*	is no way of finding out whether the new vertex corresponds to a vertex
+*	of the face.
 */
 
 void face::add_face_vertex(vertex* v)
@@ -101,29 +94,15 @@ void face::add_face_vertex(vertex* v)
 }
 
 /*!
-*	Returns a face vertex that corresponds to a vertex in the mesh.
+*	@param i Index of face vertex.
+*	@return Face vertex that corresponds to a vertex in the mesh or NULL if
+*	the index is out of range.
 */
 
-const vertex* face::get_face_vertex(size_t i) const
+vertex* face::get_face_vertex(size_t i)
 {
-	// FIXME: Check range? Check ID?
-	return(V_F[i]);
-}
-
-/*!
-*	Sets ID of the face.
-*/
-
-void face::set_id(size_t id)
-{
-	this->id = id;
-}
-
-/*!
-*	Returns face ID.
-*/
-
-size_t face::get_id() const
-{
-	return(id);
+	if(i >= V_F.size())
+		return(NULL);
+	else
+		return(V_F[i]);
 }

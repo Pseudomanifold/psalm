@@ -29,8 +29,8 @@
 *	OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <cfloat>
 #include <cmath>
+#include <stdexcept>
 
 #include "v3ctor.h"
 
@@ -187,7 +187,9 @@ v3ctor v3ctor::operator|(const v3ctor& b) const
 }
 
 /*!
-*	Allows element-wise access to vector.
+*	@param i Index of element to access.
+*	@return Reference to element i of the vector. If the index is out of
+*	bounds, an exception is thrown.
 */
 
 double& v3ctor::operator[](short i)
@@ -201,9 +203,15 @@ double& v3ctor::operator[](short i)
 		case 2:
 			return(z);
 		default:
-			throw "Invalid access.";
+			throw std::out_of_range("v3ctor::operator[](): Invalid element index");
 	}
 }
+
+/*!
+*	@param i Index of element to access.
+*	@return Const reference to element i of the vector. If the index is out
+*	of bounds, an exception is thrown.
+*/
 
 const double& v3ctor::operator[](short i) const
 {
@@ -216,7 +224,7 @@ const double& v3ctor::operator[](short i) const
 		case 2:
 			return(z);
 		default:
-			throw "Invalid access.";
+			throw std::out_of_range("v3ctor::operator[](): Invalid element index");
 	}
 }
 

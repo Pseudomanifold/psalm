@@ -21,21 +21,23 @@ class face
 		void add_vertex(vertex* v);
 		void add_face_vertex(vertex* v);
 
-		directed_edge* find_edge(const size_t& e, size_t& pos);
-
 		size_t num_edges() const;
 		size_t num_vertices() const;
 
-		void set_id(size_t id);
-		size_t get_id() const;
-
 		const vertex* get_vertex(size_t i) const;
-		const vertex* get_face_vertex(size_t i) const;
-		directed_edge& get_edge(size_t i); // FIXME: Need to check whether this can be made constant
+		vertex* get_face_vertex(size_t i);
+		directed_edge& get_edge(size_t i);
 
-		vertex* face_point; // FIXME: Make this private?
+		/*!
+		*	@brief Pointer to face point.
+		*
+		*	Pointer to face point that corresponds to the current
+		*	face. This pointer is only set and read during
+		*	subdivision algorithms and must \e not be relied on
+		*	within other functions.
+		*/
 
-		size_t type; // FIXME: Remove once debugging is done!
+		vertex* face_point;
 
 	private:
 		std::vector<directed_edge> E;

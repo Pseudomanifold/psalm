@@ -6,8 +6,6 @@
 #ifndef __EDGE_H__
 #define __EDGE_H__
 
-#include <iostream>
-
 #include "vertex.h"
 #include "face.h"
 
@@ -23,24 +21,35 @@ class edge
 		edge(const vertex* u, const vertex* v);
 
 		void set(const vertex* u, const vertex* v);
-		void set_f(const face* f);
-		void set_g(const face* g);
 
 		const vertex* get_u() const;
 		const vertex* get_v() const;
 
-		const face* get_f() const;
-		const face* get_g() const;
+		void set_f(face* f);
+		void set_g(face* g);
 
-		vertex* edge_point; // FIXME: Make this private?
+		face*		get_f();
+		const face*	get_f() const;
+		face*		get_g();
+		const face*	get_g() const;
 
-		bool operator<(const edge& b) const;
+		/*!
+		*	@brief Pointer to edge point.
+		*
+		*	Pointer to edge point that corresponds to the current
+		*	edge.  This pointer is only set and read during
+		*	subdivision algorithms and must \e not be relied on
+		*	within other functions.
+		*/
+
+		vertex* edge_point;
 
 	private:
 		const vertex* u;	///< Pointer to start vertex
 		const vertex* v;	///< Pointer to end vertex
-		const face* f;		///< Pointer to first adjacent face
-		const face* g;		///< Pointer to second adjacent face
+
+		face* f;		///< Pointer to first adjacent face
+		face* g;		///< Pointer to second adjacent face
 };
 
 #endif
