@@ -11,7 +11,6 @@ MLS 	    = /home/bastian/tmp/meshlab-snapshot-svn3524/meshlab/src/meshlabserver/
 
 $(BIN): $(MYOBJECTS) Makefile
 	$(CC) $(MYOBJECTS) $(LIBS) $(LDFLAGS) -o $(BIN)
-	./$(BIN)
 
 .cpp.o:
 	$(CC) $(INCLUDES) $(CCFLAGS) $<
@@ -25,13 +24,13 @@ clean:
 # Create subdivided test data using "meshlab"
 test: $(BIN)
 	echo "Catmull-Clark Subdivision..."
-	./$(BIN) -a cc -n 1 -o Meshes/ICO_CC_01.ply Meshes/Icosahedron_Inverted.ply
-	./$(BIN) -a cc -n 2 -o Meshes/ICO_CC_02.ply Meshes/Icosahedron_Inverted.ply
-	./$(BIN) -a cc -n 3 -o Meshes/ICO_CC_03.ply Meshes/Icosahedron_Inverted.ply
+	./$(BIN) -a cc -n 1 -o Meshes/ICO_CC_01.ply Meshes/Icosahedron.ply
+	./$(BIN) -a cc -n 2 -o Meshes/ICO_CC_02.ply Meshes/Icosahedron.ply
+	./$(BIN) -a cc -n 3 -o Meshes/ICO_CC_03.ply Meshes/Icosahedron.ply
 	echo "Doo-Sabin Subdivision..."
-	./$(BIN) -a ds -n 1 -o Meshes/ICO_DS_01.ply Meshes/Icosahedron_Inverted.ply
-	./$(BIN) -a ds -n 2 -o Meshes/ICO_DS_02.ply Meshes/Icosahedron_Inverted.ply
-	./$(BIN) -a ds -n 3 -o Meshes/ICO_DS_03.ply Meshes/Icosahedron_Inverted.ply
+	./$(BIN) -a ds -n 1 -o Meshes/ICO_DS_01.ply Meshes/Icosahedron.ply
+	./$(BIN) -a ds -n 2 -o Meshes/ICO_DS_02.ply Meshes/Icosahedron.ply
+	./$(BIN) -a ds -n 3 -o Meshes/ICO_DS_03.ply Meshes/Icosahedron.ply
 	echo "Converting..."
 	$(MLS) -i Meshes/ICO_CC_01.ply -o Meshes/ICO_CC_01.stl
 	$(MLS) -i Meshes/ICO_CC_02.ply -o Meshes/ICO_CC_02.stl
