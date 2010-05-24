@@ -3,8 +3,6 @@
 *	@brief	Functions for representing a mesh
 */
 
-#include <GL/glut.h>
-
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -808,48 +806,6 @@ bool mesh::save_off(ostream& out)
 	}
 
 	return(true);
-}
-
-/*!
-* Draws the mesh using standard OpenGL drawing routines.
-*/
-
-void mesh::draw()
-{
-	glBegin(GL_POINTS);
-	for(size_t i = 0; i < V.size(); i++)
-	{
-		const v3ctor& p = V[i]->get_position();
-
-		glColor3f(1.0, 0.0, 0.0);
-		glVertex3f(p[0], p[1], p[2]);
-	}
-	glEnd();
-
-	glColor3f(0.0, 1.0, 0.0);
-	glBegin(GL_LINES);
-	for(vector<edge*>::iterator e = E.begin(); e != E.end(); e++)
-	{
-		glVertex3f(	(*e)->get_u()->get_position()[0],
-				(*e)->get_u()->get_position()[1],
-				(*e)->get_u()->get_position()[2]);
-		glVertex3f(	(*e)->get_v()->get_position()[0],
-				(*e)->get_v()->get_position()[1],
-				(*e)->get_v()->get_position()[2]);
-	}
-	glEnd();
-
-	glColor3f(1.0, 1.0, 1.0);
-	for(size_t i = 0; i < F.size(); i++)
-	{
-		glBegin(GL_POLYGON);
-		for(size_t j = 0; j < F[i]->num_vertices(); j++)
-		{
-			const v3ctor& p = F[i]->get_vertex(j)->get_position();
-			glVertex3f(p[0], p[1], p[2]);
-		}
-		glEnd();
-	}
 }
 
 /*!

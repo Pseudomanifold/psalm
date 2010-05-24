@@ -2,7 +2,7 @@ CC          = g++
 CCFLAGS     = -g -Wall -c -pedantic
 LIBS        = -L /usr/X11/lib -L /usr/local/lib
 INCLUDES    = -I /usr/local/include
-LDFLAGS     = -lglut -lGL -lGLU 
+LDFLAGS     =
 MYOBJECTS   = psalm.o v3ctor.o mesh.o face.o vertex.o edge.o
 BIN         = psalm
 

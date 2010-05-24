@@ -31,7 +31,6 @@ class mesh
 		bool save(const std::string& filename, const short type = TYPE_EXT);
 
 		void subdivide(const short algorithm = mesh::ALG_CATMULL_CLARK, const size_t steps = 1);
-		void draw();
 		void destroy();
 
 		mesh& operator=(const mesh& M);
