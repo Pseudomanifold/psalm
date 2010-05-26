@@ -14,6 +14,7 @@
 #include <cmath>
 #include <cassert>
 #include <cerrno>
+#include <cstring>
 
 #include "mesh.h"
 
