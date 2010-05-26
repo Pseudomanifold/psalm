@@ -30,16 +30,23 @@ void show_usage()
 	cout	<< "psalm\n\n"
 		<< "Usage: psalm [arguments] [file...]\n\n"
 		<< "Arguments:\n\n"
-		<< "--algorithm <algorithm>\tSelect subdivision algorithm (default: Catmull-Clark)\n"
-		<< "-a\n"
-		<< "--type <type>\tSelect type of input data\n"
-		<< "-t\n"
-		<< "--output <file>\tSet output file\n"
-		<< "-o\n"
-		<< "--steps <n>\tSet nunmber of subdivision steps to perform (default: 0)\n"
-		<< "-n\n"
-		<< "--help\tShow this screen\n"
-		<< "-h\n\n";
+		<< "-a, --algorithm <algorithm>\tSelect subdivision algorithm to use on the\n"
+		<< "\t\t\t\tinput mesh. Valid values for <algorithm> are:\n\n"
+		<< "\t\t\t\t\t* catmull-clark, catmull, clark, cc\n"
+		<< "\t\t\t\t\t* doo-sabin, doo, sabin, ds\n"
+		<< "\t\t\t\t\t* loop, l\n\n"
+		<< "\t\t\t\tDefault algorithm: Catmull-Clark\n\n"
+		<< "-t, --type <type>\t\tSelect type of input data. Valid values for\n"
+		<< "\t\t\t\tthe <type> parameter are:\n\n"
+		<< "\t\t\t\t\t* ply (Standford PLY files)\n"
+		<< "\t\t\t\t\t* obj (Wavefront OBJ files)\n"
+		<< "\t\t\t\t\t* off (Geomview object files)\n\n"
+		<< "-o, --output <file>\t\tSet output file\n\n"
+		<< "-n, --steps <n>\t\t\tSet number of subdivision steps to perform on\n"
+		<< "\t\t\t\tthe input mesh.\n\n"
+		<< "\t\t\t\tDefault value: 0\n\n"
+		<< "-h, --help\t\t\tShow this screen\n"
+		<< "\n";
 }
 
 /*!
