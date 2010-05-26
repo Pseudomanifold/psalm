@@ -1396,7 +1396,8 @@ void mesh::subdivide_doo_sabin()
 				}
 			}
 
-			assert(e1 != NULL && e2 != NULL);
+			assert(e1 != NULL);
+			assert(e2 != NULL);
 
 			// Calculate midpoints of the edges and the position of
 			// face vertex
@@ -1480,7 +1481,10 @@ void mesh::subdivide_doo_sabin()
 		for(size_t j = 0; j < V[i]->num_adjacent_faces(); j++)
 			vertices.push_back(find_face_vertex(faces[j], V[i]));
 
-		M.add_face(vertices);
+		// This is a quick fix required for processing some meshes that
+		// are degenerate
+		if(vertices.size() >= 3)
+			M.add_face(vertices);
 	}
 
 	this->replace_with(M);
@@ -1542,7 +1546,8 @@ void mesh::subdivide_catmull_clark()
 		v3ctor S;
 
 		size_t n = V[i]->valency();
-		assert(n >= 3);
+		if(n < 3)
+			continue; // ignore degenerate vertices
 
 		// Q is the average of the new face points of all faces
 		// adjacent to the old vertex point
@@ -1578,6 +1583,9 @@ void mesh::subdivide_catmull_clark()
 
 	for(size_t i = 0; i < V.size(); i++)
 	{
+		if(V[i]->vertex_point == NULL)
+			continue; // ignore degenerate vertices
+
 		for(size_t j = 0; j < V[i]->num_adjacent_faces(); j++)
 		{
 			const face* f = V[i]->get_face(j);
