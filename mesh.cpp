@@ -1495,6 +1495,11 @@ void mesh::subdivide_doo_sabin()
 	// adjacent to a fixed vertex.
 	for(size_t i = 0; i < V.size(); i++)
 	{
+		// This is a quick fix required for processing some meshes that
+		// are degenerate
+		if(V[i]->num_adjacent_faces() < 3)
+			continue;
+
 		// The faces need to be sorted in counterclockwise order around
 		// the vertex.
 		std::vector<face*> faces = sort_faces(V[i]);
@@ -1503,10 +1508,7 @@ void mesh::subdivide_doo_sabin()
 		for(size_t j = 0; j < V[i]->num_adjacent_faces(); j++)
 			vertices.push_back(find_face_vertex(faces[j], V[i]));
 
-		// This is a quick fix required for processing some meshes that
-		// are degenerate
-		if(vertices.size() >= 3)
-			M.add_face(vertices);
+		M.add_face(vertices);
 	}
 
 	this->replace_with(M);
