@@ -105,8 +105,7 @@ int main(int argc, char* argv[])
 					type = mesh::TYPE_OFF;
 				else
 				{
-					cerr << "Error: \"" << type_str << "\" is an unknown mesh data type.\n";
-					show_usage();
+					cerr << "psalm: \"" << type_str << "\" is an unknown mesh data type.\n";
 					return(-1);
 				}
 
@@ -133,8 +132,7 @@ int main(int argc, char* argv[])
 					algorithm = mesh::ALG_LOOP;
 				else
 				{
-					cerr << "Error: \"" << algorithm_str << "\" is an unknown algorithm.\n";
-					show_usage();
+					cerr << "psalm: \"" << algorithm_str << "\" is an unknown algorithm.\n";
 					return(-1);
 				}
 
@@ -155,7 +153,6 @@ int main(int argc, char* argv[])
 					converter >> value;
 					if(converter.fail())
 					{
-						show_usage();
 						cerr << "psalm: Unable to convert \"" << val_str << "\" to a number.\n";
 						return(-1);
 					}
@@ -172,8 +169,7 @@ int main(int argc, char* argv[])
 				converter >> steps;
 				if(converter.fail())
 				{
-					cerr << "Error: Unable to  convert \"" << optarg << "\" to a number.\n";
-					show_usage();
+					cerr << "psalm: Unable to  convert \"" << optarg << "\" to a number.\n";
 					return(-1);
 				}
 				break;
@@ -196,7 +192,7 @@ int main(int argc, char* argv[])
 		files.push_back(argv[optind++]);
 		if(output.length() != 0 && files.size() > 1)
 		{
-			cerr << "Error: Output file specified, but more than one input file present.\n";
+			cerr << "psalm: Output file specified, but more than one input file present.\n";
 			return(-1);
 		}
 	}
