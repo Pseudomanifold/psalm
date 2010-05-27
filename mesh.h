@@ -27,10 +27,10 @@ class mesh
 		mesh();
 		~mesh();
 
-		bool load(const std::string& filename, const short type = TYPE_EXT);
-		bool save(const std::string& filename, const short type = TYPE_EXT);
+		bool load(const std::string& filename, short type = TYPE_EXT);
+		bool save(const std::string& filename, short type = TYPE_EXT);
 
-		void subdivide(const short algorithm = mesh::ALG_CATMULL_CLARK, const size_t steps = 1);
+		void subdivide(short algorithm = mesh::ALG_CATMULL_CLARK, size_t steps = 1);
 		void destroy();
 
 		mesh& operator=(const mesh& M);

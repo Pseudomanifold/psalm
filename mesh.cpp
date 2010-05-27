@@ -88,7 +88,7 @@ mesh::~mesh()
 *	@return	true if the mesh could be loaded, else false
 */
 
-bool mesh::load(const std::string& filename, const short type)
+bool mesh::load(const std::string& filename, short type)
 {
 	short result = STATUS_UNDEFINED;
 
@@ -201,7 +201,7 @@ bool mesh::load(const std::string& filename, const short type)
 *	@return	true if the mesh could be stored, else false.
 */
 
-bool mesh::save(const std::string& filename, const short type)
+bool mesh::save(const std::string& filename, short type)
 {
 	short result = STATUS_UNDEFINED;
 
@@ -1160,7 +1160,7 @@ vertex* mesh::add_vertex(const v3ctor& pos)
 *				not specify otherwise).
 */
 
-void mesh::subdivide(const short algorithm, const size_t steps)
+void mesh::subdivide(short algorithm, size_t steps)
 {
 	// Choose algorithm (if this is _not_ done via pointers, the for-loop
 	// would have to be duplicated or the algorithm check would have to be
