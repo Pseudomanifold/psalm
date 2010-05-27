@@ -9,6 +9,9 @@
 #include <vector>
 #include "v3ctor.h"
 
+namespace psalm
+{
+
 class edge; // forward declaration to break up circular dependency
 class face; // forward declaration to break up circular dependency
 
@@ -54,5 +57,7 @@ class vertex
 		v3ctor p;
 		size_t id;
 };
+
+} // end of namespace "psalm"
 
 #endif

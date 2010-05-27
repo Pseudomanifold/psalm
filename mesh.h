@@ -17,6 +17,9 @@
 #include "edge.h"
 #include "face.h"
 
+namespace psalm
+{
+
 /*!
 *	@class mesh
 *	@brief Represents a mesh
@@ -88,5 +91,7 @@ class mesh
 		static const short STATUS_ERROR;	//< Status constant signalling an operation failed
 		static const short STATUS_UNDEFINED;	//< Status constant signalling no operation took place
 };
+
+} // end of namespace "psalm"
 
 #endif

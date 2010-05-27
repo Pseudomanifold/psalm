@@ -5,6 +5,9 @@
 
 #include "vertex.h"
 
+namespace psalm
+{
+
 /*!
 *	Default constructor for vertex.
 */
@@ -131,3 +134,5 @@ size_t vertex::num_adjacent_faces() const
 {
 	return(F.size());
 }
+
+} // end of namespace "psalm"

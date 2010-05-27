@@ -18,7 +18,8 @@
 
 #include "mesh.h"
 
-using namespace std;
+namespace psalm
+{
 
 // Initialization of some static member variables
 
@@ -1804,3 +1805,5 @@ std::vector<face*> mesh::sort_faces(vertex* v)
 
 	return(faces);
 }
+
+} // end of namespace "psalm"

@@ -9,6 +9,9 @@
 #include "vertex.h"
 #include "face.h"
 
+namespace psalm
+{
+
 /*!
 *	@class edge
 *	@brief Data for an oriented edge (u,v) of the mesh
@@ -51,5 +54,7 @@ class edge
 		face* f;		///< Pointer to first adjacent face
 		face* g;		///< Pointer to second adjacent face
 };
+
+} // end of namespace "psalm"
 
 #endif

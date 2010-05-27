@@ -6,6 +6,9 @@
 #include <cassert>
 #include "edge.h"
 
+namespace psalm
+{
+
 /*!
 *	Default constructor that creates and invalid edge.
 */
@@ -129,3 +132,5 @@ const face* edge::get_g() const
 {
 	return(g);
 }
+
+} // end of namespace "psalm"

@@ -9,6 +9,9 @@
 #include "vertex.h"
 #include "directed_edge.h"
 
+namespace psalm
+{
+
 /*!
 *	@class face
 *	@brief Data for a face of the mesh
@@ -47,5 +50,7 @@ class face
 
 		size_t id;
 };
+
+} // end of namespace "psalm"
 
 #endif

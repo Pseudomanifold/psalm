@@ -6,6 +6,9 @@
 #include <stdexcept>
 #include "face.h"
 
+namespace psalm
+{
+
 /*!
 *	Adds an edge to the face.
 *
@@ -106,3 +109,5 @@ vertex* face::get_face_vertex(size_t i)
 	else
 		return(V_F[i]);
 }
+
+} // end of namespace "psalm"

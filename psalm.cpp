@@ -17,7 +17,7 @@
 
 #include "mesh.h"
 
-mesh scene_mesh;
+psalm::mesh scene_mesh;
 std::string input;
 std::string output;
 
@@ -74,8 +74,8 @@ int main(int argc, char* argv[])
 		{NULL, 0, NULL, 0}
 	};
 
-	short type	= mesh::TYPE_EXT;
-	short algorithm	= mesh::ALG_CATMULL_CLARK;
+	short type	= psalm::mesh::TYPE_EXT;
+	short algorithm	= psalm::mesh::ALG_CATMULL_CLARK;
 
 	std::set<size_t> ignore_faces;
 
@@ -96,11 +96,11 @@ int main(int argc, char* argv[])
 				std::transform(type_str.begin(), type_str.end(), type_str.begin(), (int(*)(int)) tolower);
 
 				if(type_str == "ply")
-					type = mesh::TYPE_PLY;
+					type = psalm::mesh::TYPE_PLY;
 				else if(type_str == "obj")
-					type = mesh::TYPE_OBJ;
+					type = psalm::mesh::TYPE_OBJ;
 				else if(type_str == "off")
-					type = mesh::TYPE_OFF;
+					type = psalm::mesh::TYPE_OFF;
 				else
 				{
 					std::cerr << "psalm: \"" << type_str << "\" is an unknown mesh data type.\n";
@@ -119,15 +119,15 @@ int main(int argc, char* argv[])
 					algorithm_str == "catmull"		||
 					algorithm_str == "clark"		||
 					algorithm_str == "cc")
-					algorithm = mesh::ALG_CATMULL_CLARK;
+					algorithm = psalm::mesh::ALG_CATMULL_CLARK;
 				else if(algorithm_str == "doo-sabin"		||
 					algorithm_str == "doo"			||
 					algorithm_str == "sabin"		||
 					algorithm_str == "ds")
-					algorithm = mesh::ALG_DOO_SABIN;
+					algorithm = psalm::mesh::ALG_DOO_SABIN;
 				else if(algorithm_str == "loop"	||
 					algorithm_str == "l")
-					algorithm = mesh::ALG_LOOP;
+					algorithm = psalm::mesh::ALG_LOOP;
 				else
 				{
 					std::cerr << "psalm: \"" << algorithm_str << "\" is an unknown algorithm.\n";

@@ -6,6 +6,9 @@
 #ifndef __DIRECTED_EDGE_H__
 #define __DIRECTED_EDGE_H__
 
+namespace psalm
+{
+
 class edge; // forward declaration to break up circular dependency with face class
 
 /*!
@@ -36,5 +39,7 @@ class directed_edge
 
 		bool new_edge;
 };
+
+} // end of namespace "psalm"
 
 #endif
