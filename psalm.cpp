@@ -17,11 +17,9 @@
 
 #include "mesh.h"
 
-using namespace std;
-
 mesh scene_mesh;
-string input;
-string output;
+std::string input;
+std::string output;
 
 /*!
 *	Shows usage information for the program.
@@ -29,29 +27,29 @@ string output;
 
 void show_usage()
 {
-	cout	<< "psalm\n\n"
-		<< "Usage: psalm [arguments] [file...]\n\n"
-		<< "Arguments:\n\n"
-		<< "-a, --algorithm <algorithm>\tSelect subdivision algorithm to use on the\n"
-		<< "\t\t\t\tinput mesh. Valid values for <algorithm> are:\n\n"
-		<< "\t\t\t\t\t* catmull-clark, catmull, clark, cc\n"
-		<< "\t\t\t\t\t* doo-sabin, doo, sabin, ds\n"
-		<< "\t\t\t\t\t* loop, l\n\n"
-		<< "\t\t\t\tDefault algorithm: Catmull-Clark\n\n"
-		<< "-t, --type <type>\t\tSelect type of input data. Valid values for\n"
-		<< "\t\t\t\tthe <type> parameter are:\n\n"
-		<< "\t\t\t\t\t* ply (Standford PLY files)\n"
-		<< "\t\t\t\t\t* obj (Wavefront OBJ files)\n"
-		<< "\t\t\t\t\t* off (Geomview object files)\n\n"
-		<< "-i, --ignore <list of numbers>\tIgnore any face whose number of sides matches\n"
-		<< "\t\t\t\tone of the numbers in the list. Use commas to\n"
-		<< "\t\t\t\tseparate list values.\n\n"
-		<< "-o, --output <file>\t\tSet output file\n\n"
-		<< "-n, --steps <n>\t\t\tSet number of subdivision steps to perform on\n"
-		<< "\t\t\t\tthe input mesh.\n\n"
-		<< "\t\t\t\tDefault value: 0\n\n"
-		<< "-h, --help\t\t\tShow this screen\n"
-		<< "\n";
+	std::cout	<< "psalm\n\n"
+			<< "Usage: psalm [arguments] [file...]\n\n"
+			<< "Arguments:\n\n"
+			<< "-a, --algorithm <algorithm>\tSelect subdivision algorithm to use on the\n"
+			<< "\t\t\t\tinput mesh. Valid values for <algorithm> are:\n\n"
+			<< "\t\t\t\t\t* catmull-clark, catmull, clark, cc\n"
+			<< "\t\t\t\t\t* doo-sabin, doo, sabin, ds\n"
+			<< "\t\t\t\t\t* loop, l\n\n"
+			<< "\t\t\t\tDefault algorithm: Catmull-Clark\n\n"
+			<< "-t, --type <type>\t\tSelect type of input data. Valid values for\n"
+			<< "\t\t\t\tthe <type> parameter are:\n\n"
+			<< "\t\t\t\t\t* ply (Standford PLY files)\n"
+			<< "\t\t\t\t\t* obj (Wavefront OBJ files)\n"
+			<< "\t\t\t\t\t* off (Geomview object files)\n\n"
+			<< "-i, --ignore <list of numbers>\tIgnore any face whose number of sides matches\n"
+			<< "\t\t\t\tone of the numbers in the list. Use commas to\n"
+			<< "\t\t\t\tseparate list values.\n\n"
+			<< "-o, --output <file>\t\tSet output file\n\n"
+			<< "-n, --steps <n>\t\t\tSet number of subdivision steps to perform on\n"
+			<< "\t\t\t\tthe input mesh.\n\n"
+			<< "\t\t\t\tDefault value: 0\n\n"
+			<< "-h, --help\t\t\tShow this screen\n"
+			<< "\n";
 }
 
 /*!
@@ -94,8 +92,8 @@ int main(int argc, char* argv[])
 
 			case 't':
 			{
-				string type_str = optarg;
-				transform(type_str.begin(), type_str.end(), type_str.begin(), (int(*)(int)) tolower);
+				std::string type_str = optarg;
+				std::transform(type_str.begin(), type_str.end(), type_str.begin(), (int(*)(int)) tolower);
 
 				if(type_str == "ply")
 					type = mesh::TYPE_PLY;
@@ -105,7 +103,7 @@ int main(int argc, char* argv[])
 					type = mesh::TYPE_OFF;
 				else
 				{
-					cerr << "psalm: \"" << type_str << "\" is an unknown mesh data type.\n";
+					std::cerr << "psalm: \"" << type_str << "\" is an unknown mesh data type.\n";
 					return(-1);
 				}
 
@@ -114,8 +112,8 @@ int main(int argc, char* argv[])
 
 			case 'a':
 			{
-				string algorithm_str = optarg;
-				transform(algorithm_str.begin(), algorithm_str.end(), algorithm_str.begin(), (int(*)(int)) tolower);
+				std::string algorithm_str = optarg;
+				std::transform(algorithm_str.begin(), algorithm_str.end(), algorithm_str.begin(), (int(*)(int)) tolower);
 
 				if(	algorithm_str == "catmull-clark"	||
 					algorithm_str == "catmull"		||
@@ -132,7 +130,7 @@ int main(int argc, char* argv[])
 					algorithm = mesh::ALG_LOOP;
 				else
 				{
-					cerr << "psalm: \"" << algorithm_str << "\" is an unknown algorithm.\n";
+					std::cerr << "psalm: \"" << algorithm_str << "\" is an unknown algorithm.\n";
 					return(-1);
 				}
 
@@ -153,7 +151,7 @@ int main(int argc, char* argv[])
 					converter >> value;
 					if(converter.fail())
 					{
-						cerr << "psalm: Unable to convert \"" << val_str << "\" to a number.\n";
+						std::cerr << "psalm: Unable to convert \"" << val_str << "\" to a number.\n";
 						return(-1);
 					}
 
@@ -165,11 +163,11 @@ int main(int argc, char* argv[])
 
 			case 'n':
 			{
-				istringstream converter(optarg);
+				std::istringstream converter(optarg);
 				converter >> steps;
 				if(converter.fail())
 				{
-					cerr << "psalm: Unable to  convert \"" << optarg << "\" to a number.\n";
+					std::cerr << "psalm: Unable to  convert \"" << optarg << "\" to a number.\n";
 					return(-1);
 				}
 				break;
@@ -186,13 +184,13 @@ int main(int argc, char* argv[])
 	// input files. If the user already specified an output file, only one
 	// input file will be accepted.
 
-	vector<string> files;
+	std::vector<std::string> files;
 	while(optind < argc)
 	{
 		files.push_back(argv[optind++]);
 		if(output.length() != 0 && files.size() > 1)
 		{
-			cerr << "psalm: Output file specified, but more than one input file present.\n";
+			std::cerr << "psalm: Output file specified, but more than one input file present.\n";
 			return(-1);
 		}
 	}
@@ -201,7 +199,7 @@ int main(int argc, char* argv[])
 	// that standard input and standard output are to be used as file
 	// streams.
 
-	for(vector<string>::iterator it = files.begin(); it != files.end(); it++)
+	for(std::vector<std::string>::iterator it = files.begin(); it != files.end(); it++)
 	{
 		if(it->length() == 1 && (*it)[0] == '-')
 			*it = "";
@@ -217,7 +215,7 @@ int main(int argc, char* argv[])
 
 	// Apply subdivision algorithm to all files
 
-	for(vector<string>::iterator it = files.begin(); it != files.end(); it++)
+	for(std::vector<std::string>::iterator it = files.begin(); it != files.end(); it++)
 	{
 		scene_mesh.load(*it, type);
 		scene_mesh.subdivide(algorithm, steps);
@@ -233,7 +231,7 @@ int main(int argc, char* argv[])
 		else if(it->length() > 0)
 		{
 			size_t ext_pos = (*it).find_last_of(".");
-			if(ext_pos == string::npos)
+			if(ext_pos == std::string::npos)
 				scene_mesh.save(*it+".subdivided", type);
 			else
 				scene_mesh.save( (*it).substr(0, ext_pos) + "_subdivided"

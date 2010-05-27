@@ -92,17 +92,17 @@ bool mesh::load(const std::string& filename, short type)
 {
 	short result = STATUS_UNDEFINED;
 
-	ifstream in;
+	std::ifstream in;
 	if(filename.length() > 0)
 	{
 		errno = 0;
 		in.open(filename.c_str());
 		if(errno)
 		{
-			string error = strerror(errno);
-			cerr	<< "psalm: Could not load input file \""
-				<< filename << "\": "
-				<< error << "\n";
+			std::string error = strerror(errno);
+			std::cerr	<< "psalm: Could not load input file \""
+					<< filename << "\": "
+					<< error << "\n";
 
 			return(false);
 		}
@@ -113,8 +113,8 @@ bool mesh::load(const std::string& filename, short type)
 	// Filename given, data type identification by extension
 	if(filename.length() >= 4 && type == TYPE_EXT)
 	{
-		string extension = filename.substr(filename.length()-4);
-		transform(extension.begin(), extension.end(), extension.begin(), (int(*)(int)) tolower);
+		std::string extension = filename.substr(filename.length()-4);
+		std::transform(extension.begin(), extension.end(), extension.begin(), (int(*)(int)) tolower);
 
 		if(extension == ".ply")
 			result = (load_ply(in) ? STATUS_OK : STATUS_ERROR);
@@ -132,7 +132,7 @@ bool mesh::load(const std::string& filename, short type)
 		// Check whether file name has been specified. If no file name
 		// has been specified, use standard input to read data.
 
-		istream& input_stream = ((filename.length() > 0) ? in : cin);
+		std::istream& input_stream = ((filename.length() > 0) ? in : std::cin);
 		switch(type)
 		{
 			case TYPE_PLY:
@@ -156,7 +156,7 @@ bool mesh::load(const std::string& filename, short type)
 		if(filename.length() > 0)
 			result = (load_ply(in) ? STATUS_OK : STATUS_ERROR);
 		else
-			result = (load_ply(cin) ? STATUS_OK : STATUS_ERROR);
+			result = (load_ply(std::cin) ? STATUS_OK : STATUS_ERROR);
 	}
 
 	in.close();
@@ -205,17 +205,17 @@ bool mesh::save(const std::string& filename, short type)
 {
 	short result = STATUS_UNDEFINED;
 
-	ofstream out;
+	std::ofstream out;
 	if(filename.length() > 0)
 	{
 		errno = 0;
 		out.open(filename.c_str());
 		if(errno)
 		{
-			string error = strerror(errno);
-			cerr	<< "psalm: Could not save to file \""
-				<< filename << "\": "
-				<< error << "\n";
+			std::string error = strerror(errno);
+			std::cerr	<< "psalm: Could not save to file \""
+					<< filename << "\": "
+					<< error << "\n";
 
 			return(false);
 		}
@@ -224,8 +224,8 @@ bool mesh::save(const std::string& filename, short type)
 	// Filename given, data type identification by extension
 	if(filename.length() >= 4 && type == TYPE_EXT)
 	{
-		string extension = filename.substr(filename.length()-4);
-		transform(extension.begin(), extension.end(), extension.begin(), (int(*)(int)) tolower);
+		std::string extension = filename.substr(filename.length()-4);
+		std::transform(extension.begin(), extension.end(), extension.begin(), (int(*)(int)) tolower);
 
 		if(extension == ".ply")
 			result = (save_ply(out) ? STATUS_OK : STATUS_ERROR);
@@ -243,7 +243,7 @@ bool mesh::save(const std::string& filename, short type)
 		// Check whether file name has been specified. If no file name
 		// has been specified, use standard output to write data.
 
-		ostream& output_stream = ((filename.length() > 0) ? out : cout);
+		std::ostream& output_stream = ((filename.length() > 0) ? out : std::cout);
 
 		switch(type)
 		{
@@ -268,7 +268,7 @@ bool mesh::save(const std::string& filename, short type)
 		if(filename.length() > 0)
 			result = (save_ply(out) ? STATUS_OK : STATUS_ERROR);
 		else
-			result = (save_ply(cout) ? STATUS_OK : STATUS_ERROR);
+			result = (save_ply(std::cout) ? STATUS_OK : STATUS_ERROR);
 	}
 
 	out.close();
@@ -282,27 +282,27 @@ bool mesh::save(const std::string& filename, short type)
 *	@return	true if the mesh could be loaded, else false
 */
 
-bool mesh::load_ply(istream& in)
+bool mesh::load_ply(std::istream& in)
 {
 	if(!in.good())
 		return(false);
 
-	string data;
+	std::string data;
 
 	// Read the headers: Only ASCII format is accepted, but the version is
 	// ignored
 
-	getline(in, data);
+	std::getline(in, data);
 	if(data != "ply")
 	{
-		cerr << "psalm: I am missing a \"ply\" header for the input data.\n";
+		std::cerr << "psalm: I am missing a \"ply\" header for the input data.\n";
 		return(false);
 	}
 
-	getline(in, data);
-	if(data.find("format ascii") == string::npos)
+	std::getline(in, data);
+	if(data.find("format ascii") == std::string::npos)
 	{
-		cerr << "psalm: Expected \"format ascii\", got \"" << data << "\" instead.\n";
+		std::cerr << "psalm: Expected \"format ascii\", got \"" << data << "\" instead.\n";
 		return(false);
 	}
 
@@ -334,17 +334,17 @@ bool mesh::load_ply(istream& in)
 			Lines contaning "comment" or "obj_info" are skipped.
 			Not sure whether obj_info is allowed to appear at all.
 		*/
-		if(	data.find("comment")  != string::npos ||
-			data.find("obj_info") != string::npos)
+		if(	data.find("comment")  != std::string::npos ||
+			data.find("obj_info") != std::string::npos)
 			continue;
-		else if(data.find("end_header") != string::npos)
+		else if(data.find("end_header") != std::string::npos)
 			break;
 
 		switch(mode)
 		{
 			case MODE_PARSE_VERTEX_PROPERTIES:
 
-				if(data.find("property") != string::npos)
+				if(data.find("property") != std::string::npos)
 				{
 					/*
 						Ignore. Some special handlings
@@ -354,19 +354,19 @@ bool mesh::load_ply(istream& in)
 
 					continue;
 				}
-				else if(data.find("element face") != string::npos)
+				else if(data.find("element face") != std::string::npos)
 				{
 					mode = MODE_PARSE_FACE_PROPERTIES;
 
-					string dummy; // not necessary, but more readable
-					istringstream converter(data);
+					std::string dummy; // not necessary, but more readable
+					std::istringstream converter(data);
 					converter >> dummy >> dummy >> num_faces;
 
 					if(num_faces == 0)
 					{
-						cerr	<< "psalm: Can't parse number of faces from \""
-							<< data
-							<< "\".\n";
+						std::cerr	<< "psalm: Can't parse number of faces from \""
+								<< data
+								<< "\".\n";
 						return(false);
 					}
 
@@ -374,7 +374,7 @@ bool mesh::load_ply(istream& in)
 				}
 				else
 				{
-					cerr << "psalm: Expected \"property\", but got \"" << data << "\" instead.\n";
+					std::cerr << "psalm: Expected \"property\", but got \"" << data << "\" instead.\n";
 					return(false);
 				}
 
@@ -382,9 +382,9 @@ bool mesh::load_ply(istream& in)
 
 			case MODE_PARSE_FACE_PROPERTIES:
 
-				if(data.find("property list") == string::npos)
+				if(data.find("property list") == std::string::npos)
 				{
-					cerr << "Warning: Got \"" << data << "\". "
+					std::cerr << "Warning: Got \"" << data << "\". "
 					<< "This property is unknown and might lead "
 					<< "to problems when parsing the file.\n";
 				}
@@ -394,19 +394,19 @@ bool mesh::load_ply(istream& in)
 			// Expect "element vertex" line
 			case MODE_PARSE_HEADER:
 
-				if(data.find("element vertex") != string::npos)
+				if(data.find("element vertex") != std::string::npos)
 				{
 					mode = MODE_PARSE_VERTEX_PROPERTIES;
 
-					string dummy; // not necessary, but more readable
-					istringstream converter(data);
+					std::string dummy; // not necessary, but more readable
+					std::istringstream converter(data);
 					converter >> dummy >> dummy >> num_vertices;
 
 					if(num_vertices == 0)
 					{
-						cerr	<< "psalm: Can't parse number of vertices from \""
-							<< data
-							<< "\".\n";
+						std::cerr	<< "psalm: Can't parse number of vertices from \""
+								<< data
+								<< "\".\n";
 
 						return(false);
 					}
@@ -415,10 +415,10 @@ bool mesh::load_ply(istream& in)
 				}
 				else
 				{
-					cerr	<< "psalm: Got \""
-						<< data
-						<< "\", but expected \"element vertex\" "
-						<< "or \"element face\" instead. I cannot continue.\n";
+					std::cerr	<< "psalm: Got \""
+							<< data
+							<< "\", but expected \"element vertex\" "
+							<< "or \"element face\" instead. I cannot continue.\n";
 					return(false);
 				}
 
@@ -450,7 +450,7 @@ bool mesh::load_ply(istream& in)
 			// Store vertices of face in proper order and add a new
 			// face.
 
-			vector<vertex*> vertices;
+			std::vector<vertex*> vertices;
 			size_t v = 0;
 			for(size_t i = 0; i < k; i++)
 			{
@@ -474,7 +474,7 @@ bool mesh::load_ply(istream& in)
 *	@return	true if the mesh could be stored, else false.
 */
 
-bool mesh::save_ply(ostream& out)
+bool mesh::save_ply(std::ostream& out)
 {
 	if(!out.good())
 		return(false);
@@ -493,7 +493,7 @@ bool mesh::save_ply(ostream& out)
 	// write vertex list (separated by spaces)
 	for(size_t i = 0; i < V.size(); i++)
 	{
-		out << fixed << setprecision(8) << V[i]->get_position()[0] << " "
+		out << std::fixed << std::setprecision(8) << V[i]->get_position()[0] << " "
 						<< V[i]->get_position()[1] << " "
 						<< V[i]->get_position()[2] << "\n";
 	}
@@ -524,22 +524,22 @@ bool mesh::save_ply(ostream& out)
 *	@return	true if the mesh could be loaded, else false
 */
 
-bool mesh::load_obj(istream &in)
+bool mesh::load_obj(std::istream &in)
 {
 	if(!in.good())
 		return(false);
 
-	string line;
-	string keyword;
-	istringstream converter;
+	std::string line;
+	std::string keyword;
+	std::istringstream converter;
 
 	// These are specify the only keywords of the .OBJ file that the parse
 	// is going to understand
 
-	const string OBJ_KEY_VERTEX	= "v";
-	const string OBJ_KEY_FACE	= "f";
+	const std::string OBJ_KEY_VERTEX	= "v";
+	const std::string OBJ_KEY_FACE		= "f";
 
-	while(!getline(in, line).eof())
+	while(!std::getline(in, line).eof())
 	{
 		converter.str(line);
 		converter >> keyword;
@@ -551,9 +551,9 @@ bool mesh::load_obj(istream &in)
 
 			if(converter.fail())
 			{
-				cerr	<< "psalm: I tried to parse vertex coordinates from line \""
-					<< line
-					<<" \" and failed.\n";
+				std::cerr	<< "psalm: I tried to parse vertex coordinates from line \""
+						<< line
+						<<" \" and failed.\n";
 				return(false);
 			}
 
@@ -562,13 +562,13 @@ bool mesh::load_obj(istream &in)
 		else if(keyword == OBJ_KEY_FACE)
 		{
 			// Check whether it is a triplet data string
-			if(line.find_first_of('/') != string::npos)
+			if(line.find_first_of('/') != std::string::npos)
 			{
 				// FIXME: NYI
 			}
 			else
 			{
-				vector<vertex*> vertices;
+				std::vector<vertex*> vertices;
 
 				long index = 0;
 				while(!converter.eof())
@@ -578,9 +578,9 @@ bool mesh::load_obj(istream &in)
 
 					if(index == 0)
 					{
-						cerr	<< "psalm: I cannot parse face data from line \""
-							<< line
-							<< "\".\n";
+						std::cerr	<< "psalm: I cannot parse face data from line \""
+								<< line
+								<< "\".\n";
 						return(false);
 					}
 
@@ -592,10 +592,10 @@ bool mesh::load_obj(istream &in)
 							vertices.push_back(get_vertex(V.size()+index));
 						else
 						{
-							cerr	<< "psalm: Invalid backwards vertex reference "
-								<< "in line \""
-								<< line
-								<< "\".\n";
+							std::cerr	<< "psalm: Invalid backwards vertex reference "
+									<< "in line \""
+									<< line
+									<< "\".\n";
 							return(false);
 						}
 					}
@@ -623,12 +623,12 @@ bool mesh::load_obj(istream &in)
 *	@return	true if the mesh could be stored, else false.
 */
 
-bool mesh::save_obj(ostream& out)
+bool mesh::save_obj(std::ostream& out)
 {
 	if(!out.good())
 		return(false);
 
-	for(vector<vertex*>::const_iterator it = V.begin(); it != V.end(); it++)
+	for(std::vector<vertex*>::const_iterator it = V.begin(); it != V.end(); it++)
 	{
 		v3ctor position = (*it)->get_position();
 		out << "v "	<< position[0] << " "
@@ -636,7 +636,7 @@ bool mesh::save_obj(ostream& out)
 				<< position[2] << "\n";
 	}
 
-	for(vector<face*>::const_iterator it = F.begin(); it != F.end(); it++)
+	for(std::vector<face*>::const_iterator it = F.begin(); it != F.end(); it++)
 	{
 		out << "f ";
 		for(size_t i = 0; i < (*it)->num_vertices(); i++)
@@ -658,13 +658,13 @@ bool mesh::save_obj(ostream& out)
 *	@return	true if the mesh could be loaded, else false
 */
 
-bool mesh::load_off(istream& in)
+bool mesh::load_off(std::istream& in)
 {
 	if(!in.good())
 		return(false);
 
-	string line;
-	istringstream converter;
+	std::string line;
+	std::istringstream converter;
 
 	/*
 		Read "header", i.e.,
@@ -675,23 +675,23 @@ bool mesh::load_off(istream& in)
 		where num_edges is ignored.
 	*/
 
-	getline(in, line);
+	std::getline(in, line);
 	if(line != "OFF")
 	{
-		cerr << "psalm: I am missing a \"OFF\" header for the input data.\n";
+		std::cerr << "psalm: I am missing a \"OFF\" header for the input data.\n";
 		return(false);
 	}
 
 	size_t num_vertices, num_faces, num_edges;
 	size_t cur_line_num = 0; // count line numbers (after header)
 
-	getline(in, line);
+	std::getline(in, line);
 	converter.str(line);
 	converter >> num_vertices >> num_faces >> num_edges;
 
 	if(converter.fail())
 	{
-		cerr << "psalm: I cannot parse vertex, face, and edge numbers from \"" << line << "\"\n";
+		std::cerr << "psalm: I cannot parse vertex, face, and edge numbers from \"" << line << "\"\n";
 		return(false);
 	}
 
@@ -701,7 +701,7 @@ bool mesh::load_off(istream& in)
 	// These are specify the only keywords of the .OBJ file that the parse
 	// is going to understand
 
-	while(!getline(in, line).eof())
+	while(!std::getline(in, line).eof())
 	{
 		converter.str(line);
 
@@ -712,9 +712,9 @@ bool mesh::load_off(istream& in)
 
 			if(converter.fail())
 			{
-				cerr	<< "psalm: I tried to parse vertex coordinates from line \""
-					<< line
-					<<" \" and failed.\n";
+				std::cerr	<< "psalm: I tried to parse vertex coordinates from line \""
+						<< line
+						<<" \" and failed.\n";
 				return(false);
 			}
 
@@ -727,22 +727,22 @@ bool mesh::load_off(istream& in)
 
 			converter >> k;
 
-			vector<vertex*> vertices;
+			std::vector<vertex*> vertices;
 			for(size_t i = 0; i < k; i++)
 			{
 				converter >> index;
 				if(converter.fail())
 				{
-					cerr	<< "psalm: Tried to parse face data in line \""
-						<< line
-						<< "\", but failed.\n";
+					std::cerr	<< "psalm: Tried to parse face data in line \""
+							<< line
+							<< "\", but failed.\n";
 					return(false);
 				}
 
 				if(index >= V.size())
 				{
-					cerr	<< "psalm: Index " << index << "in line \""
-						<< line
+					std::cerr	<< "psalm: Index " << index << "in line \""
+							<< line
 						<< "\" is out of bounds.\n";
 					return(false);
 				}
@@ -754,7 +754,7 @@ bool mesh::load_off(istream& in)
 		}
 		else
 		{
-			cerr << "psalm: Got an unexpected data line \"" << line << "\".\n";
+			std::cerr << "psalm: Got an unexpected data line \"" << line << "\".\n";
 			return(false);
 		}
 
@@ -775,7 +775,7 @@ bool mesh::load_off(istream& in)
 *	@return	true if the mesh could be stored, else false.
 */
 
-bool mesh::save_off(ostream& out)
+bool mesh::save_off(std::ostream& out)
 {
 	if(!out.good())
 		return(false);
@@ -784,7 +784,7 @@ bool mesh::save_off(ostream& out)
 		<< V.size() << " " << F.size() << " " << "0\n"; // For programs that actually interpret edge data,
 								// the last parameter should be changed
 
-	for(vector<vertex*>::const_iterator it = V.begin(); it != V.end(); it++)
+	for(std::vector<vertex*>::const_iterator it = V.begin(); it != V.end(); it++)
 	{
 		v3ctor position = (*it)->get_position();
 		out	<< position[0] << " "
@@ -792,7 +792,7 @@ bool mesh::save_off(ostream& out)
 			<< position[2] << "\n";
 	}
 
-	for(vector<face*>::const_iterator it = F.begin(); it != F.end(); it++)
+	for(std::vector<face*>::const_iterator it = F.begin(); it != F.end(); it++)
 	{
 		out	<< (*it)->num_vertices()
 			<< " ";
@@ -816,19 +816,19 @@ bool mesh::save_off(ostream& out)
 
 void mesh::destroy()
 {
-	for(vector<vertex*>::iterator it = V.begin(); it != V.end(); it++)
+	for(std::vector<vertex*>::iterator it = V.begin(); it != V.end(); it++)
 	{
 		if(*it != NULL)
 			delete(*it);
 	}
 
-	for(vector<edge*>::iterator it = E.begin(); it != E.end(); it++)
+	for(std::vector<edge*>::iterator it = E.begin(); it != E.end(); it++)
 	{
 		if(*it != NULL)
 			delete(*it);
 	}
 
-	for(vector<face*>::iterator it = F.begin(); it != F.end(); it++)
+	for(std::vector<face*>::iterator it = F.begin(); it != F.end(); it++)
 	{
 		if(*it != NULL)
 			delete(*it);
@@ -901,7 +901,7 @@ void mesh::add_face(std::vector<vertex*> vertices)
 
 	face* f = new face;
 
-	vector<vertex*>::iterator it = vertices.begin();
+	std::vector<vertex*>::iterator it = vertices.begin();
 	u = *it;
 
 	for(it = vertices.begin(); it != vertices.end(); it++)
@@ -982,7 +982,7 @@ void mesh::add_face(std::vector<vertex*> vertices)
 
 inline void mesh::add_face(vertex* v1, vertex* v2, vertex* v3)
 {
-	vector<vertex*> vertices;
+	std::vector<vertex*> vertices;
 
 	vertices.push_back(v1);
 	vertices.push_back(v2);
@@ -1007,7 +1007,7 @@ inline void mesh::add_face(vertex* v1, vertex* v2, vertex* v3)
 
 inline void mesh::add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4)
 {
-	vector<vertex*> vertices;
+	std::vector<vertex*> vertices;
 
 	vertices.push_back(v1);
 	vertices.push_back(v2);
@@ -1058,9 +1058,9 @@ directed_edge mesh::add_edge(const vertex* u, const vertex* v)
 		k2 = u->get_id();
 	}
 
-	ostringstream converter;
+	std::ostringstream converter;
 	converter << k1 << "-" << k2;
-	string k = converter.str();
+	std::string k = converter.str();
 
 	// Check whether edge exists
 	std::tr1::unordered_map<std::string, edge*>::iterator it;
@@ -1251,7 +1251,7 @@ void mesh::subdivide_loop()
 	}
 
 	// Create edge points
-	for(vector<edge*>::iterator it = E.begin(); it != E.end(); it++)
+	for(std::vector<edge*>::iterator it = E.begin(); it != E.end(); it++)
 	{
 		v3ctor edge_point;
 		edge* e = *it;
@@ -1362,7 +1362,7 @@ void mesh::subdivide_loop()
 
 		if(F[i]->num_edges() != 3)
 		{
-			cerr << "psalm: Input mesh contains non-triangular face. Loop's subdivision scheme is not applicable.\n";
+			std::cerr << "psalm: Input mesh contains non-triangular face. Loop's subdivision scheme is not applicable.\n";
 			return;
 		}
 
@@ -1447,7 +1447,7 @@ void mesh::subdivide_doo_sabin()
 		// Since the vertex points are visited in the order of the old
 		// vertices, this step is orientation-preserving
 
-		vector<vertex*> vertices;
+		std::vector<vertex*> vertices;
 		for(size_t j = 0; j < F[i]->num_vertices(); j++)
 			vertices.push_back(F[i]->get_face_vertex(j));
 
@@ -1455,7 +1455,7 @@ void mesh::subdivide_doo_sabin()
 	}
 
 	// Create quadrilateral E-faces
-	for(vector<edge*>::iterator it = E.begin(); it != E.end(); it++)
+	for(std::vector<edge*>::iterator it = E.begin(); it != E.end(); it++)
 	{
 		edge* e = *it;
 
@@ -1496,9 +1496,9 @@ void mesh::subdivide_doo_sabin()
 	{
 		// The faces need to be sorted in counterclockwise order around
 		// the vertex.
-		vector<face*> faces = sort_faces(V[i]);
+		std::vector<face*> faces = sort_faces(V[i]);
 
-		vector<vertex*> vertices;
+		std::vector<vertex*> vertices;
 		for(size_t j = 0; j < V[i]->num_adjacent_faces(); j++)
 			vertices.push_back(find_face_vertex(faces[j], V[i]));
 
@@ -1532,7 +1532,7 @@ void mesh::subdivide_catmull_clark()
 	}
 
 	// Create edge points
-	for(vector<edge*>::iterator it = E.begin(); it != E.end(); it++)
+	for(std::vector<edge*>::iterator it = E.begin(); it != E.end(); it++)
 	{
 		edge* e = *it;
 		v3ctor edge_point;
@@ -1644,7 +1644,7 @@ void mesh::subdivide_catmull_clark()
 				(e1->get_v()->get_id() == V[i]->get_id() && e1->get_f() == f) ||
 				(e2->get_u()->get_id() == V[i]->get_id() && e2->get_f() == f) ||
 				(e2->get_v()->get_id() == V[i]->get_id() && e2->get_g() == f))
-				swap(e1, e2);
+				std::swap(e1, e2);
 
 			M.add_face(	V[i]->vertex_point,
 					e1->edge_point,
@@ -1721,10 +1721,10 @@ vertex* mesh::find_face_vertex(face* f, const vertex* v)
 *	@return Sorted vector of faces
 */
 
-vector<face*> mesh::sort_faces(vertex* v)
+std::vector<face*> mesh::sort_faces(vertex* v)
 {
-	vector<face*> faces;
-	vector<edge*> edges;
+	std::vector<face*> faces;
+	std::vector<edge*> edges;
 
 	for(size_t i = 0; i < v->valency(); i++)
 		edges.push_back(v->get_edge(i));
@@ -1756,7 +1756,7 @@ vector<face*> mesh::sort_faces(vertex* v)
 				edges[j]->get_f() == edges[i]->get_g() ||
 				edges[j]->get_g() == edges[i]->get_f())
 			{
-				swap(edges[j], edges[i+1]);
+				std::swap(edges[j], edges[i+1]);
 				break;
 			}
 		}
