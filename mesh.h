@@ -9,6 +9,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <set>
 #include <tr1/unordered_map>
 
 #include "vertex.h"
@@ -30,6 +31,7 @@ class mesh
 		bool load(const std::string& filename, short type = TYPE_EXT);
 		bool save(const std::string& filename, short type = TYPE_EXT);
 
+		void prune(const std::set<size_t>& ignore_faces);
 		void subdivide(short algorithm = mesh::ALG_CATMULL_CLARK, size_t steps = 1);
 		void destroy();
 

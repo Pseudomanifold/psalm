@@ -1152,6 +1152,27 @@ vertex* mesh::add_vertex(const v3ctor& pos)
 }
 
 /*!
+*	Performs several pruning operations on the current mesh:
+*
+*		- Removal of faces with n sides
+*
+*	@param ignore_faces	Contains a set of numbers. If a face with n
+*				sides is found and n matches one of these
+*				numbers, the face will be removed from the
+*				mesh.
+*/
+
+void mesh::prune(const std::set<size_t>& ignore_faces)
+{
+	for(std::vector<face*>::iterator it = F.begin(); it != F.end(); it++)
+	{
+		if(ignore_faces.find((*it)->num_edges()) != ignore_faces.end())
+			it = F.erase(it);
+
+	}
+}
+
+/*!
 *	Applies a subdivision algorithm to the current mesh.
 *
 *	@param algorithm	Defines which algorithm to use (Catmull-Clark

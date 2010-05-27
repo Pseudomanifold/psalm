@@ -9,6 +9,7 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include <set>
 
 #include <unistd.h>
 #include <getopt.h>
@@ -42,6 +43,9 @@ void show_usage()
 		<< "\t\t\t\t\t* ply (Standford PLY files)\n"
 		<< "\t\t\t\t\t* obj (Wavefront OBJ files)\n"
 		<< "\t\t\t\t\t* off (Geomview object files)\n\n"
+		<< "-i, --ignore <list of numbers>\tIgnore any face whose number of sides matches\n"
+		<< "\t\t\t\tone of the numbers in the list. Use commas to\n"
+		<< "\t\t\t\tseparate list values.\n\n"
 		<< "-o, --output <file>\t\tSet output file\n\n"
 		<< "-n, --steps <n>\t\t\tSet number of subdivision steps to perform on\n"
 		<< "\t\t\t\tthe input mesh.\n\n"
@@ -64,6 +68,7 @@ int main(int argc, char* argv[])
 		{"output",	required_argument,	NULL,	'o'},
 		{"steps",	required_argument,	NULL,	'n'},
 		{"type",	required_argument,	NULL,	't'},
+		{"ignore",	required_argument,	NULL,	'i'},
 		{"algorithm",	required_argument,	NULL,	'a'},
 
 		{"help",	no_argument,		NULL,	'h'},
@@ -74,10 +79,12 @@ int main(int argc, char* argv[])
 	short type	= mesh::TYPE_EXT;
 	short algorithm	= mesh::ALG_CATMULL_CLARK;
 
+	std::set<size_t> ignore_faces;
+
 	size_t steps	= 0;
 
 	int option = 0;
-	while((option = getopt_long(argc, argv, "o:n:t:a:h", cmd_line_opts, NULL)) != -1)
+	while((option = getopt_long(argc, argv, "o:n:i:t:a:h", cmd_line_opts, NULL)) != -1)
 	{
 		switch(option)
 		{
@@ -129,6 +136,31 @@ int main(int argc, char* argv[])
 					cerr << "Error: \"" << algorithm_str << "\" is an unknown algorithm.\n";
 					show_usage();
 					return(-1);
+				}
+
+				break;
+			}
+
+			case 'i':
+			{
+				std::istringstream ignore_faces_str(optarg);
+				std::istringstream converter;
+				std::string val_str;
+				while(getline(ignore_faces_str, val_str, ','))
+				{
+					converter.clear();
+					converter.str(val_str);
+
+					size_t value;
+					converter >> value;
+					if(converter.fail())
+					{
+						show_usage();
+						cerr << "psalm: Unable to convert \"" << val_str << "\" to a number.\n";
+						return(-1);
+					}
+
+					ignore_faces.insert(value);
 				}
 
 				break;
@@ -193,6 +225,7 @@ int main(int argc, char* argv[])
 	{
 		scene_mesh.load(*it, type);
 		scene_mesh.subdivide(algorithm, steps);
+		scene_mesh.prune(ignore_faces);
 
 		// If an output file has been set (even if it is empty), it
 		// will be used.
