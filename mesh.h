@@ -73,6 +73,7 @@ class mesh
 		const vertex* find_remaining_vertex(const edge* e, const face* f);
 		vertex* find_face_vertex(face* f, const vertex* v);
 
+		std::vector<const vertex*> sort_vertices(face* f, const vertex* v);
 		std::vector<face*> sort_faces(vertex* v);
 
 		void subdivide_loop();

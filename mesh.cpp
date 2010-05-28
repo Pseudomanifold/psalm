@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <string>
+#include <limits>
 
 #include <ctime>
 #include <cmath>
@@ -1714,6 +1715,77 @@ vertex* mesh::find_face_vertex(face* f, const vertex* v)
 	}
 
 	return(NULL);
+}
+
+/*!
+*	Given a face and a vertex v, sort all vertices of the face in
+*	counterclockwise order, starting with vertex v.
+*
+*	@param f Pointer to the face
+*	@param v Pointer to the "first" vertex
+*
+*	@return Sorted vector of vertices
+*/
+
+std::vector<const vertex*> mesh::sort_vertices(face* f, const vertex* v)
+{
+	std::vector<const vertex*> vertices;
+
+	size_t pos_v = std::numeric_limits<std::size_t>::max();
+	directed_edge d_edge_v;
+
+	for(size_t i = 0; i < f->num_edges(); i++)
+	{
+		d_edge_v = f->get_edge(i);
+		if(	d_edge_v.e->get_u()->get_id() == v->get_id() ||
+			d_edge_v.e->get_v()->get_id() == v->get_id())
+		{
+			pos_v = i;
+			break;
+		}
+	}
+
+	assert(pos_v != std::numeric_limits<std::size_t>::max());
+
+	bool take_first = false;	// signals whether the first or the second
+					// edge is to be taken for each edge
+	if(d_edge_v.e->get_u()->get_id() == v->get_id())
+	{
+		vertices.push_back(d_edge_v.e->get_u());
+		take_first = !d_edge_v.inverted;
+	}
+	else
+	{
+		vertices.push_back(d_edge_v.e->get_v());
+		take_first = d_edge_v.inverted;
+	}
+
+	for(size_t i = pos_v; (i-pos_v) < f->num_edges(); i++)
+	{
+		const vertex* w;
+		directed_edge d_e;
+
+		// Index must wrap around once the end is reached
+		if(i >= f->num_edges())
+			d_e = f->get_edge(i-f->num_edges());
+		else
+			d_e = f->get_edge(i);
+
+		// Always take the _same_ vertex of each edge (depending on the
+		// position of v)
+		if(d_e.inverted)
+			w = (take_first ? d_e.e->get_v() : d_e.e->get_u());
+		else
+			w = (take_first ? d_e.e->get_u() : d_e.e->get_v());
+
+		// Avoid duplicates. They can only occur with v because v will
+		// always be the first vertex in the result vector regardless
+		// of whether it was the first or second vertex of the edge
+		if(w->get_id() != v->get_id())
+			vertices.push_back(w);
+	}
+
+	return(vertices);
 }
 
 /*!
