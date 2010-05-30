@@ -36,6 +36,13 @@ void show_usage()
 			<< "\t\t\t\t\t* doo-sabin, doo, sabin, ds\n"
 			<< "\t\t\t\t\t* loop, l\n\n"
 			<< "\t\t\t\tDefault algorithm: Catmull-Clark\n\n"
+			<< "-w, --weights <weights>\t\tSelect type of weights to that are used for\n"
+			<< "\t\t\t\tthe subdivision scheme. Valid values are:\n\n"
+			<< "\t\t\t\t\t[for the Doo-Sabin algorithm]\n"
+			<< "\t\t\t\t\t* catmull-clark, catmull, clark, cc\n"
+			<< "\t\t\t\t\t* doo-sabin, doo, sabin, ds\n\n"
+			<< "\t\t\t\t\t[for all algorithms]\n"
+			<< "\t\t\t\t\t* default\n\n"
 			<< "-t, --type <type>\t\tSelect type of input data. Valid values for\n"
 			<< "\t\t\t\tthe <type> parameter are:\n\n"
 			<< "\t\t\t\t\t* ply (Standford PLY files)\n"
@@ -68,6 +75,7 @@ int main(int argc, char* argv[])
 		{"type",	required_argument,	NULL,	't'},
 		{"ignore",	required_argument,	NULL,	'i'},
 		{"algorithm",	required_argument,	NULL,	'a'},
+		{"weights",	required_argument,	NULL,	'w'},
 
 		{"help",	no_argument,		NULL,	'h'},
 
@@ -76,13 +84,14 @@ int main(int argc, char* argv[])
 
 	short type	= psalm::mesh::TYPE_EXT;
 	short algorithm	= psalm::mesh::ALG_CATMULL_CLARK;
+	short weights	= psalm::mesh::W_DEFAULT;
 
 	std::set<size_t> ignore_faces;
 
 	size_t steps	= 0;
 
 	int option = 0;
-	while((option = getopt_long(argc, argv, "o:n:i:t:a:h", cmd_line_opts, NULL)) != -1)
+	while((option = getopt_long(argc, argv, "o:n:i:t:a:w:h", cmd_line_opts, NULL)) != -1)
 	{
 		switch(option)
 		{
@@ -131,6 +140,32 @@ int main(int argc, char* argv[])
 				else
 				{
 					std::cerr << "psalm: \"" << algorithm_str << "\" is an unknown algorithm.\n";
+					return(-1);
+				}
+
+				break;
+			}
+
+			case 'w':
+			{
+				std::string weights_str = optarg;
+				std::transform(weights_str.begin(), weights_str.end(), weights_str.begin(), (int(*)(int)) tolower);
+
+				if(	weights_str == "catmull-clark"	||
+					weights_str == "catmull"	||
+					weights_str == "clark"		||
+					weights_str == "cc")
+					weights = psalm::mesh::W_CATMULL_CLARK;
+				else if(weights_str == "doo-sabin"	||
+					weights_str == "doo"		||
+					weights_str == "sabin"		||
+					weights_str == "ds")
+					weights = psalm::mesh::W_DOO_SABIN;
+				else if(weights_str == "default")
+					weights = psalm::mesh::W_DEFAULT;
+				else
+				{
+					std::cerr << "psalm: \"" << weights_str << "\" is an unknown weight scheme.\n";
 					return(-1);
 				}
 
@@ -218,7 +253,7 @@ int main(int argc, char* argv[])
 	for(std::vector<std::string>::iterator it = files.begin(); it != files.end(); it++)
 	{
 		scene_mesh.load(*it, type);
-		scene_mesh.subdivide(algorithm, steps);
+		scene_mesh.subdivide(algorithm, steps, weights);
 		scene_mesh.prune(ignore_faces);
 
 		// If an output file has been set (even if it is empty), it

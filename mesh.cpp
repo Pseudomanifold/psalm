@@ -37,6 +37,10 @@ const short mesh::ALG_CATMULL_CLARK	= 0;
 const short mesh::ALG_DOO_SABIN		= 1;
 const short mesh::ALG_LOOP		= 2;
 
+const short mesh::W_DEFAULT		= 0;
+const short mesh::W_CATMULL_CLARK	= 1;
+const short mesh::W_DOO_SABIN		= 2;
+
 /*!
 *	Default constructor.
 */
@@ -1181,14 +1185,18 @@ void mesh::prune(const std::set<size_t>& ignore_faces)
 *				if the user did not specify otherwise).
 *	@param steps		Number of subdivision steps (1 if the user did
 *				not specify otherwise).
+*	@param weights		Defines which weight distribution function is
+*				to be used for the given subdivision scheme. By
+*				default, the standard weights for any algorithm
+*				are used.
 */
 
-void mesh::subdivide(short algorithm, size_t steps)
+void mesh::subdivide(short algorithm, size_t steps, short weights)
 {
 	// Choose algorithm (if this is _not_ done via pointers, the for-loop
 	// would have to be duplicated or the algorithm check would have to be
 	// made for each iteration.
-	void (mesh::*subdivision_algorithm)(void) = NULL;
+	void (mesh::*subdivision_algorithm)(short) = NULL;
 	switch(algorithm)
 	{
 		case ALG_CATMULL_CLARK:
@@ -1205,15 +1213,17 @@ void mesh::subdivide(short algorithm, size_t steps)
 	};
 
 	for(size_t i = 0; i < steps; i++)
-		(this->*subdivision_algorithm)();
+		(this->*subdivision_algorithm)(weights);
 }
 
 /*!
 *	Performs one step of Loop subdivision on the current mesh, thereby
 *	replacing it with the refined mesh.
+*
+*	@param weights Parameter is ignored for now
 */
 
-void mesh::subdivide_loop()
+void mesh::subdivide_loop(short weights)
 {
 	mesh M;
 
@@ -1378,69 +1388,22 @@ void mesh::subdivide_loop()
 
 /*!
 *	Performs one step of Doo-Sabin subdivision on the current mesh.
+*
+*	@param weights Allows the user to choose different weights for the
+*	algorithm. The values W_CATMULL_CLARK and W_DOO_SABIN are possible.
 */
 
-void mesh::subdivide_doo_sabin()
+void mesh::subdivide_doo_sabin(short weights)
 {
 	mesh M;
-
-	// Create new points
-	for(size_t i = 0; i < F.size(); i++)
-	{
-		// Find centroid of face
-		v3ctor centroid;
-		for(size_t j = 0; j < F[i]->num_vertices(); j++)
-		{
-			const vertex* v = F[i]->get_vertex(j);
-			centroid += v->get_position();
-		}
-		centroid *= 1.0/F[i]->num_vertices();
-
-		// For a fixed vertex of the face, find the two edges that are
-		// incident on this vertex and calculate their midpoints.
-		for(size_t j = 0; j < F[i]->num_vertices(); j++)
-		{
-			const vertex* v = F[i]->get_vertex(j);
-
-			const edge* e1 = NULL;
-			const edge* e2 = NULL;
-			for(size_t k = 0; k < F[i]->num_edges(); k++)
-			{
-				if(	F[i]->get_edge(k).e->get_u() == v ||
-					F[i]->get_edge(k).e->get_v() == v)
-				{
-					if(e1 == NULL)
-						e1 = F[i]->get_edge(k).e;
-					else
-					{
-						e2 = F[i]->get_edge(k).e;
-						break;
-					}
-				}
-			}
-
-			assert(e1 != NULL);
-			assert(e2 != NULL);
-
-			// Calculate midpoints of the edges and the position of
-			// face vertex
-
-			v3ctor midpoint1;
-			v3ctor midpoint2;
-
-			midpoint1 = (e1->get_u()->get_position()+e1->get_v()->get_position())/2;
-			midpoint2 = (e2->get_u()->get_position()+e2->get_v()->get_position())/2;
-
-			v3ctor face_vertex_position = (midpoint1+midpoint2+centroid+v->get_position())/4;
-
-			// Add new vertex to the face. The lookup using the
-			// vertex's ID is necessary because the face only
-			// supplies const pointers.
-
-			vertex* face_vertex = M.add_vertex(face_vertex_position);
-			F[i]->add_face_vertex(face_vertex);
-		}
-	}
+	if(weights == W_DEFAULT)
+		ds_create_points_g(M);
+	else if(weights == W_CATMULL_CLARK)
+		ds_create_points_p(M, mesh::ds_weights_cc);
+	else if(weights == W_DOO_SABIN)
+		ds_create_points_p(M, mesh::ds_weights_ds);
+	else
+		return;
 
 	// Create new F-faces by connecting the appropriate vertex points
 	// (generated above) of the face
@@ -1516,10 +1479,159 @@ void mesh::subdivide_doo_sabin()
 }
 
 /*!
-*	Performs one step of Catmull-Clark subdivision on the current mesh.
+*	Creates the new points of the Doo-Sabin subdivision scheme. This
+*	function uses the geometrical approach as presented in the paper of Doo
+*	and Sabin. User-configurable parameters are ignored.
+*
+*	@param M Mesh that stores the new points
 */
 
-void mesh::subdivide_catmull_clark()
+void mesh::ds_create_points_g(mesh& M)
+{
+	// Create new points
+	for(size_t i = 0; i < F.size(); i++)
+	{
+		// Find centroid of face
+		v3ctor centroid;
+		for(size_t j = 0; j < F[i]->num_vertices(); j++)
+		{
+			const vertex* v = F[i]->get_vertex(j);
+			centroid += v->get_position();
+		}
+		centroid *= 1.0/F[i]->num_vertices();
+
+		// For a fixed vertex of the face, find the two edges that are
+		// incident on this vertex and calculate their midpoints.
+		for(size_t j = 0; j < F[i]->num_vertices(); j++)
+		{
+			const vertex* v = F[i]->get_vertex(j);
+
+			const edge* e1 = NULL;
+			const edge* e2 = NULL;
+			for(size_t k = 0; k < F[i]->num_edges(); k++)
+			{
+				if(	F[i]->get_edge(k).e->get_u() == v ||
+					F[i]->get_edge(k).e->get_v() == v)
+				{
+					if(e1 == NULL)
+						e1 = F[i]->get_edge(k).e;
+					else
+					{
+						e2 = F[i]->get_edge(k).e;
+						break;
+					}
+				}
+			}
+
+			assert(e1 != NULL);
+			assert(e2 != NULL);
+
+			// Calculate midpoints of the edges and the position of
+			// face vertex
+
+			v3ctor midpoint1;
+			v3ctor midpoint2;
+
+			midpoint1 = (e1->get_u()->get_position()+e1->get_v()->get_position())/2;
+			midpoint2 = (e2->get_u()->get_position()+e2->get_v()->get_position())/2;
+
+			v3ctor face_vertex_position = (midpoint1+midpoint2+centroid+v->get_position())/4;
+
+			// Add new vertex to the face. The lookup using the
+			// vertex's ID is necessary because the face only
+			// supplies const pointers.
+
+			vertex* face_vertex = M.add_vertex(face_vertex_position);
+			F[i]->add_face_vertex(face_vertex);
+		}
+	}
+}
+
+/*!
+*	Creates the new points of the Doo-Sabin subdivision scheme. This
+*	function uses a parametrical approach, thus making it possible for the
+*	user to specify different weights in order to fine-tune the algorithm.
+*
+*	@param M		Mesh that stores the new points
+*	@param weight_function	Pointer to weight function
+*/
+
+void mesh::ds_create_points_p(mesh& M, double (*weight_function)(size_t, size_t))
+{
+	for(std::vector<face*>::iterator f = F.begin(); f != F.end(); f++)
+	{
+		size_t k = (*f)->num_vertices();
+		std::vector<const vertex*> vertices = sort_vertices(*f, (*f)->get_vertex(0));
+		for(size_t i = 0; i < vertices.size(); i++)
+		{
+			v3ctor face_vertex_position;
+			for(size_t j = 0; j < vertices.size(); j++)
+				face_vertex_position += vertices[j]->get_position()*weight_function(k,j);
+
+			vertex* face_vertex = M.add_vertex(face_vertex_position);
+			(*f)->add_face_vertex(face_vertex);
+
+			// Shift the vector
+
+			const vertex* v = vertices[0];
+			vertices.erase(vertices.begin());
+			vertices.push_back(v);
+		}
+	}
+}
+
+/*!
+*	Computes the weight factor for the i-th vertex of a face with k
+*	vertices. The formula of Doo and Sabin is used.
+*
+*	This function only applies to the Doo-Sabin subdivision scheme.
+*
+*	@param i Index of vertex in face (0, 1, ..., k-1)
+*	@param k Number of vertices
+*
+*	@return Weight
+*/
+
+inline double mesh::ds_weights_ds(size_t k, size_t i)
+{
+	if(i == 0)
+		return(0.25+5.0/(4.0*k));
+	else
+		return((3.0+2.0*cos(2*M_PI*i/k))/(4.0*k));
+}
+
+/*!
+*	Computes the weight factor for the i-th vertex of a face with k
+*	vertices. The formula of Catmull and Clark is used.
+*
+*	This function only applies to the Doo-Sabin subdivision scheme.
+*
+*	@param i Index of vertex in face (0, 1, ..., k-1)
+*	@param k Number of vertices
+*
+*	@return Weight
+*/
+
+inline double mesh::ds_weights_cc(size_t k, size_t i)
+{
+	if(i == 0)
+		return(0.5+1.0/(4.0*k));
+	else
+	{
+		if(i == 1 || i == (k-1))
+			return(0.125+1.0/(4.0*k));
+		else
+			return(1.0/(4.0*k));
+	}
+}
+
+/*!
+*	Performs one step of Catmull-Clark subdivision on the current mesh.
+*
+*	@param weights Parameter is ignored for now
+*/
+
+void mesh::subdivide_catmull_clark(short weights)
 {
 	mesh M;
 

@@ -35,7 +35,9 @@ class mesh
 		bool save(const std::string& filename, short type = TYPE_EXT);
 
 		void prune(const std::set<size_t>& ignore_faces);
-		void subdivide(short algorithm = mesh::ALG_CATMULL_CLARK, size_t steps = 1);
+		void subdivide(	short algorithm = mesh::ALG_CATMULL_CLARK,
+				size_t steps = 1,
+				short weights = mesh::W_DEFAULT);
 		void destroy();
 
 		mesh& operator=(const mesh& M);
@@ -49,6 +51,10 @@ class mesh
 		static const short ALG_CATMULL_CLARK;	///< Represents Catmull-Clark algorithm in subdivision method
 		static const short ALG_DOO_SABIN;	///< Represents Doo-Sabin algorithm in subdivision method
 		static const short ALG_LOOP;		///< Represents Loop algorithm in subdivision method
+
+		static const short W_DEFAULT;		///< Represents default weights for any subdivision scheme
+		static const short W_CATMULL_CLARK;	///< Represents Catmull-Clark weights for the DS scheme
+		static const short W_DOO_SABIN;		///< Represents Doo-Sabin weights for the DS scheme
 
 	private:
 		std::vector<vertex*>	V;
@@ -76,9 +82,15 @@ class mesh
 		std::vector<const vertex*> sort_vertices(face* f, const vertex* v);
 		std::vector<face*> sort_faces(vertex* v);
 
-		void subdivide_loop();
-		void subdivide_doo_sabin();
-		void subdivide_catmull_clark();
+		void subdivide_loop(short weights);
+		void subdivide_doo_sabin(short weights);
+		void subdivide_catmull_clark(short weights);
+
+		void ds_create_points_g(mesh& M);
+		void ds_create_points_p(mesh& M, double (*weight_function)(size_t, size_t));
+
+		static double ds_weights_ds(size_t k, size_t i);
+		static double ds_weights_cc(size_t k, size_t i);
 
 		bool load_ply(std::istream& in);
 		bool load_obj(std::istream& in);
