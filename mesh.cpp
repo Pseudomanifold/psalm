@@ -1189,14 +1189,20 @@ void mesh::prune(const std::set<size_t>& ignore_faces)
 *				to be used for the given subdivision scheme. By
 *				default, the standard weights for any algorithm
 *				are used.
+*	@param extra_weights	Pointer to an associative array that contains
+*				the weights for a face with a given number of
+*				vertices. NULL by default.
 */
 
-void mesh::subdivide(short algorithm, size_t steps, short weights)
+void mesh::subdivide(	short algorithm,
+			size_t steps,
+			short weights,
+			const weights_map* extra_weights)
 {
 	// Choose algorithm (if this is _not_ done via pointers, the for-loop
 	// would have to be duplicated or the algorithm check would have to be
 	// made for each iteration.
-	void (mesh::*subdivision_algorithm)(short) = NULL;
+	void (mesh::*subdivision_algorithm)(short, const weights_map*) = NULL;
 	switch(algorithm)
 	{
 		case ALG_CATMULL_CLARK:
@@ -1213,17 +1219,18 @@ void mesh::subdivide(short algorithm, size_t steps, short weights)
 	};
 
 	for(size_t i = 0; i < steps; i++)
-		(this->*subdivision_algorithm)(weights);
+		(this->*subdivision_algorithm)(weights, extra_weights);
 }
 
 /*!
 *	Performs one step of Loop subdivision on the current mesh, thereby
 *	replacing it with the refined mesh.
 *
-*	@param weights Parameter is ignored for now
+*	@param weights		Parameter is ignored for now
+*	@param extra_weights	Parameter is ignored for now
 */
 
-void mesh::subdivide_loop(short weights)
+void mesh::subdivide_loop(short weights, const weights_map* extra_weights)
 {
 	mesh M;
 
@@ -1389,19 +1396,23 @@ void mesh::subdivide_loop(short weights)
 /*!
 *	Performs one step of Doo-Sabin subdivision on the current mesh.
 *
-*	@param weights Allows the user to choose different weights for the
-*	algorithm. The values W_CATMULL_CLARK and W_DOO_SABIN are possible.
+*	@param weights		Allows the user to choose different weights for the
+*				algorithm. The values W_CATMULL_CLARK and
+*				W_DOO_SABIN are possible.
+*	@param extra_weights	Allows the user to override certain weights for
+*				the algorithm.
 */
 
-void mesh::subdivide_doo_sabin(short weights)
+void mesh::subdivide_doo_sabin(short weights, const weights_map* extra_weights)
 {
 	mesh M;
-	if(weights == W_DEFAULT)
+	if(weights == W_DEFAULT && extra_weights == NULL)
 		ds_create_points_g(M);
-	else if(weights == W_CATMULL_CLARK)
-		ds_create_points_p(M, mesh::ds_weights_cc);
+	else if((weights == W_DEFAULT && extra_weights != NULL) ||
+		 weights == W_CATMULL_CLARK)
+		ds_create_points_p(M, mesh::ds_weights_cc, extra_weights);
 	else if(weights == W_DOO_SABIN)
-		ds_create_points_p(M, mesh::ds_weights_ds);
+		ds_create_points_p(M, mesh::ds_weights_ds, extra_weights);
 	else
 		return;
 
@@ -1554,19 +1565,48 @@ void mesh::ds_create_points_g(mesh& M)
 *
 *	@param M		Mesh that stores the new points
 *	@param weight_function	Pointer to weight function
+*	@param extra_weights	Allows the user to override weights for some
+*				faces. This means that for certain faces, the
+*				user-defined weights are used instead of the
+*				weights defined by the weight function.
 */
 
-void mesh::ds_create_points_p(mesh& M, double (*weight_function)(size_t, size_t))
+void mesh::ds_create_points_p(mesh& M, double (*weight_function)(size_t, size_t), const weights_map* extra_weights)
 {
+	// Only used if extra_weights has been defined
+	weights_map::const_iterator it;
+	std::vector<double> weights;
+
 	for(std::vector<face*>::iterator f = F.begin(); f != F.end(); f++)
 	{
 		size_t k = (*f)->num_vertices();
 		std::vector<const vertex*> vertices = sort_vertices(*f, (*f)->get_vertex(0));
+
+		// Check if weights for a face with k vertices can be found
+		if(	extra_weights != NULL &&
+			((it = extra_weights->find(k)) != extra_weights->end()))
+			weights = it->second;
+		else
+			weights.clear();
+
 		for(size_t i = 0; i < vertices.size(); i++)
 		{
 			v3ctor face_vertex_position;
-			for(size_t j = 0; j < vertices.size(); j++)
-				face_vertex_position += vertices[j]->get_position()*weight_function(k,j);
+
+			// If a user-defined weights are present and weights for the current
+			// number of vertices have been found
+			if(!weights.empty())
+			{
+				for(size_t j = 0; j < weights.size(); j++)
+					face_vertex_position += vertices[j]->get_position()*weights[j];
+			}
+
+			// Use weight distribution function
+			else
+			{
+				for(size_t j = 0; j < vertices.size(); j++)
+					face_vertex_position += vertices[j]->get_position()*weight_function(k,j);
+			}
 
 			vertex* face_vertex = M.add_vertex(face_vertex_position);
 			(*f)->add_face_vertex(face_vertex);
@@ -1628,10 +1668,11 @@ inline double mesh::ds_weights_cc(size_t k, size_t i)
 /*!
 *	Performs one step of Catmull-Clark subdivision on the current mesh.
 *
-*	@param weights Parameter is ignored for now
+*	@param weights		Parameter is ignored for now
+*	@param extra_weights	Parameter is ignored for now
 */
 
-void mesh::subdivide_catmull_clark(short weights)
+void mesh::subdivide_catmull_clark(short weights, const weights_map* extra_weights)
 {
 	mesh M;
 

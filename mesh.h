@@ -10,6 +10,7 @@
 #include <vector>
 #include <string>
 #include <set>
+#include <map>
 #include <tr1/unordered_map>
 
 #include "vertex.h"
@@ -19,6 +20,13 @@
 
 namespace psalm
 {
+
+/*!
+*	Typedef for describing a map that contains the weights for an k-sided
+*	face.
+*/
+
+typedef std::map<size_t, std::vector<double> > weights_map;
 
 /*!
 *	@class mesh
@@ -37,7 +45,8 @@ class mesh
 		void prune(const std::set<size_t>& ignore_faces);
 		void subdivide(	short algorithm = mesh::ALG_CATMULL_CLARK,
 				size_t steps = 1,
-				short weights = mesh::W_DEFAULT);
+				short weights = mesh::W_DEFAULT,
+				const weights_map* extra_weights = NULL);
 		void destroy();
 
 		mesh& operator=(const mesh& M);
@@ -82,12 +91,14 @@ class mesh
 		std::vector<const vertex*> sort_vertices(face* f, const vertex* v);
 		std::vector<face*> sort_faces(vertex* v);
 
-		void subdivide_loop(short weights);
-		void subdivide_doo_sabin(short weights);
-		void subdivide_catmull_clark(short weights);
+		void subdivide_loop(short weights, const weights_map* extra_weights);
+		void subdivide_doo_sabin(short weights, const weights_map* extra_weights);
+		void subdivide_catmull_clark(short weights, const weights_map* extra_weights);
 
 		void ds_create_points_g(mesh& M);
-		void ds_create_points_p(mesh& M, double (*weight_function)(size_t, size_t));
+		void ds_create_points_p(mesh& M,
+					double (*weight_function)(size_t, size_t),
+					const weights_map*);
 
 		static double ds_weights_ds(size_t k, size_t i);
 		static double ds_weights_cc(size_t k, size_t i);

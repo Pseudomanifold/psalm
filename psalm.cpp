@@ -8,8 +8,10 @@
 
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <algorithm>
 #include <set>
+#include <cerrno>
 
 #include <unistd.h>
 #include <getopt.h>
@@ -36,6 +38,10 @@ void show_usage()
 			<< "\t\t\t\t\t* doo-sabin, doo, sabin, ds\n"
 			<< "\t\t\t\t\t* loop, l\n\n"
 			<< "\t\t\t\tDefault algorithm: Catmull-Clark\n\n"
+			<< "-e, --extra-weights <file>\tOverride the default weights of subdivision\n"
+			<< "\t\t\t\tschemes by reading them from <file>. The exact\n"
+			<< "\t\t\t\tformat of this file depends on the subdivision\n"
+			<< "\t\t\t\talgorithm that is used.\n\n"
 			<< "-w, --weights <weights>\t\tSelect type of weights to that are used for\n"
 			<< "\t\t\t\tthe subdivision scheme. Valid values are:\n\n"
 			<< "\t\t\t\t\t[for the Doo-Sabin algorithm]\n"
@@ -60,6 +66,78 @@ void show_usage()
 }
 
 /*!
+*	Reads a map of weights for a sudivision algorithm from a file. Each
+*	line of the file must be of the following form:
+*
+*		<k> <a_1> ... <a_k>
+*
+*	Where <k> is the number of vertices for a face and <a_i> are the
+*	weights that are used for the vertices of the face. The weights are
+*	supposed to be arranged in counterclockwise order.
+*
+*	@param filename Filename of weights map
+*	@return Associative array for quickly looking up the weights.
+*/
+
+psalm::weights_map load_weights_map(const std::string& filename)
+{
+	psalm::weights_map res;
+
+	std::ifstream in;
+	errno = 0;
+	in.open(filename.c_str());
+
+	if(!in.good() || errno)
+	{
+		std::string error = strerror(errno);
+		std::cerr	<< "psalm: Could not load weights map file \""
+				<< filename << "\": "
+				<< error << "\n";
+
+		return(res);
+	}
+
+	std::string line;
+	std::istringstream converter;
+	while(getline(in, line))
+	{
+		converter.clear();
+		converter.str(line);
+
+		std::vector<double> weights;
+		size_t k = 0;
+
+		// Read k and try to read k weights afterwards
+
+		converter >> k;
+		if(converter.fail())
+		{
+			std::cerr	<< "psalm: Unable to read number of weights "
+					<< "from line \"" << line << "\"\n";
+			return(res);
+		}
+
+		double w = 0.0;
+		for(size_t i = 0; i < k; i++)
+		{
+			converter >> w;
+			if(converter.fail())
+			{
+				std::cerr	<< "psalm: Unable to read weights "
+						<< "from line \"" << line << "\"\n";
+				return(res);
+			}
+
+			weights.push_back(w);
+		}
+
+		res[k] = weights;
+	}
+
+	return(res);
+}
+
+/*!
 *	Handles user interaction.
 *
 *	@param argc Number of command-line arguments
@@ -70,14 +148,15 @@ int main(int argc, char* argv[])
 {
 	static option cmd_line_opts[] =
 	{
-		{"output",	required_argument,	NULL,	'o'},
-		{"steps",	required_argument,	NULL,	'n'},
-		{"type",	required_argument,	NULL,	't'},
-		{"ignore",	required_argument,	NULL,	'i'},
-		{"algorithm",	required_argument,	NULL,	'a'},
-		{"weights",	required_argument,	NULL,	'w'},
+		{"output",		required_argument,	NULL,	'o'},
+		{"steps",		required_argument,	NULL,	'n'},
+		{"type",		required_argument,	NULL,	't'},
+		{"ignore",		required_argument,	NULL,	'i'},
+		{"algorithm",		required_argument,	NULL,	'a'},
+		{"weights",		required_argument,	NULL,	'w'},
+		{"extra-weights",	required_argument,	NULL,	'e'},
 
-		{"help",	no_argument,		NULL,	'h'},
+		{"help",		no_argument,		NULL,	'h'},
 
 		{NULL, 0, NULL, 0}
 	};
@@ -87,11 +166,12 @@ int main(int argc, char* argv[])
 	short weights	= psalm::mesh::W_DEFAULT;
 
 	std::set<size_t> ignore_faces;
+	psalm::weights_map extra_weights;
 
 	size_t steps	= 0;
 
 	int option = 0;
-	while((option = getopt_long(argc, argv, "o:n:i:t:a:w:h", cmd_line_opts, NULL)) != -1)
+	while((option = getopt_long(argc, argv, "o:n:i:t:a:w:e:h", cmd_line_opts, NULL)) != -1)
 	{
 		switch(option)
 		{
@@ -143,6 +223,17 @@ int main(int argc, char* argv[])
 					return(-1);
 				}
 
+				break;
+			}
+
+			case 'e':
+			{
+				extra_weights = load_weights_map(optarg);
+				if(extra_weights.size() == 0)
+				{
+					std::cerr << "psalm: Unwilling to continue with empty weights file.\n";
+					return(-1);
+				}
 				break;
 			}
 
@@ -253,7 +344,7 @@ int main(int argc, char* argv[])
 	for(std::vector<std::string>::iterator it = files.begin(); it != files.end(); it++)
 	{
 		scene_mesh.load(*it, type);
-		scene_mesh.subdivide(algorithm, steps, weights);
+		scene_mesh.subdivide(algorithm, steps, weights, &extra_weights);
 		scene_mesh.prune(ignore_faces);
 
 		// If an output file has been set (even if it is empty), it
