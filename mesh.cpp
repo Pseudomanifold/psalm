@@ -1174,7 +1174,6 @@ void mesh::prune(const std::set<size_t>& ignore_faces)
 	{
 		if(ignore_faces.find((*it)->num_edges()) != ignore_faces.end())
 			it = F.erase(it);
-
 	}
 }
 
