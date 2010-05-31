@@ -4,7 +4,7 @@ element vertex 36
 property float x
 property float y
 property float z
-element face 19
+element face 13
 property list uchar int vertex_index
 end_header
 -1.5	 2.60	0
@@ -44,21 +44,15 @@ end_header
  0.5	-2.60	0
  1.5	-2.60	0
 4 5 6 1 0
-4 1 6 7 2
-4 2 7 8 3
+4 1 6 8 3
 4 3 8 9 4
-4 5 10 13 6
-4 9 8 14 11
-4 10 12 17 13
-4 14 18 15 11
+4 6 5 12 17
+4 9 8 18 15
 4 12 16 20 17
 4 15 18 23 19
-4 17 20 24 21
-4 23 18 22 25
-4 21 24 26 27
+4 17 20 26 27
+4 23 18 29 30
 4 27 26 31 32
-4 27 32 33 28
-4 28 33 34 29
+4 27 32 34 29
 4 29 34 35 30
-4 25 22 29 30
 6 8 6 17 27 29 18
