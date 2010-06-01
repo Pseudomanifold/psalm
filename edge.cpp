@@ -17,6 +17,8 @@ edge::edge()
 {
 	u = v = NULL;
 	f = g = NULL;
+
+	edge_point = NULL;
 }
 
 /*!

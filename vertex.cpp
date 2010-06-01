@@ -14,6 +14,7 @@ namespace psalm
 
 vertex::vertex()
 {
+	vertex_point = NULL;
 }
 
 /*!
@@ -45,6 +46,10 @@ void vertex::set(double x, double y, double z, size_t id)
 	this->p[1]	= y;
 	this->p[2]	= z;
 	this->id	= id;
+
+	// Needs to be initialized, otherwise it cannot be determined whether a
+	// vertex already has a vertex point
+	vertex_point = NULL;
 }
 
 /*!

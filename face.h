@@ -20,6 +20,8 @@ namespace psalm
 class face
 {
 	public:
+		face();
+
 		void add_edge(const directed_edge& edge);
 		void add_vertex(vertex* v);
 		void add_face_vertex(vertex* v);

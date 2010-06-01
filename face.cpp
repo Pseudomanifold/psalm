@@ -10,6 +10,15 @@ namespace psalm
 {
 
 /*!
+*	Default constructor for the face.
+*/
+
+face::face()
+{
+	face_point = NULL;
+}
+
+/*!
 *	Adds an edge to the face.
 *
 *	@param result Directed edge to add to face
