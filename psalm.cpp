@@ -11,7 +11,9 @@
 #include <fstream>
 #include <algorithm>
 #include <set>
+
 #include <cerrno>
+#include <cstring>
 
 #include <unistd.h>
 #include <getopt.h>
