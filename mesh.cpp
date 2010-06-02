@@ -1491,7 +1491,7 @@ void mesh::subdivide_doo_sabin(short weights, const weights_map* extra_weights)
 /*!
 *	Creates the new points of the Doo-Sabin subdivision scheme. This
 *	function uses the geometrical approach as presented in the paper of Doo
-*	and Sabin. User-configurable parameters are ignored.
+*	and Sabin.
 *
 *	@param M Mesh that stores the new points
 */
@@ -1712,43 +1712,7 @@ void mesh::subdivide_catmull_clark(short weights, const weights_map* extra_weigh
 		e->edge_point = M.add_vertex(edge_point);
 	}
 
-	// Create vertex points
-	for(size_t i = 0; i < V.size(); i++)
-	{
-		// This follows the original terminology as described by
-		// Catmull and Clark
-
-		v3ctor Q;
-		v3ctor R;
-		v3ctor S;
-
-		size_t n = V[i]->valency();
-		if(n < 3)
-			continue; // ignore degenerate vertices
-
-		// Q is the average of the new face points of all faces
-		// adjacent to the old vertex point
-		for(size_t j = 0; j < V[i]->num_adjacent_faces(); j++)
-			Q += V[i]->get_face(j)->face_point->get_position();
-
-		Q /= V[i]->num_adjacent_faces();
-
-		// R is the average of the midpoints of all old edges incident
-		// on the current vertex
-		for(size_t j = 0; j < n; j++)
-		{
-			const edge* e = V[i]->get_edge(j);
-			R += (e->get_u()->get_position()+e->get_v()->get_position())*0.5;
-		}
-
-		R /= n;
-
-		// S is the current vertex
-		S = V[i]->get_position();
-
-		v3ctor vertex_point =(Q+R*2+S*(n-3))/n;
-		V[i]->vertex_point = M.add_vertex(vertex_point);
-	}
+	cc_create_points_g(M);
 
 	/*
 		Create new topology of the mesh by connecting
@@ -1810,6 +1774,143 @@ void mesh::subdivide_catmull_clark(short weights, const weights_map* extra_weigh
 	}
 
 	this->replace_with(M);
+}
+
+/*!
+*	Creates the new vertex points of the Catmull-Clark subdivision scheme.
+*	This function uses the geometrical approach as presented in the
+*	original 1978 paper.
+*
+*	@param M Mesh that stores the new points
+*/
+
+void mesh::cc_create_points_g(mesh& M)
+{
+	for(size_t i = 0; i < V.size(); i++)
+	{
+		// This follows the original terminology as described by
+		// Catmull and Clark
+
+		v3ctor Q;
+		v3ctor R;
+		v3ctor S;
+
+		size_t n = V[i]->valency();
+		if(n < 3)
+			continue; // ignore degenerate vertices
+
+		// Q is the average of the new face points of all faces
+		// adjacent to the old vertex point
+		for(size_t j = 0; j < V[i]->num_adjacent_faces(); j++)
+			Q += V[i]->get_face(j)->face_point->get_position();
+
+		Q /= V[i]->num_adjacent_faces();
+
+		// R is the average of the midpoints of all old edges incident
+		// on the current vertex
+		for(size_t j = 0; j < n; j++)
+		{
+			const edge* e = V[i]->get_edge(j);
+			R += (e->get_u()->get_position()+e->get_v()->get_position())*0.5;
+		}
+
+		R /= n;
+
+		// S is the current vertex
+		S = V[i]->get_position();
+
+		v3ctor vertex_point =(Q+R*2+S*(n-3))/n;
+		V[i]->vertex_point = M.add_vertex(vertex_point);
+	}
+}
+
+/*!
+*	Creates the new vertex points of the Catmull-Clark subdivision scheme. This
+*	function uses a parametrical approach, thus making it possible for the
+*	user to specify different weights in order to fine-tune the algorithm.
+*
+*	@param M	Mesh that stores the new points
+*	@param alpha	Alpha weight for algorithm
+*	@param beta	Beta weight for algorithm
+*	@param gamma	Gamma weight for algorithm
+*/
+
+void mesh::cc_create_points_p(mesh& M,
+			std::pair<double, double> (*weight_function)(size_t))
+{
+	for(std::vector<vertex*>::iterator v_it = V.begin(); v_it != V.end(); v_it++)
+	{
+		vertex* v = *v_it;
+
+		// will be used later for determining the real weights
+		size_t n = v->valency();
+
+		std::pair<double, double> weights = weight_function(n);
+		double gamma	= weights.second;
+		double beta	= weights.first;
+		double alpha	= 1.0-beta-gamma;
+
+		std::cout << n << "," << alpha << "," << beta << "," << gamma << "\n";
+
+		// sets of vertices with weights beta and gamma
+		std::set<const vertex*> vertices_beta;
+		std::set<const vertex*> vertices_gamma;
+
+		// All vertices that are connected via an edge with the current
+		// vertex will be assigned the weight beta.
+		for(size_t i = 0; i < n; i++)
+		{
+			edge* e = v->get_edge(i);
+			if(e->get_u()->get_id() != v->get_id())
+				vertices_beta.insert(e->get_u());
+			else
+				vertices_beta.insert(e->get_v());
+		}
+
+		// All remaining vertices of all adjacent faces to the current
+		// vertex will be assigned the weight gamma.
+		for(size_t i = 0; i < n; i++)
+		{
+			const face* f = v->get_face(i);
+			for(size_t j = 0; j < f->num_vertices(); j++)
+			{
+				const vertex* f_v = f->get_vertex(j);
+
+				// Insert the vertex only if it is not already
+				// counted within in the "beta" set (and if it
+				// is not the current vertex)
+				if(f_v->get_id() != v->get_id() && vertices_beta.find(f_v) == vertices_beta.end())
+					vertices_gamma.insert(f_v);
+			}
+		}
+
+		// Apply weights
+
+		v3ctor vertex_point = v->get_position()*alpha;
+		for(std::set<const vertex*>::iterator it = vertices_beta.begin(); it != vertices_beta.end(); it++)
+			vertex_point += (*it)->get_position()*beta/n;
+
+		for(std::set<const vertex*>::iterator it = vertices_gamma.begin(); it != vertices_gamma.end(); it++)
+			vertex_point += (*it)->get_position()*gamma/n;
+
+		v->vertex_point = M.add_vertex(vertex_point);
+	}
+}
+
+/*!
+*	Calculates the weight factors beta and gamma for a vertex with valency
+*	n by using the original formula from the 1978 paper of Catmull and
+*	Clark.
+*
+*	@param	n Valency of the vertex
+*	@return	Pair of weights. The first value of the pair will be the beta
+*		parameter for the vertex, the second value of the pair will be
+*		the gamma parameter.
+*/
+
+inline std::pair<double, double> mesh::cc_weights_cc(size_t n)
+{
+	return(std::make_pair(3.0/(2.0*n), 1.0/(4.0*n)));
 }
 
 /*!

@@ -9,6 +9,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <utility>
 #include <set>
 #include <map>
 #include <tr1/unordered_map>
@@ -100,8 +101,14 @@ class mesh
 					double (*weight_function)(size_t, size_t),
 					const weights_map*);
 
+		void cc_create_points_g(mesh& M);
+		void cc_create_points_p(mesh& M,
+					std::pair<double, double> (*weight_function)(size_t));
+
 		static double ds_weights_ds(size_t k, size_t i);
 		static double ds_weights_cc(size_t k, size_t i);
+
+		static std::pair<double, double> cc_weights_cc(size_t n);
 
 		bool load_ply(std::istream& in);
 		bool load_obj(std::istream& in);
