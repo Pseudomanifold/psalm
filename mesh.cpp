@@ -1158,6 +1158,45 @@ vertex* mesh::add_vertex(const v3ctor& pos)
 }
 
 /*!
+*	Sets flag for parametric point creation.
+*
+*	@param status Value for flag (true by default)
+*/
+
+void mesh::set_parametric_point_creation(bool status)
+{
+	use_parametric_point_creation = status;
+}
+
+/*!
+*	Sets predefined set of weights for subdivision algorithms. All schemes
+*	will ignore weights that do not apply.
+*
+*	@param weights	Valid weight set constant. Invalid constants will be
+*			ignored.
+*/
+
+void mesh::set_predefined_weights(short weights)
+{
+	if(	weights == W_DEFAULT		||
+		weights == W_CATMULL_CLARK	||
+		weights == W_DOO_SABIN)
+		this->weights = weights;
+}
+
+/*!
+*	Allows the user to set custom weights. This function sets custom
+*	weights for the DS scheme.
+*
+*	@param custom_weights The new weights
+*/
+
+void mesh::set_custom_weights(const weights_map& custom_weights)
+{
+	this->ds_custom_weights = custom_weights;
+}
+
+/*!
 *	Performs several pruning operations on the current mesh:
 *
 *		- Removal of faces with n sides
@@ -1184,24 +1223,15 @@ void mesh::prune(const std::set<size_t>& ignore_faces)
 *				if the user did not specify otherwise).
 *	@param steps		Number of subdivision steps (1 if the user did
 *				not specify otherwise).
-*	@param weights		Defines which weight distribution function is
-*				to be used for the given subdivision scheme. By
-*				default, the standard weights for any algorithm
-*				are used.
-*	@param extra_weights	Pointer to an associative array that contains
-*				the weights for a face with a given number of
-*				vertices. NULL by default.
 */
 
 void mesh::subdivide(	short algorithm,
-			size_t steps,
-			short weights,
-			const weights_map* extra_weights)
+			size_t steps)
 {
 	// Choose algorithm (if this is _not_ done via pointers, the for-loop
 	// would have to be duplicated or the algorithm check would have to be
 	// made for each iteration.
-	void (mesh::*subdivision_algorithm)(short, const weights_map*) = NULL;
+	void (mesh::*subdivision_algorithm)() = NULL;
 	switch(algorithm)
 	{
 		case ALG_CATMULL_CLARK:
@@ -1218,18 +1248,15 @@ void mesh::subdivide(	short algorithm,
 	};
 
 	for(size_t i = 0; i < steps; i++)
-		(this->*subdivision_algorithm)(weights, extra_weights);
+		(this->*subdivision_algorithm)();
 }
 
 /*!
 *	Performs one step of Loop subdivision on the current mesh, thereby
 *	replacing it with the refined mesh.
-*
-*	@param weights		Parameter is ignored for now
-*	@param extra_weights	Parameter is ignored for now
 */
 
-void mesh::subdivide_loop(short weights, const weights_map* extra_weights)
+void mesh::subdivide_loop()
 {
 	mesh M;
 
@@ -1394,26 +1421,23 @@ void mesh::subdivide_loop(short weights, const weights_map* extra_weights)
 
 /*!
 *	Performs one step of Doo-Sabin subdivision on the current mesh.
-*
-*	@param weights		Allows the user to choose different weights for the
-*				algorithm. The values W_CATMULL_CLARK and
-*				W_DOO_SABIN are possible.
-*	@param extra_weights	Allows the user to override certain weights for
-*				the algorithm.
 */
 
-void mesh::subdivide_doo_sabin(short weights, const weights_map* extra_weights)
+void mesh::subdivide_doo_sabin()
 {
 	mesh M;
-	if(weights == W_DEFAULT && extra_weights == NULL)
+
+	// Only create points geometrically if the user did not change _any_ of
+	// the default settings
+	if(	weights == W_DEFAULT		&&
+		ds_custom_weights.size() == 0	&&
+		!use_parametric_point_creation)
 		ds_create_points_g(M);
-	else if((weights == W_DEFAULT && extra_weights != NULL) ||
-		 weights == W_CATMULL_CLARK)
-		ds_create_points_p(M, mesh::ds_weights_cc, extra_weights);
-	else if(weights == W_DOO_SABIN)
-		ds_create_points_p(M, mesh::ds_weights_ds, extra_weights);
+	else if(weights == W_DEFAULT ||
+		weights == W_CATMULL_CLARK)
+		ds_create_points_p(M, mesh::ds_weights_cc);
 	else
-		return;
+		ds_create_points_p(M, mesh::ds_weights_ds);
 
 	// Create new F-faces by connecting the appropriate vertex points
 	// (generated above) of the face
@@ -1564,13 +1588,9 @@ void mesh::ds_create_points_g(mesh& M)
 *
 *	@param M		Mesh that stores the new points
 *	@param weight_function	Pointer to weight function
-*	@param extra_weights	Allows the user to override weights for some
-*				faces. This means that for certain faces, the
-*				user-defined weights are used instead of the
-*				weights defined by the weight function.
 */
 
-void mesh::ds_create_points_p(mesh& M, double (*weight_function)(size_t, size_t), const weights_map* extra_weights)
+void mesh::ds_create_points_p(mesh& M, double (*weight_function)(size_t, size_t))
 {
 	// Only used if extra_weights has been defined
 	weights_map::const_iterator it;
@@ -1582,8 +1602,8 @@ void mesh::ds_create_points_p(mesh& M, double (*weight_function)(size_t, size_t)
 		std::vector<const vertex*> vertices = sort_vertices(*f, (*f)->get_vertex(0));
 
 		// Check if weights for a face with k vertices can be found
-		if(	extra_weights != NULL &&
-			((it = extra_weights->find(k)) != extra_weights->end()))
+		if(	ds_custom_weights.size() != 0 &&
+			((it = ds_custom_weights.find(k)) != ds_custom_weights.end()))
 			weights = it->second;
 		else
 			weights.clear();
@@ -1666,12 +1686,9 @@ inline double mesh::ds_weights_cc(size_t k, size_t i)
 
 /*!
 *	Performs one step of Catmull-Clark subdivision on the current mesh.
-*
-*	@param weights		Parameter is ignored for now
-*	@param extra_weights	Parameter is ignored for now
 */
 
-void mesh::subdivide_catmull_clark(short weights, const weights_map* extra_weights)
+void mesh::subdivide_catmull_clark()
 {
 	mesh M;
 	bool non_quadrangular = false;
@@ -1716,10 +1733,12 @@ void mesh::subdivide_catmull_clark(short weights, const weights_map* extra_weigh
 		e->edge_point = M.add_vertex(edge_point);
 	}
 
-	if(non_quadrangular)
-		cc_create_points_g(M);
-	else
+	// Points can only be created parametrically if the user requested it
+	// _and_ there are no non-quadrangular faces
+	if(use_parametric_point_creation && !non_quadrangular)
 		cc_create_points_p(M, mesh::cc_weights_cc);
+	else
+		cc_create_points_g(M);
 
 	/*
 		Create new topology of the mesh by connecting

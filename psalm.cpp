@@ -236,6 +236,8 @@ int main(int argc, char* argv[])
 					std::cerr << "psalm: Unwilling to continue with empty weights file.\n";
 					return(-1);
 				}
+
+				scene_mesh.set_custom_weights(extra_weights);
 				break;
 			}
 
@@ -262,6 +264,7 @@ int main(int argc, char* argv[])
 					return(-1);
 				}
 
+				scene_mesh.set_predefined_weights(weights);
 				break;
 			}
 
@@ -346,7 +349,7 @@ int main(int argc, char* argv[])
 	for(std::vector<std::string>::iterator it = files.begin(); it != files.end(); it++)
 	{
 		scene_mesh.load(*it, type);
-		scene_mesh.subdivide(algorithm, steps, weights, &extra_weights);
+		scene_mesh.subdivide(algorithm, steps);
 		scene_mesh.prune(ignore_faces);
 
 		// If an output file has been set (even if it is empty), it

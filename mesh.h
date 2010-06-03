@@ -45,13 +45,19 @@ class mesh
 
 		void prune(const std::set<size_t>& ignore_faces);
 		void subdivide(	short algorithm = mesh::ALG_CATMULL_CLARK,
-				size_t steps = 1,
-				short weights = mesh::W_DEFAULT,
-				const weights_map* extra_weights = NULL);
+				size_t steps = 1);
 		void destroy();
 
 		mesh& operator=(const mesh& M);
 		void replace_with(mesh& M);
+
+		// Setters for instance options
+
+		void set_parametric_point_creation(bool status = true);
+		void set_predefined_weights(short weights);
+		void set_custom_weights(const weights_map& custom_weights);
+
+		// Class-wide constants
 
 		static const short TYPE_PLY;		///< Constant for reading/writing PLY files
 		static const short TYPE_OBJ;		///< Constant for reading/writing OBJ files
@@ -67,11 +73,16 @@ class mesh
 		static const short W_DOO_SABIN;		///< Represents Doo-Sabin weights for the DS scheme
 
 	private:
+
+		// Data variables
+
 		std::vector<vertex*>	V;
 		std::vector<edge*>	E;
 		std::vector<face*>	F;
 
 		std::tr1::unordered_map<std::string, edge*> E_M;
+
+		// Functions
 
 		vertex* get_vertex(size_t id);
 
@@ -92,14 +103,13 @@ class mesh
 		std::vector<const vertex*> sort_vertices(face* f, const vertex* v);
 		std::vector<face*> sort_faces(vertex* v);
 
-		void subdivide_loop(short weights, const weights_map* extra_weights);
-		void subdivide_doo_sabin(short weights, const weights_map* extra_weights);
-		void subdivide_catmull_clark(short weights, const weights_map* extra_weights);
+		void subdivide_loop();
+		void subdivide_doo_sabin();
+		void subdivide_catmull_clark();
 
 		void ds_create_points_g(mesh& M);
 		void ds_create_points_p(mesh& M,
-					double (*weight_function)(size_t, size_t),
-					const weights_map*);
+					double (*weight_function)(size_t, size_t));
 
 		void cc_create_points_g(mesh& M);
 		void cc_create_points_p(mesh& M,
@@ -118,9 +128,20 @@ class mesh
 		bool save_obj(std::ostream& out);
 		bool save_off(std::ostream& out);
 
+		// Status variables and options
+
 		static const short STATUS_OK;		//< Status constant signalling an operation worked
 		static const short STATUS_ERROR;	//< Status constant signalling an operation failed
 		static const short STATUS_UNDEFINED;	//< Status constant signalling no operation took place
+
+		bool use_parametric_point_creation;	//< Flag signalling that points in subdivision schemes shall
+							//< be computed using the parametric variant. Normally, the
+							//< geometric variant is used.
+
+		short weights;				//< Predefined weight set for the current algorithm; implies
+							//< that points are created parametrically
+
+		weights_map ds_custom_weights;		//< Stores custom weights for the DS scheme
 };
 
 } // end of namespace "psalm"
