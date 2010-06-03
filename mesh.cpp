@@ -1876,8 +1876,6 @@ void mesh::cc_create_points_p(mesh& M,
 		double beta	= weights.first;
 		double alpha	= 1.0-beta-gamma;
 
-		std::cout << n << "," << alpha << "," << beta << "," << gamma << "\n";
-
 		// sets of vertices with weights beta and gamma
 		std::set<const vertex*> vertices_beta;
 		std::set<const vertex*> vertices_gamma;
