@@ -137,6 +137,9 @@ class mesh
 		bool use_parametric_point_creation;	//< Flag signalling that points in subdivision schemes shall
 							//< be computed using the parametric variant. Normally, the
 							//< geometric variant is used.
+		bool print_statistics;			//< Flag signalling that statistics shall be printed to
+							//< STDERR--STDOUT cannot be used because the user may
+							//< specify it as an input or output "file".
 
 		short weights;				//< Predefined weight set for the current algorithm; implies
 							//< that points are created parametrically
