@@ -40,6 +40,8 @@ void show_usage()
 			<< "\t\t\t\t\t* doo-sabin, doo, sabin, ds\n"
 			<< "\t\t\t\t\t* loop, l\n\n"
 			<< "\t\t\t\tDefault algorithm: Catmull-Clark\n\n"
+			<< "-p, --parametric\t\tForces algorithms to compute new points using\n"
+			<< "\t\t\t\tparametric methods and not geometric ones.\n\n"
 			<< "-e, --extra-weights <file>\tOverride the default weights of subdivision\n"
 			<< "\t\t\t\tschemes by reading them from <file>. The exact\n"
 			<< "\t\t\t\tformat of this file depends on the subdivision\n"
@@ -158,6 +160,7 @@ int main(int argc, char* argv[])
 		{"weights",		required_argument,	NULL,	'w'},
 		{"extra-weights",	required_argument,	NULL,	'e'},
 
+		{"parametric",		no_argument,		NULL,	'p'},
 		{"help",		no_argument,		NULL,	'h'},
 
 		{NULL, 0, NULL, 0}
@@ -173,7 +176,7 @@ int main(int argc, char* argv[])
 	size_t steps	= 0;
 
 	int option = 0;
-	while((option = getopt_long(argc, argv, "o:n:i:t:a:w:e:h", cmd_line_opts, NULL)) != -1)
+	while((option = getopt_long(argc, argv, "o:n:i:t:a:w:e:ph", cmd_line_opts, NULL)) != -1)
 	{
 		switch(option)
 		{
@@ -303,6 +306,10 @@ int main(int argc, char* argv[])
 				}
 				break;
 			}
+
+			case 'p':
+				scene_mesh.set_parametric_point_creation();
+				break;
 
 			case 'h':
 			case '?':
