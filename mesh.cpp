@@ -1674,6 +1674,7 @@ inline double mesh::ds_weights_cc(size_t k, size_t i)
 void mesh::subdivide_catmull_clark(short weights, const weights_map* extra_weights)
 {
 	mesh M;
+	bool non_quadrangular = false;
 
 	// Create face points
 	for(size_t i = 0; i < F.size(); i++)
@@ -1685,6 +1686,9 @@ void mesh::subdivide_catmull_clark(short weights, const weights_map* extra_weigh
 		centroid /= F[i]->num_vertices();
 
 		F[i]->face_point = M.add_vertex(centroid);
+
+		if(!non_quadrangular && F[i]->num_vertices() != 4)
+			non_quadrangular = true;
 	}
 
 	// Create edge points
@@ -1712,7 +1716,10 @@ void mesh::subdivide_catmull_clark(short weights, const weights_map* extra_weigh
 		e->edge_point = M.add_vertex(edge_point);
 	}
 
-	cc_create_points_g(M);
+	if(non_quadrangular)
+		cc_create_points_g(M);
+	else
+		cc_create_points_p(M, mesh::cc_weights_cc);
 
 	/*
 		Create new topology of the mesh by connecting
@@ -1819,7 +1826,7 @@ void mesh::cc_create_points_g(mesh& M)
 		// S is the current vertex
 		S = V[i]->get_position();
 
-		v3ctor vertex_point =(Q+R*2+S*(n-3))/n;
+		v3ctor vertex_point = (Q+R*2+S*(n-3))/n;
 		V[i]->vertex_point = M.add_vertex(vertex_point);
 	}
 }
