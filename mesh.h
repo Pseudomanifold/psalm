@@ -119,6 +119,7 @@ class mesh
 		static double ds_weights_cc(size_t k, size_t i);
 
 		static std::pair<double, double> cc_weights_cc(size_t n);
+		static std::pair<double, double> cc_weights_ds(size_t n);
 
 		bool load_ply(std::istream& in);
 		bool load_obj(std::istream& in);

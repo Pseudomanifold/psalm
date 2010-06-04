@@ -1765,7 +1765,12 @@ void mesh::subdivide_catmull_clark()
 	// Points can only be created parametrically if the user requested it
 	// _and_ there are no non-quadrangular faces
 	if(use_parametric_point_creation && !non_quadrangular)
-		cc_create_points_p(M, mesh::cc_weights_cc);
+	{
+		if(weights == W_DOO_SABIN)
+			cc_create_points_p(M, mesh::cc_weights_ds);
+		else
+			cc_create_points_p(M, mesh::cc_weights_cc);
+	}
 	else
 		cc_create_points_g(M);
 
@@ -1964,6 +1969,21 @@ void mesh::cc_create_points_p(mesh& M,
 inline std::pair<double, double> mesh::cc_weights_cc(size_t n)
 {
 	return(std::make_pair(3.0/(2.0*n), 1.0/(4.0*n)));
+}
+
+/*!
+*	Calculates weight factors for the CC scheme by using the formula from
+*	the 1978 paper of Doo and Sabin.
+*
+*	@param	n Valency of the vertex
+*	@return	Pair of weights.
+*
+*	@see mesh::cc_weights_cc()
+*/
+
+inline std::pair<double, double> mesh::cc_weights_ds(size_t n)
+{
+	return(std::make_pair(1.0/n, 1.0/(4.0*n)));
 }
 
 /*!
