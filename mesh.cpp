@@ -2034,7 +2034,8 @@ vertex* mesh::find_face_vertex(face* f, const vertex* v)
 {
 	for(size_t i = 0; i < f->num_vertices(); i++)
 	{
-		// TODO: Speed could be increased by using lookup tables that map the "old" id to the "new id"
+		// TODO: Speed could be increased by using lookup tables that
+		// map the "old" id to the "new id"
 		if(f->get_vertex(i)->get_id() == v->get_id())
 			return(f->get_face_vertex(i));
 	}
