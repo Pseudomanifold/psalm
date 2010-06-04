@@ -1631,17 +1631,16 @@ void mesh::ds_create_points_p(mesh& M, double (*weight_function)(size_t, size_t)
 		std::vector<const vertex*> vertices = sort_vertices(*f, (*f)->get_vertex(0));
 
 		// Check if weights for a face with k vertices can be found
+		weights.clear();
 		if(	ds_custom_weights.size() != 0 &&
 			((it = ds_custom_weights.find(k)) != ds_custom_weights.end()))
 			weights = it->second;
-		else
-			weights.clear();
 
 		for(size_t i = 0; i < vertices.size(); i++)
 		{
 			v3ctor face_vertex_position;
 
-			// If a user-defined weights are present and weights for the current
+			// If user-defined weights are present and weights for the current
 			// number of vertices have been found
 			if(!weights.empty())
 			{
