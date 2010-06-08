@@ -4,6 +4,7 @@
 */
 
 #include <stdexcept>
+#include <limits>
 #include "face.h"
 
 namespace psalm
@@ -15,7 +16,8 @@ namespace psalm
 
 face::face()
 {
-	face_point = NULL;
+	face_point	= NULL;
+	id		= std::numeric_limits<size_t>::max();
 }
 
 /*!

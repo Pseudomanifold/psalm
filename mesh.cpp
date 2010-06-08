@@ -42,11 +42,15 @@ const short mesh::W_CATMULL_CLARK	= 1;
 const short mesh::W_DOO_SABIN		= 2;
 
 /*!
-*	Default constructor.
+*	Sets some default values.
 */
 
 mesh::mesh()
 {
+	weights = W_DEFAULT;
+
+	print_statistics		= false;
+	use_parametric_point_creation	= false;
 }
 
 /*!
@@ -880,6 +884,11 @@ mesh& mesh::operator=(const mesh& M)
 	this->F		= M.F;
 	this->E		= M.E;
 	this->E_M	= M.E_M;
+
+	this->weights	= M.weights;
+
+	this->print_statistics			= M.print_statistics;
+	this->use_parametric_point_creation	= M.use_parametric_point_creation;
 
 	return(*this);
 }

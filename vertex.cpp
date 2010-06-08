@@ -3,6 +3,7 @@
 *	@brief	Implementations for vertex class
 */
 
+#include <limits>
 #include "vertex.h"
 
 namespace psalm
@@ -14,7 +15,8 @@ namespace psalm
 
 vertex::vertex()
 {
-	vertex_point = NULL;
+	vertex_point	= NULL;
+	id		= std::numeric_limits<size_t>::max();
 }
 
 /*!

@@ -48,7 +48,8 @@ void edge::set(const vertex* u, const vertex* v)
 	this->u = u;
 	this->v = v;
 
-	f = g = NULL;
+	f = g		= NULL;
+	edge_point	= NULL;
 }
 
 /*!
