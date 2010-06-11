@@ -571,15 +571,43 @@ bool mesh::load_obj(std::istream &in)
 		}
 		else if(keyword == OBJ_KEY_FACE)
 		{
+			std::vector<vertex*> vertices;
+
 			// Check whether it is a triplet data string
 			if(line.find_first_of('/') != std::string::npos)
 			{
-				// FIXME: NYI
+				while(!converter.eof())
+				{
+					std::string index_str;
+					converter >> index_str;
+
+					if(index_str.length() == 0)
+						continue;
+
+					size_t slash_pos = index_str.find_first_of('/'); // only interested in first occurrence
+
+					// Contains the index as a string (not
+					// including the '/'). The other
+					// attributes (normals, textures
+					// coordinates) are _removed_ here.
+					std::istringstream index_conv(index_str.substr(0, slash_pos));
+
+					long index = 0;
+					index_conv >> index;
+
+					if(index < 0)
+					{
+						std::cerr << "psalm: Handling of negative indices not yet implemented.\n";
+						return(false);
+					}
+					else
+						vertices.push_back(get_vertex(index-1));
+				}
+
+				add_face(vertices);
 			}
 			else
 			{
-				std::vector<vertex*> vertices;
-
 				long index = 0;
 				while(!converter.eof())
 				{
