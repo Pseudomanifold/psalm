@@ -71,6 +71,7 @@ class mesh
 		static const short W_DEFAULT;		///< Represents default weights for any subdivision scheme
 		static const short W_CATMULL_CLARK;	///< Represents Catmull-Clark weights for the DS scheme
 		static const short W_DOO_SABIN;		///< Represents Doo-Sabin weights for the DS scheme
+		static const short W_RIECK;		///< Represents Rieck weights for the DS scheme
 
 	private:
 
@@ -117,6 +118,7 @@ class mesh
 
 		static double ds_weights_ds(size_t k, size_t i);
 		static double ds_weights_cc(size_t k, size_t i);
+		static double ds_weights_br(size_t k, size_t i);
 
 		static std::pair<double, double> cc_weights_cc(size_t n);
 		static std::pair<double, double> cc_weights_ds(size_t n);

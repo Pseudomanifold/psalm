@@ -40,6 +40,7 @@ const short mesh::ALG_LOOP		= 2;
 const short mesh::W_DEFAULT		= 0;
 const short mesh::W_CATMULL_CLARK	= 1;
 const short mesh::W_DOO_SABIN		= 2;
+const short mesh::W_RIECK		= 3;
 
 /*!
 *	Sets some default values.
@@ -1217,7 +1218,8 @@ void mesh::set_predefined_weights(short weights)
 {
 	if(	weights == W_DEFAULT		||
 		weights == W_CATMULL_CLARK	||
-		weights == W_DOO_SABIN)
+		weights == W_DOO_SABIN		||
+		weights == W_RIECK)
 		this->weights = weights;
 }
 
@@ -1502,6 +1504,8 @@ void mesh::subdivide_doo_sabin()
 	else if(weights == W_DEFAULT ||
 		weights == W_CATMULL_CLARK)
 		ds_create_points_p(M, mesh::ds_weights_cc);
+	else if(weights == W_RIECK)
+		ds_create_points_p(M, mesh::ds_weights_br);
 	else
 		ds_create_points_p(M, mesh::ds_weights_ds);
 
@@ -1747,6 +1751,27 @@ inline double mesh::ds_weights_cc(size_t k, size_t i)
 		else
 			return(1.0/(4.0*k));
 	}
+}
+
+/*!
+*	Computes the weight factor for the i-th vertex of a face with k
+*	vertices. The weights have been selected in order to yield the
+*	most degenerate surfaces.
+*
+*	This function only applies to the Doo-Sabin subdivision scheme.
+*
+*	@param i Index of vertex in face (0, 1, ..., k-1)
+*	@param k Number of vertices
+*
+*	@return Weight
+*/
+
+inline double mesh::ds_weights_br(size_t k, size_t i)
+{
+	if(i == 0)
+		return(0.0);
+	else
+		return(1.0/static_cast<double>(k-1));
 }
 
 /*!
