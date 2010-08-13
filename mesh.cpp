@@ -52,6 +52,7 @@ mesh::mesh()
 
 	print_statistics		= false;
 	use_parametric_point_creation	= false;
+	handle_creases			= false;
 }
 
 /*!
@@ -1196,6 +1197,17 @@ vertex* mesh::add_vertex(const v3ctor& pos)
 }
 
 /*!
+*	Sets flag for handling crease and border edges.
+*
+*	@param status Value for flag (true by default)
+*/
+
+void mesh::set_crease_handling(bool status)
+{
+	handle_creases = status;
+}
+
+/*!
 *	Sets flag for parametric point creation.
 *
 *	@param status Value for flag (true by default)
@@ -1805,10 +1817,17 @@ void mesh::subdivide_catmull_clark()
 		v3ctor edge_point;
 
 		// Border/crease edge: Use midpoint of edge for the edge point
+		// if crease handling is enabled
 		if(e->get_g() == NULL)
 		{
-			edge_point = (	e->get_u()->get_position()+
-					e->get_v()->get_position())*0.5;
+			e->edge_point = NULL;
+			if(handle_creases)
+			{
+				edge_point = (	e->get_u()->get_position()+
+						e->get_v()->get_position())*0.5;
+
+				e->edge_point = M.add_vertex(edge_point);
+			}
 		}
 
 		// Normal edge
@@ -1818,9 +1837,9 @@ void mesh::subdivide_catmull_clark()
 					e->get_v()->get_position()+
 					e->get_f()->face_point->get_position()+
 					e->get_g()->face_point->get_position())*0.25;
-		}
 
-		e->edge_point = M.add_vertex(edge_point);
+			e->edge_point = M.add_vertex(edge_point);
+		}
 	}
 
 	// Points can only be created parametrically if the user requested it
@@ -1872,6 +1891,13 @@ void mesh::subdivide_catmull_clark()
 					}
 				}
 			}
+
+			// If crease handling is not enabled, we may not have
+			// edge points everywhere. These faces need to be
+			// skipped, of course.
+			if(	e1->edge_point == NULL ||
+				e2->edge_point == NULL)
+				continue;
 
 			/*
 				Check which edge needs to be used first in

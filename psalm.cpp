@@ -161,6 +161,7 @@ int main(int argc, char* argv[])
 		{"extra-weights",	required_argument,	NULL,	'e'},
 
 		{"parametric",		no_argument,		NULL,	'p'},
+		{"crease-handling",	no_argument,		NULL,	'c'},
 		{"help",		no_argument,		NULL,	'h'},
 
 		{NULL, 0, NULL, 0}
@@ -176,7 +177,7 @@ int main(int argc, char* argv[])
 	size_t steps	= 0;
 
 	int option = 0;
-	while((option = getopt_long(argc, argv, "o:n:i:t:a:w:e:ph", cmd_line_opts, NULL)) != -1)
+	while((option = getopt_long(argc, argv, "o:n:i:t:a:w:e:cph", cmd_line_opts, NULL)) != -1)
 	{
 		switch(option)
 		{
@@ -308,6 +309,10 @@ int main(int argc, char* argv[])
 				}
 				break;
 			}
+
+			case 'c':
+				scene_mesh.set_crease_handling();
+				break;
 
 			case 'p':
 				scene_mesh.set_parametric_point_creation();

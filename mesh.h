@@ -53,6 +53,7 @@ class mesh
 
 		// Setters for instance options
 
+		void set_crease_handling(bool status= true);
 		void set_parametric_point_creation(bool status = true);
 		void set_predefined_weights(short weights);
 		void set_custom_weights(const weights_map& custom_weights);
@@ -140,9 +141,16 @@ class mesh
 		bool use_parametric_point_creation;	//< Flag signalling that points in subdivision schemes shall
 							//< be computed using the parametric variant. Normally, the
 							//< geometric variant is used.
+
 		bool print_statistics;			//< Flag signalling that statistics shall be printed to
 							//< STDERR--STDOUT cannot be used because the user may
 							//< specify it as an input or output "file".
+
+		bool handle_creases;			//< Flag signalling
+							//< that creases or border edges are handled. The handling depends
+							//< on the algorithm. The CC scheme, for example, will
+							//< compute the midpoint of the crease edges in order to
+							//< obtain a new edge point.
 
 		short weights;				//< Predefined weight set for the current algorithm; implies
 							//< that points are created parametrically
