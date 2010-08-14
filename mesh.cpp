@@ -981,7 +981,6 @@ void mesh::add_face(std::vector<vertex*> vertices)
 		if(edge.inverted)
 		{
 			edge.e->set_g(f);
-			//V[u]->add_edge(edge.e);
 			u->add_face(f);
 		}
 
@@ -1082,8 +1081,8 @@ directed_edge mesh::add_edge(const vertex* u, const vertex* v)
 	directed_edge result;
 
 	/*
-		The edge is assigned an ID string of the form "k1-k2", where k1
-		is the lower of the two indices.
+		The vertex IDs are combined into an std::pair. These pairs are
+		then stored in an std::map container.
 
 		Previously, the Cantor pairing function had been used, but this
 		yielded integer overflows with normal 32bit integers. Hence,
@@ -1091,31 +1090,30 @@ directed_edge mesh::add_edge(const vertex* u, const vertex* v)
 		it requires a conversion step.
 	*/
 
-	size_t k1, k2;
-	if(u->get_id() < v->get_id())
+	size_t u_id = u->get_id();
+	size_t v_id = v->get_id();
+
+	std::pair<size_t, size_t> id;
+	if(u_id < v_id)
 	{
-		k1 = u->get_id();
-		k2 = v->get_id();
+		id.first = u_id;
+		id.second = v_id;
 	}
 	else
 	{
-		k1 = v->get_id();
-		k2 = u->get_id();
+		id.first = v_id;
+		id.second = u_id;
 	}
 
-	std::ostringstream converter;
-	converter << k1 << "-" << k2;
-	std::string k = converter.str();
-
 	// Check whether edge exists
-	std::tr1::unordered_map<std::string, edge*>::iterator it;
-	if((it = E_M.find(k)) == E_M.end())
+	std::map<std::pair<size_t, size_t>, edge*>::iterator it;
+	if((it = E_M.find(id)) == E_M.end())
 	{
 		// Edge not found, create an edge from the _original_ edge and
 		// add it to the map
 		edge* new_edge = new edge(u, v);
 		E.push_back(new_edge);
-		E_M[k] = new_edge;
+		E_M[id] = new_edge;
 
 		result.e = new_edge;
 		result.inverted = false;
@@ -1125,7 +1123,7 @@ directed_edge mesh::add_edge(const vertex* u, const vertex* v)
 	{
 		// Edge has been found, check whether the proper direction has
 		// been stored.
-		if(it->second->get_u()->get_id() != u->get_id())
+		if(it->second->get_u()->get_id() != u_id)
 			result.inverted = true;
 		else
 			result.inverted = false;
