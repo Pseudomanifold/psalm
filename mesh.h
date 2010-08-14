@@ -12,7 +12,6 @@
 #include <utility>
 #include <set>
 #include <map>
-#include <tr1/unordered_map>
 
 #include "vertex.h"
 #include "directed_edge.h"
@@ -82,7 +81,7 @@ class mesh
 		std::vector<edge*>	E;
 		std::vector<face*>	F;
 
-		std::tr1::unordered_map<std::string, edge*> E_M;
+		std::map<std::pair<size_t,size_t>, edge*> E_M;
 
 		// Functions
 
