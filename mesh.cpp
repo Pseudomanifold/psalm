@@ -919,6 +919,7 @@ mesh& mesh::operator=(const mesh& M)
 
 	this->print_statistics			= M.print_statistics;
 	this->use_parametric_point_creation	= M.use_parametric_point_creation;
+	this->handle_creases			= M.handle_creases;
 
 	return(*this);
 }
