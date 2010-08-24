@@ -40,7 +40,7 @@ const short mesh::ALG_LOOP		= 2;
 const short mesh::W_DEFAULT		= 0;
 const short mesh::W_CATMULL_CLARK	= 1;
 const short mesh::W_DOO_SABIN		= 2;
-const short mesh::W_RIECK		= 3;
+const short mesh::W_DEGENERATE		= 3;
 
 /*!
 *	Sets some default values.
@@ -51,7 +51,10 @@ mesh::mesh()
 	weights = W_DEFAULT;
 
 	print_statistics		= false;
+
 	use_parametric_point_creation	= false;
+	use_bspline_weights		= true;
+
 	handle_creases			= false;
 }
 
@@ -915,11 +918,8 @@ mesh& mesh::operator=(const mesh& M)
 	this->E		= M.E;
 	this->E_M	= M.E_M;
 
-	this->weights	= M.weights;
-
-	this->print_statistics			= M.print_statistics;
-	this->use_parametric_point_creation	= M.use_parametric_point_creation;
-	this->handle_creases			= M.handle_creases;
+	// Options will _not_ be overwritten by this operation; previously this
+	// was the case.
 
 	return(*this);
 }
@@ -1230,7 +1230,7 @@ void mesh::set_predefined_weights(short weights)
 	if(	weights == W_DEFAULT		||
 		weights == W_CATMULL_CLARK	||
 		weights == W_DOO_SABIN		||
-		weights == W_RIECK)
+		weights == W_DEGENERATE)
 		this->weights = weights;
 }
 
@@ -1515,8 +1515,8 @@ void mesh::subdivide_doo_sabin()
 	else if(weights == W_DEFAULT ||
 		weights == W_CATMULL_CLARK)
 		ds_create_points_p(M, mesh::ds_weights_cc);
-	else if(weights == W_RIECK)
-		ds_create_points_p(M, mesh::ds_weights_br);
+	else if(weights == W_DEGENERATE)
+		ds_create_points_p(M, mesh::ds_weights_degenerate);
 	else
 		ds_create_points_p(M, mesh::ds_weights_ds);
 
@@ -1703,8 +1703,20 @@ void mesh::ds_create_points_p(mesh& M, double (*weight_function)(size_t, size_t)
 			// Use weight distribution function
 			else
 			{
-				for(size_t j = 0; j < vertices.size(); j++)
-					face_vertex_position += vertices[j]->get_position()*weight_function(k,j);
+				// By default, use original weights for quadrangles
+				if(k == 4 && use_bspline_weights)
+				{
+					face_vertex_position =  vertices[0]->get_position()*9.0/16.0+
+								vertices[1]->get_position()*3.0/16.0+
+								vertices[2]->get_position()*1.0/16.0+
+								vertices[3]->get_position()*3.0/16.0;
+				}
+
+				else
+				{
+					for(size_t j = 0; j < vertices.size(); j++)
+						face_vertex_position += vertices[j]->get_position()*weight_function(k,j);
+				}
 			}
 
 			vertex* face_vertex = M.add_vertex(face_vertex_position);
@@ -1765,7 +1777,7 @@ inline double mesh::ds_weights_cc(size_t k, size_t i)
 }
 
 /*!
-*	Computes the weight factor for the i-th vertex of a face with k
+*	Computes the weight factor for the ith vertex of a face with k
 *	vertices. The weights have been selected in order to yield the
 *	most degenerate surfaces.
 *
@@ -1777,7 +1789,7 @@ inline double mesh::ds_weights_cc(size_t k, size_t i)
 *	@return Weight
 */
 
-inline double mesh::ds_weights_br(size_t k, size_t i)
+inline double mesh::ds_weights_degenerate(size_t k, size_t i)
 {
 	if(i == 0)
 		return(0.0);
@@ -1847,6 +1859,8 @@ void mesh::subdivide_catmull_clark()
 	{
 		if(weights == W_DOO_SABIN)
 			cc_create_points_p(M, mesh::cc_weights_ds);
+		else if(weights == W_DEGENERATE)
+			cc_create_points_p(M, mesh::cc_weights_degenerate);
 		else
 			cc_create_points_p(M, mesh::cc_weights_cc);
 	}
@@ -1988,13 +2002,28 @@ void mesh::cc_create_points_p(mesh& M,
 	{
 		vertex* v = *v_it;
 
-		// will be used later for determining the real weights
+		// will be used later for determining the real weights; for the
+		// regular case, we will always use the standard weights
 		size_t n = v->valency();
 
-		std::pair<double, double> weights = weight_function(n);
-		double gamma	= weights.second;
-		double beta	= weights.first;
-		double alpha	= 1.0-beta-gamma;
+		double gamma	= 0.0;
+		double beta	= 0.0;
+		double alpha	= 0.0;
+
+		if(n == 4 && use_bspline_weights)
+		{
+			gamma	= 1.0/16.0;
+			beta	= 3.0/8.0;
+			alpha	= 9.0/16.0;
+		}
+		else
+		{
+			std::pair<double, double> weights = weight_function(n);
+
+			gamma	= weights.second;
+			beta	= weights.first;
+			alpha	= 1.0-beta-gamma;
+		}
 
 		// sets of vertices with weights beta and gamma
 		std::set<const vertex*> vertices_beta;
@@ -2016,6 +2045,9 @@ void mesh::cc_create_points_p(mesh& M,
 		for(size_t i = 0; i < n; i++)
 		{
 			const face* f = v->get_face(i);
+			if(f == NULL)
+				continue;
+
 			for(size_t j = 0; j < f->num_vertices(); j++)
 			{
 				const vertex* f_v = f->get_vertex(j);
@@ -2028,14 +2060,22 @@ void mesh::cc_create_points_p(mesh& M,
 			}
 		}
 
-		// Apply weights
+		// Apply weights; since this is O(n), the function checks
+		// whether the weights for beta and gamma are applicable at all
 
 		v3ctor vertex_point = v->get_position()*alpha;
-		for(std::set<const vertex*>::iterator it = vertices_beta.begin(); it != vertices_beta.end(); it++)
-			vertex_point += (*it)->get_position()*beta/n;
 
-		for(std::set<const vertex*>::iterator it = vertices_gamma.begin(); it != vertices_gamma.end(); it++)
-			vertex_point += (*it)->get_position()*gamma/n;
+		if(beta != 0.0)
+		{
+			for(std::set<const vertex*>::iterator it = vertices_beta.begin(); it != vertices_beta.end(); it++)
+				vertex_point += (*it)->get_position()*beta/n;
+		}
+
+		if(gamma != 0.0)
+		{
+			for(std::set<const vertex*>::iterator it = vertices_gamma.begin(); it != vertices_gamma.end(); it++)
+				vertex_point += (*it)->get_position()*gamma/n;
+		}
 
 		v->vertex_point = M.add_vertex(vertex_point);
 	}
@@ -2070,6 +2110,20 @@ inline std::pair<double, double> mesh::cc_weights_cc(size_t n)
 inline std::pair<double, double> mesh::cc_weights_ds(size_t n)
 {
 	return(std::make_pair(1.0/n, 1.0/(4.0*n)));
+}
+
+/*!
+*	Calculates degenerate weights for the CC scheme.
+*
+*	@param	n Valency of the vertex
+*	@return	Pair of weights
+*
+*	@see mesh::cc_weights_cc()
+*/
+
+inline std::pair<double, double> mesh::cc_weights_degenerate(size_t n)
+{
+	return(std::make_pair(0.0, 0.0));
 }
 
 /*!

@@ -71,7 +71,7 @@ class mesh
 		static const short W_DEFAULT;		///< Represents default weights for any subdivision scheme
 		static const short W_CATMULL_CLARK;	///< Represents Catmull-Clark weights for the DS scheme
 		static const short W_DOO_SABIN;		///< Represents Doo-Sabin weights for the DS scheme
-		static const short W_RIECK;		///< Represents Rieck weights for the DS scheme
+		static const short W_DEGENERATE;	///< Represents degenerate weights for the DS scheme
 
 	private:
 
@@ -118,10 +118,11 @@ class mesh
 
 		static double ds_weights_ds(size_t k, size_t i);
 		static double ds_weights_cc(size_t k, size_t i);
-		static double ds_weights_br(size_t k, size_t i);
+		static double ds_weights_degenerate(size_t k, size_t i);
 
 		static std::pair<double, double> cc_weights_cc(size_t n);
 		static std::pair<double, double> cc_weights_ds(size_t n);
+		static std::pair<double, double> cc_weights_degenerate(size_t n);
 
 		bool load_ply(std::istream& in);
 		bool load_obj(std::istream& in);
@@ -150,6 +151,8 @@ class mesh
 							//< on the algorithm. The CC scheme, for example, will
 							//< compute the midpoint of the crease edges in order to
 							//< obtain a new edge point.
+
+		bool use_bspline_weights;		//< Flag signalling that the B-spline weights are supposed to be use whenever an algorithm encounters a regular situation (i.e. 4-sided polygon for Doo-Sabin, vertex with valency 4 for Catmull-Clark). Only relevant for parametric point creation.
 
 		short weights;				//< Predefined weight set for the current algorithm; implies
 							//< that points are created parametrically

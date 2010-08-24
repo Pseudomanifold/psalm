@@ -260,8 +260,8 @@ int main(int argc, char* argv[])
 					weights_str == "sabin"		||
 					weights_str == "ds")
 					weights = psalm::mesh::W_DOO_SABIN;
-				else if(weights_str == "rieck")
-					weights = psalm::mesh::W_RIECK;
+				else if(weights_str == "degenerate")
+					weights = psalm::mesh::W_DEGENERATE;
 				else if(weights_str == "default")
 					weights = psalm::mesh::W_DEFAULT;
 				else
