@@ -1267,6 +1267,31 @@ void mesh::prune(const std::set<size_t>& ignore_faces)
 }
 
 /*!
+*	Prints a progress bar to STDOUT.
+*
+*	@param	op	Operation the progress bar shall show; will be expanded by ": "
+*	@param	cur_pos	Current position of progress bar
+*	@param	max_pos	Maximum position of progress bar
+*/
+
+void mesh::print_progress(std::string message, size_t cur_pos, size_t max_pos)
+{
+	std::cerr	<< "\r" << std::left << std::setw(50) << message << ": "
+			<< "[";
+
+	size_t percentage = (cur_pos*100)/max_pos;
+
+	std::cerr	<< std::setw(10)
+			<< std::string( percentage/10, '#')
+			<< "]"
+			<< " "
+			<< std::setw(3) << percentage << "%" << std::right;
+
+	if(cur_pos == max_pos)
+		std::cerr << std::endl;
+}
+
+/*!
 *	Applies a subdivision algorithm to the current mesh.
 *
 *	@param algorithm	Defines which algorithm to use (Catmull-Clark
@@ -1302,9 +1327,12 @@ void mesh::subdivide(	short algorithm,
 	};
 
 	clock_t start = clock();
-
 	for(size_t i = 0; i < steps; i++)
+	{
+		std::cerr << "[" << i << "]\n";
 		(this->*subdivision_algorithm)();
+		std::cerr << "\n";
+	}
 
 	clock_t end = clock();
 
@@ -1524,6 +1552,10 @@ void mesh::subdivide_doo_sabin()
 	// (generated above) of the face
 	for(size_t i = 0; i < F.size(); i++)
 	{
+		print_progress(	"Creating F-faces",
+				i,
+				F.size()-1);
+
 		// Since the vertex points are visited in the order of the old
 		// vertices, this step is orientation-preserving
 
@@ -1537,6 +1569,10 @@ void mesh::subdivide_doo_sabin()
 	// Create quadrilateral E-faces
 	for(std::vector<edge*>::iterator it = E.begin(); it != E.end(); it++)
 	{
+		print_progress(	"Creating E-faces",
+				std::distance(E.begin(), it)+1,
+				E.size());
+
 		edge* e = *it;
 
 		// Skip border edges--we cannot create any new faces here
@@ -1574,6 +1610,8 @@ void mesh::subdivide_doo_sabin()
 	// adjacent to a fixed vertex.
 	for(size_t i = 0; i < V.size(); i++)
 	{
+		print_progress("Creating V-faces", i, V.size()-1);
+
 		// This is a quick fix required for processing some meshes that
 		// are degenerate
 		if(V[i]->num_adjacent_faces() < 3)
@@ -1606,6 +1644,10 @@ void mesh::ds_create_points_g(mesh& M)
 	// Create new points
 	for(size_t i = 0; i < F.size(); i++)
 	{
+		print_progress(	"Creating points [geometrically]",
+				i,
+				F.size()-1);
+
 		// Find centroid of face
 		v3ctor centroid;
 		for(size_t j = 0; j < F[i]->num_vertices(); j++)
@@ -1679,6 +1721,10 @@ void mesh::ds_create_points_p(mesh& M, double (*weight_function)(size_t, size_t)
 
 	for(std::vector<face*>::iterator f = F.begin(); f != F.end(); f++)
 	{
+		print_progress(	"Creating points [parametrically]",
+				std::distance(F.begin(), f)+1,
+				F.size());
+
 		size_t k = (*f)->num_vertices();
 		std::vector<const vertex*> vertices = sort_vertices(*f, (*f)->get_vertex(0));
 
@@ -1809,6 +1855,8 @@ void mesh::subdivide_catmull_clark()
 	// Create face points
 	for(size_t i = 0; i < F.size(); i++)
 	{
+		print_progress("Creating face points", i, F.size()-1);
+
 		v3ctor centroid;
 		for(size_t j = 0; j < F[i]->num_vertices(); j++)
 			centroid += F[i]->get_vertex(j)->get_position();
@@ -1824,6 +1872,8 @@ void mesh::subdivide_catmull_clark()
 	// Create edge points
 	for(std::vector<edge*>::iterator it = E.begin(); it != E.end(); it++)
 	{
+		print_progress("Creating edge points", std::distance(it, E.end())+1, E.size());
+
 		edge* e = *it;
 		v3ctor edge_point;
 
@@ -1854,8 +1904,9 @@ void mesh::subdivide_catmull_clark()
 	}
 
 	// Points can only be created parametrically if the user requested it
-	// _and_ there are no non-quadrangular faces
-	if(use_parametric_point_creation && !non_quadrangular)
+	// _and_ there are no non-quadrangular faces. If the user specified
+	// other weights, this overrides any setting.
+	if((use_parametric_point_creation || weights != W_DEFAULT) && !non_quadrangular)
 	{
 		if(weights == W_DOO_SABIN)
 			cc_create_points_p(M, mesh::cc_weights_ds);
@@ -1877,6 +1928,7 @@ void mesh::subdivide_catmull_clark()
 
 	for(size_t i = 0; i < V.size(); i++)
 	{
+		print_progress("Creating topology", i, V.size()-1);
 		if(V[i]->vertex_point == NULL)
 			continue; // ignore degenerate vertices
 
@@ -1948,6 +2000,8 @@ void mesh::cc_create_points_g(mesh& M)
 {
 	for(size_t i = 0; i < V.size(); i++)
 	{
+		print_progress("Creating vertex points [geometrically]", i, V.size()-1);
+
 		// This follows the original terminology as described by
 		// Catmull and Clark
 
@@ -2000,6 +2054,7 @@ void mesh::cc_create_points_p(mesh& M,
 {
 	for(std::vector<vertex*>::iterator v_it = V.begin(); v_it != V.end(); v_it++)
 	{
+		print_progress("Creating vertex points [parametrically]", std::distance(V.begin(), v_it)+1, V.size());
 		vertex* v = *v_it;
 
 		// will be used later for determining the real weights; for the

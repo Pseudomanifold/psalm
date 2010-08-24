@@ -104,6 +104,8 @@ class mesh
 		std::vector<const vertex*> sort_vertices(face* f, const vertex* v);
 		std::vector<face*> sort_faces(vertex* v);
 
+		void print_progress(std::string op, size_t cur_pos, size_t max_pos);
+
 		void subdivide_loop();
 		void subdivide_doo_sabin();
 		void subdivide_catmull_clark();
@@ -152,7 +154,11 @@ class mesh
 							//< compute the midpoint of the crease edges in order to
 							//< obtain a new edge point.
 
-		bool use_bspline_weights;		//< Flag signalling that the B-spline weights are supposed to be use whenever an algorithm encounters a regular situation (i.e. 4-sided polygon for Doo-Sabin, vertex with valency 4 for Catmull-Clark). Only relevant for parametric point creation.
+		bool use_bspline_weights;		//< Flag signalling
+							//< that the B-spline weights are supposed to be use whenever an
+							//< algorithm encounters a regular situation (i.e. 4-sided polygon
+							//< for Doo-Sabin, vertex with valency 4 for Catmull-Clark). Only
+							//< relevant for parametric point creation.
 
 		short weights;				//< Predefined weight set for the current algorithm; implies
 							//< that points are created parametrically
