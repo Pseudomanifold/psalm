@@ -1872,7 +1872,7 @@ void mesh::subdivide_catmull_clark()
 	// Create edge points
 	for(std::vector<edge*>::iterator it = E.begin(); it != E.end(); it++)
 	{
-		print_progress("Creating edge points", std::distance(it, E.end())+1, E.size());
+		print_progress("Creating edge points", std::distance(E.begin(),it)+1, E.size());
 
 		edge* e = *it;
 		v3ctor edge_point;
