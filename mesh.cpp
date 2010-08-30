@@ -1276,10 +1276,15 @@ void mesh::prune(const std::set<size_t>& ignore_faces)
 
 void mesh::print_progress(std::string message, size_t cur_pos, size_t max_pos)
 {
+	size_t percentage = (cur_pos*100)/max_pos;
+	static size_t last;
+
+	if(percentage == last)
+		return;
+
 	std::cerr	<< "\r" << std::left << std::setw(50) << message << ": "
 			<< "[";
 
-	size_t percentage = (cur_pos*100)/max_pos;
 
 	std::cerr	<< std::setw(10)
 			<< std::string( percentage/10, '#')
@@ -1289,6 +1294,8 @@ void mesh::print_progress(std::string message, size_t cur_pos, size_t max_pos)
 
 	if(cur_pos == max_pos)
 		std::cerr << std::endl;
+
+	last = percentage;
 }
 
 /*!
