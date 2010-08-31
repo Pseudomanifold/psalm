@@ -285,7 +285,7 @@ int main(int argc, char* argv[])
 			}
 
 			case 'F':
-			case 'I':
+			case 'V':
 			{
 				std::istringstream val_stream(optarg);
 				std::istringstream converter;
