@@ -1289,7 +1289,8 @@ void mesh::prune(const std::set<size_t>& remove_faces, const std::set<size_t>& r
 					it_f = F.erase(it_f);
 			}
 
-			it = V.erase(it);
+			// Do not remove vertex; otherwise all vertex IDs would
+			// need to be changed
 		}
 	}
 }
