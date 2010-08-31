@@ -1250,19 +1250,39 @@ void mesh::set_custom_weights(const weights_map& custom_weights)
 *	Performs several pruning operations on the current mesh:
 *
 *		- Removal of faces with n sides
+*		- Removal of faces with n sides
 *
-*	@param ignore_faces	Contains a set of numbers. If a face with n
+*	@param remove_faces	Contains a set of numbers. If a face with n
 *				sides is found and n matches one of these
 *				numbers, the face will be removed from the
 *				mesh.
+*
+*	@param remove_vertices	Ditto; removes vertices with valency n.
 */
 
-void mesh::prune(const std::set<size_t>& ignore_faces)
+void mesh::prune(const std::set<size_t>& remove_faces, const std::set<size_t>& remove_vertices)
 {
 	for(std::vector<face*>::iterator it = F.begin(); it != F.end(); it++)
 	{
-		if(ignore_faces.find((*it)->num_edges()) != ignore_faces.end())
+		if(remove_faces.find((*it)->num_edges()) != remove_faces.end())
 			it = F.erase(it);
+	}
+
+	for(std::vector<vertex*>:: iterator it = V.begin(); it != V.end(); it++)
+	{
+		if(remove_vertices.find((*it)->num_adjacent_faces()) != remove_vertices.end())
+		{
+			// Remove all adjacent faces
+			for(size_t i = 0; i < (*it)->num_adjacent_faces(); i++)
+			{
+				const face* f = (*it)->get_face(i);
+				std::vector<face*>::iterator it_f = std::find(F.begin(), F.end(), f);
+				if(it_f != F.end())
+					it_f = F.erase(it_f);
+			}
+
+			it = V.erase(it);
+		}
 	}
 }
 

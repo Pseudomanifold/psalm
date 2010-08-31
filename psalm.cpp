@@ -58,13 +58,17 @@ void show_usage()
 			<< "\t\t\t\t\t* ply (Standford PLY files)\n"
 			<< "\t\t\t\t\t* obj (Wavefront OBJ files)\n"
 			<< "\t\t\t\t\t* off (Geomview object files)\n\n"
-			<< "-i, --ignore <list of numbers>\tIgnore any face whose number of sides matches\n"
-			<< "\t\t\t\tone of the numbers in the list. Use commas to\n"
-			<< "\t\t\t\tseparate list values.\n\n"
 			<< "-o, --output <file>\t\tSet output file\n\n"
 			<< "-n, --steps <n>\t\t\tSet number of subdivision steps to perform on\n"
 			<< "\t\t\t\tthe input mesh.\n\n"
 			<< "\t\t\t\tDefault value: 0\n\n"
+			<< "--remove-faces <numbers>\tRemove faces whose number of sides matches\n"
+			<< "\t\t\t\tone of the numbers in the list. Use commas to\n"
+			<< "\t\t\t\tseparate list values.\n\n"
+			<< "--remove-vertices <numbers>\tRemove vertices whose valency matches one\n"
+			<< "\t\t\t\tof the numbers in the list. Use commas to\n"
+			<< "\t\t\t\tseparate list values.\n\n"
+			<< "-s, --statistics\t\tPrint statistics to STDERR\n\n"
 			<< "-h, --help\t\t\tShow this screen\n"
 			<< "\n";
 }
@@ -155,7 +159,8 @@ int main(int argc, char* argv[])
 		{"output",		required_argument,	NULL,	'o'},
 		{"steps",		required_argument,	NULL,	'n'},
 		{"type",		required_argument,	NULL,	't'},
-		{"ignore",		required_argument,	NULL,	'i'},
+		{"remove-faces",	required_argument,	NULL,	'F'},
+		{"remove-vertices",	required_argument,	NULL,	'V'},
 		{"algorithm",		required_argument,	NULL,	'a'},
 		{"weights",		required_argument,	NULL,	'w'},
 		{"extra-weights",	required_argument,	NULL,	'e'},
@@ -171,13 +176,14 @@ int main(int argc, char* argv[])
 	short algorithm	= psalm::mesh::ALG_CATMULL_CLARK;
 	short weights	= psalm::mesh::W_DEFAULT;
 
-	std::set<size_t> ignore_faces;
+	std::set<size_t> remove_faces;
+	std::set<size_t> remove_vertices;
 	psalm::weights_map extra_weights;
 
 	size_t steps	= 0;
 
 	int option = 0;
-	while((option = getopt_long(argc, argv, "o:n:i:t:a:w:e:cph", cmd_line_opts, NULL)) != -1)
+	while((option = getopt_long(argc, argv, "o:n:F:V:t:a:w:e:bcph", cmd_line_opts, NULL)) != -1)
 	{
 		switch(option)
 		{
@@ -274,12 +280,13 @@ int main(int argc, char* argv[])
 				break;
 			}
 
-			case 'i':
+			case 'F':
+			case 'I':
 			{
-				std::istringstream ignore_faces_str(optarg);
+				std::istringstream val_stream(optarg);
 				std::istringstream converter;
 				std::string val_str;
-				while(getline(ignore_faces_str, val_str, ','))
+				while(getline(val_stream, val_str, ','))
 				{
 					converter.clear();
 					converter.str(val_str);
@@ -292,7 +299,10 @@ int main(int argc, char* argv[])
 						return(-1);
 					}
 
-					ignore_faces.insert(value);
+					if(option == 'F')
+						remove_faces.insert(value);
+					else
+						remove_vertices.insert(value);
 				}
 
 				break;
@@ -364,7 +374,7 @@ int main(int argc, char* argv[])
 	{
 		scene_mesh.load(*it, type);
 		scene_mesh.subdivide(algorithm, steps);
-		scene_mesh.prune(ignore_faces);
+		scene_mesh.prune(remove_faces, remove_vertices);
 
 		// If an output file has been set (even if it is empty), it
 		// will be used.

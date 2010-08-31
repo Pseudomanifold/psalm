@@ -42,7 +42,8 @@ class mesh
 		bool load(const std::string& filename, short type = TYPE_EXT);
 		bool save(const std::string& filename, short type = TYPE_EXT);
 
-		void prune(const std::set<size_t>& ignore_faces);
+		void prune(	const std::set<size_t>& remove_faces,
+				const std::set<size_t>& remove_vertices);
 		void subdivide(	short algorithm = mesh::ALG_CATMULL_CLARK,
 				size_t steps = 1);
 		void destroy();
