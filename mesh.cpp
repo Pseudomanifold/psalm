@@ -893,24 +893,6 @@ void mesh::destroy()
 
 void mesh::replace_with(mesh& M)
 {
-	*this = M;
-
-	// Clear old mesh
-	M.V.clear();
-	M.F.clear();
-	M.E.clear();
-	M.E_M.clear();
-}
-
-/*!
-*	Assigns another mesh to the current mesh.
-*
-*	@param M Mesh to assign to the current mesh
-*	@return Reference to replaced mesh
-*/
-
-mesh& mesh::operator=(const mesh& M)
-{
 	this->destroy();
 
 	this->V		= M.V;
@@ -921,7 +903,11 @@ mesh& mesh::operator=(const mesh& M)
 	// Options will _not_ be overwritten by this operation; previously this
 	// was the case.
 
-	return(*this);
+	// Clear old mesh
+	M.V.clear();
+	M.F.clear();
+	M.E.clear();
+	M.E_M.clear();
 }
 
 /*!

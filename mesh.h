@@ -47,8 +47,6 @@ class mesh
 		void subdivide(	short algorithm = mesh::ALG_CATMULL_CLARK,
 				size_t steps = 1);
 		void destroy();
-
-		mesh& operator=(const mesh& M);
 		void replace_with(mesh& M);
 
 		// Setters for instance options
