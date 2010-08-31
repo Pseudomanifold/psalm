@@ -957,11 +957,11 @@ void mesh::add_face(std::vector<vertex*> vertices)
 		f->add_edge(edge);
 
 		/*
-			GIANT FIXME: We are assuming that the edges are ordered
-			properly. Hence, an edge is supposed to appear only
-			_once_ in a fixed direction. If this is not the case,
-			the lookup below will _fail_ or an already stored face
-			might be overwritten!
+			Potential problem: I am assuming that the edges are
+			ordered properly. Hence, an edge is supposed to appear
+			only _once_ in a fixed direction. If this is not the
+			case, the lookup below will _fail_ or an already stored
+			face might be overwritten!
 		*/
 
 		// Edge already known; update second adjacent face
@@ -971,22 +971,21 @@ void mesh::add_face(std::vector<vertex*> vertices)
 			u->add_face(f);
 		}
 
-		// (Possibly) new edge; update first adjacent face and adjacent
+		// (Possibly) new edge; update the first adjacent face and adjacent
 		// vertices
 		else
 		{
-			// FIXME: This is ugly...and probably wrong?
 			if(edge.new_edge)
 			{
 				edge.e->set_f(f);
 				u->add_edge(edge.e);
-				// TODO: Check whether it's ok to do this...or if it
-				// can be removed and done for the edge.inverted ==
-				// true case
 				v->add_edge(edge.e);
 			}
 			else
+			{
+				std::cerr << "psalm: Detected wrong orientation in mesh. Expect inconsistent results.\n";
 				edge.e->set_g(f);
+			}
 
 			u->add_face(f);
 		}
@@ -1416,7 +1415,7 @@ void mesh::subdivide_loop()
 		size_t n = V[i]->valency();
 		v3ctor vertex_point;
 
-		// TODO: Could also be done using iterators.
+		// TODO: Iterators required.
 		for(size_t j = 0; j < n; j++)
 		{
 			const edge* e = V[i]->get_edge(j);
@@ -1488,11 +1487,11 @@ void mesh::subdivide_loop()
 			directed_edge d_e1; // first adjacent edge (for vertex & face)
 			directed_edge d_e2; // second adjacent edge (for vertex & face)
 
-			// brute-force search for the two edges
-			//
-			// TODO: Optimize!
+			// brute-force search for the two edges; could be
+			// optimized
 			for(size_t k = 0; k < n; k++)
 			{
+				// TODO: Optimization required.
 				directed_edge d_edge = F[i]->get_edge(k);
 				if(	d_edge.e->get_u()->get_id() == F[i]->get_vertex(j)->get_id() ||
 					d_edge.e->get_v()->get_id() == F[i]->get_vertex(j)->get_id())
@@ -1819,7 +1818,7 @@ void mesh::ds_create_points_p(mesh& M, double (*weight_function)(size_t, size_t)
 }
 
 /*!
-*	Computes the weight factor for the i-th vertex of a face with k
+*	Computes the weight factor for the ith vertex of a face with k
 *	vertices. The formula of Doo and Sabin is used.
 *
 *	This function only applies to the Doo-Sabin subdivision scheme.
@@ -1839,7 +1838,7 @@ inline double mesh::ds_weights_ds(size_t k, size_t i)
 }
 
 /*!
-*	Computes the weight factor for the i-th vertex of a face with k
+*	Computes the weight factor for the ith vertex of a face with k
 *	vertices. The formula of Catmull and Clark is used.
 *
 *	This function only applies to the Doo-Sabin subdivision scheme.
@@ -2269,9 +2268,12 @@ const vertex* mesh::find_remaining_vertex(const edge* e, const face* f)
 
 vertex* mesh::find_face_vertex(face* f, const vertex* v)
 {
+	if(f == NULL || v == NULL)
+		return(NULL);
+
 	for(size_t i = 0; i < f->num_vertices(); i++)
 	{
-		// TODO: Speed could be increased by using lookup tables that
+		// NOTE: Speed could be increased by using lookup tables that
 		// map the "old" id to the "new id"
 		if(f->get_vertex(i)->get_id() == v->get_id())
 			return(f->get_face_vertex(i));
