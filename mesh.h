@@ -55,6 +55,9 @@ class mesh
 
 		void set_crease_handling(bool status= true);
 		void set_parametric_point_creation(bool status = true);
+		void set_bspline_weights_usage(bool status = true);
+		void set_statistics_output(bool status = true);
+
 		void set_predefined_weights(short weights);
 		void set_custom_weights(const weights_map& custom_weights);
 

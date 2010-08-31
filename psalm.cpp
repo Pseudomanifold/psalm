@@ -40,6 +40,8 @@ void show_usage()
 			<< "\t\t\t\t\t* doo-sabin, doo, sabin, ds\n"
 			<< "\t\t\t\t\t* loop, l\n\n"
 			<< "\t\t\t\tDefault algorithm: Catmull-Clark\n\n"
+			<< "-c, --handle-creases\t\tSubdivide crease and boundary edges whenever\n"
+			<< "\t\t\t\tthe algorithm supports this.\n\n"
 			<< "-p, --parametric\t\tForces algorithms to compute new points using\n"
 			<< "\t\t\t\tparametric methods and not geometric ones.\n\n"
 			<< "-e, --extra-weights <file>\tOverride the default weights of subdivision\n"
@@ -165,8 +167,10 @@ int main(int argc, char* argv[])
 		{"weights",		required_argument,	NULL,	'w'},
 		{"extra-weights",	required_argument,	NULL,	'e'},
 
+		{"statistics",		no_argument,		NULL,	's'},
 		{"parametric",		no_argument,		NULL,	'p'},
-		{"crease-handling",	no_argument,		NULL,	'c'},
+		{"handle-creases",	no_argument,		NULL,	'c'},
+		{"b-spline-weights",	no_argument,		NULL,	'b'},
 		{"help",		no_argument,		NULL,	'h'},
 
 		{NULL, 0, NULL, 0}
@@ -326,6 +330,10 @@ int main(int argc, char* argv[])
 
 			case 'p':
 				scene_mesh.set_parametric_point_creation();
+				break;
+
+			case 'b':
+				scene_mesh.set_bspline_weights_usage();
 				break;
 
 			case 'h':

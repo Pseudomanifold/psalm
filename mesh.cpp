@@ -53,7 +53,7 @@ mesh::mesh()
 	print_statistics		= false;
 
 	use_parametric_point_creation	= false;
-	use_bspline_weights		= true;
+	use_bspline_weights		= false;
 
 	handle_creases			= false;
 }
@@ -1218,6 +1218,29 @@ void mesh::set_parametric_point_creation(bool status)
 }
 
 /*!
+*	Sets flag for using the B-spline weights in cases another weights
+*	scheme needs to be used.
+*
+*	@param status Value for flag (true by default)
+*/
+
+void mesh::set_bspline_weights_usage(bool status)
+{
+	use_bspline_weights = status;
+}
+
+/*!
+*	Sets flag for printing statistics to STDERR.
+*
+*	@param status Value for flag (true by default)
+*/
+
+void mesh::set_statistics_output(bool status)
+{
+	print_statistics = status;
+}
+
+/*!
 *	Sets predefined set of weights for subdivision algorithms. All schemes
 *	will ignore weights that do not apply.
 *
@@ -1369,7 +1392,6 @@ void mesh::subdivide(	short algorithm,
 
 	clock_t end = clock();
 
-	print_statistics = true;
 	if(print_statistics)
 	{
 		std::cerr	<< std::setfill('-') << std::setw(78) << "\n"
