@@ -30,6 +30,11 @@ implemented.
 +STDOUT+ and +STDIN+ by using a single dash, +-+, as the argument for
 output and input operations.
 
+If an input file has been specified, but not output file, the suffix
++.subdivided+ will be added to the input file. For example, subdividing
+a file +example.ply+ without specifying an output file results in
++example.subdivided.ply+.
+
 OPTIONS
 -------
 
@@ -173,7 +178,28 @@ descramble).
 FILES
 -----
 
-- +W_DS_Reif_[1-5].txt+: Extra weights from U. Reif's publication
+*psalm* is shipped with several example meshes:
+
+- +W_DS_Reif_[1-5].txt+: Extra weights from U. Reif's publication ``A
+  unified approach to subdivision algorithms near extraordinary
+  vertices''
+- +Hexahedron.off+: A cube in +OFF+ format.
+- +Hexahedron.ply+: A cube in +PLY+ format. The mesh is used courtesy of
+  http://people.sc.fsu.edu/~jburkardt[John Burkardt].
+- +Hole_[3,6].ply+: A 3-sided and a 6-sided hole used for testing the
+  limit behaviour of the algorithms.
+- +Icosahedron.ply+: An icosahedron in +PLY+ format. The mesh is used
+  courtesy of http://people.sc.fsu.edu/~jburkardt[John Burkardt].
+- +Icosahedron.obj+: The +PLY+ file converted to +Wavefront OBJ+ format
+  by http://meshlab.sourceforge.net[MeshLab].
+- +Klein_Bottle.obj+: A Klein bottle in +Wavefront OBJ+ format (using
+  quadrangles). The mesh is provided courtesy of *Pierre Alliez* by the
+  http://shapes.aimatshape.net[AIM@SHAPE shape repository].
+- +Klein_Bottle.ply+: A triangulated version of the Klein bottle mesh,
+  created by http://meshlab.sourceforge.net[MeshLab].
+- +Surface.obj+: A simple regular surface.
+- +Tetrahedron.obj+: A tetrahedron in +OBJ+ format. The mesh is used
+  courtesy of http://people.sc.fsu.edu/~jburkardt[John Burkardt].
 
 COPYRIGHT AND LICENCE
 ---------------------
