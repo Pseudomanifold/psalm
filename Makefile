@@ -16,7 +16,8 @@ $(BIN): $(MYOBJECTS) Makefile
 	$(CC) $(INCLUDES) $(CCFLAGS) $<
 
 clean:
-	rm -f *.o *.core $(BIN)
+	rm -f *.o *.core *.html $(BIN)
+	rm -rf Doxygen
 	echo "Removing test data..."
 	rm -f Meshes/ICO_CC_*.*
 	rm -f Meshes/ICO_DS_*.*

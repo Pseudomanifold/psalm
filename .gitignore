@@ -1,4 +1,7 @@
 *.o
 *.swp
 
+psalm.html
+psalm
+
 Doxygen/*
