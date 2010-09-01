@@ -3,7 +3,9 @@
 *	@brief	Functions and implementations for edge class
 */
 
+#include <iostream>
 #include <cassert>
+
 #include "edge.h"
 
 namespace psalm
@@ -96,7 +98,17 @@ void edge::set_f(face* f)
 
 void edge::set_g(face* g)
 {
-	assert(f != NULL && this->g == NULL);
+	static bool warning_shown = false;
+	if(f != NULL && this->g != NULL)
+	{
+		if(!warning_shown)
+		{
+			std::cerr << "psalm: Warning: Mesh might be non-manifold.\n";
+			warning_shown = true;
+		}
+		return;
+	}
+
 	this->g = g;
 }
 

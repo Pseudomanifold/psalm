@@ -925,6 +925,8 @@ void mesh::replace_with(mesh& M)
 
 void mesh::add_face(std::vector<vertex*> vertices)
 {
+	static bool warning_shown = false;
+
 	vertex* u = NULL;
 	vertex* v = NULL;
 
@@ -983,7 +985,12 @@ void mesh::add_face(std::vector<vertex*> vertices)
 			}
 			else
 			{
-				std::cerr << "psalm: Detected wrong orientation in mesh. Expect inconsistent results.\n";
+				if(!warning_shown)
+				{
+					std::cerr << "psalm: Warning: Wrong orientation in mesh--results may be inconsistent.\n";
+					warning_shown = true;
+				}
+
 				edge.e->set_g(f);
 			}
 
@@ -1997,6 +2004,13 @@ void mesh::subdivide_catmull_clark()
 					}
 				}
 			}
+
+			// For non-manifold meshes, we may not be able to find
+			// adjacent faces for every combination of vertices and
+			// edges
+			if(	e1 == NULL ||
+				e2 == NULL)
+				continue;
 
 			// If crease handling is not enabled, we may not have
 			// edge points everywhere. These faces need to be
