@@ -1418,6 +1418,8 @@ void mesh::subdivide_loop()
 	// Construct vertex points
 	for(size_t i = 0; i < V.size(); i++)
 	{
+		print_progress("Creating vertex points", i, V.size()-1);
+
 		// Find neighbours
 
 		size_t n = V[i]->valency();
@@ -1453,6 +1455,8 @@ void mesh::subdivide_loop()
 	// Create edge points
 	for(std::vector<edge*>::iterator it = E.begin(); it != E.end(); it++)
 	{
+		print_progress("Creating edge points", std::distance(E.begin(), it), E.size()-1);
+
 		v3ctor edge_point;
 		edge* e = *it;
 
@@ -1480,6 +1484,8 @@ void mesh::subdivide_loop()
 	// Create topology for new mesh
 	for(size_t i = 0; i < F.size(); i++)
 	{
+		print_progress("Creating topology", i, F.size()-1);
+
 		// ...go through all vertices of the face
 		for(size_t j = 0; j < F[i]->num_vertices(); j++)
 		{

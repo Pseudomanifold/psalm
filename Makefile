@@ -1,5 +1,5 @@
 CC          = g++
-CCFLAGS     = -g -Wall -c -pedantic -O11
+CCFLAGS     = -g -Wall -c -pedantic
 LIBS        = -L /usr/X11/lib -L /usr/local/lib
 INCLUDES    = -I /usr/local/include
 LDFLAGS     =
