@@ -336,6 +336,10 @@ int main(int argc, char* argv[])
 				scene_mesh.set_bspline_weights_usage();
 				break;
 
+			case 's':
+				scene_mesh.set_statistics_output();
+				break;
+
 			case 'h':
 			case '?':
 				show_usage();

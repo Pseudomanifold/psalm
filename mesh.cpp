@@ -1312,6 +1312,9 @@ void mesh::prune(const std::set<size_t>& remove_faces, const std::set<size_t>& r
 
 void mesh::print_progress(std::string message, size_t cur_pos, size_t max_pos)
 {
+	if(!print_statistics)
+		return;
+
 	size_t percentage = (cur_pos*100)/max_pos;
 	static size_t last;
 
@@ -1350,8 +1353,6 @@ void mesh::subdivide(	short algorithm,
 	size_t num_edges	= E.size();
 	size_t num_faces	= F.size();
 
-	std::string algorithm_name;
-
 	// Choose algorithm (if this is _not_ done via pointers, the for-loop
 	// would have to be duplicated or the algorithm check would have to be
 	// made for each iteration.
@@ -1359,15 +1360,12 @@ void mesh::subdivide(	short algorithm,
 	switch(algorithm)
 	{
 		case ALG_CATMULL_CLARK:
-			algorithm_name = "CC";
 			subdivision_algorithm = &mesh::subdivide_catmull_clark;
 			break;
 		case ALG_DOO_SABIN:
-			algorithm_name = "DS";
 			subdivision_algorithm = &mesh::subdivide_doo_sabin;
 			break;
 		case ALG_LOOP:
-			algorithm_name = "L";
 			subdivision_algorithm = &mesh::subdivide_loop;
 			break;
 		default:
@@ -1378,11 +1376,14 @@ void mesh::subdivide(	short algorithm,
 	size_t width	= static_cast<unsigned int>(log10(steps))*2;
 	for(size_t i = 0; i < steps; i++)
 	{
-		std::cerr << algorithm_name << " [" << std::setw(width) << i << "]\n";
-		(this->*subdivision_algorithm)();
-		std::cerr << "\n";
-	}
+		if(print_statistics)
+			std::cerr << "[" << std::setw(width) << i << "]\n";
 
+		(this->*subdivision_algorithm)();
+
+		if(print_statistics)
+			std::cerr << "\n";
+	}
 	clock_t end = clock();
 
 	if(print_statistics)
