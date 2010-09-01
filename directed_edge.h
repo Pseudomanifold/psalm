@@ -26,6 +26,8 @@ class edge; // forward declaration to break up circular dependency with face cla
 class directed_edge
 {
 	public:
+		directed_edge();
+
 		edge* e;	///< Pointer to edge
 		bool inverted;	///< Flag signalling direction
 
