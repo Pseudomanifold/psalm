@@ -1676,8 +1676,11 @@ void mesh::subdivide_doo_sabin()
 		// the vertex.
 		std::vector<face*> faces = sort_faces(V[i]);
 
+		// Note that for non-manifold meshes, faces.size() may not be
+		// equal to the number of adjacent faces. Faces can only be
+		// sorted correctly if a manifold mesh is assumed.
 		std::vector<vertex*> vertices;
-		for(size_t j = 0; j < V[i]->num_adjacent_faces(); j++)
+		for(size_t j = 0; j < faces.size(); j++)
 			vertices.push_back(find_face_vertex(faces[j], V[i]));
 
 		M.add_face(vertices);
