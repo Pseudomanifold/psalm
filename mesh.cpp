@@ -444,21 +444,23 @@ bool mesh::load_ply(std::istream& in)
 		}
 	}
 
-	size_t line	= 0;
+	size_t cur_line	= 0;
 	size_t k	= 0; // number of vertices for face
 
 	double x, y, z;
-	while(!in.eof())
+	std::string line;
+	while(std::getline(in, line))
 	{
-		if(line < num_vertices)
+		std::istringstream parser(line);
+		if(cur_line < num_vertices)
 		{
-			in >> x >> y >> z;
+			parser >> x >> y >> z;
 			add_vertex(x, y, z);
 		}
 		else
 		{
 			k = 0;
-			in >> k;
+			parser >> k;
 			if(k == 0)
 				break;
 
@@ -469,14 +471,14 @@ bool mesh::load_ply(std::istream& in)
 			size_t v = 0;
 			for(size_t i = 0; i < k; i++)
 			{
-				in >> v;
+				parser >> v;
 				vertices.push_back(get_vertex(v));
 			}
 
 			add_face(vertices);
 		}
 
-		line++;
+		cur_line++;
 	}
 
 	return(true);
