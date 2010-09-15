@@ -1949,6 +1949,16 @@ void mesh::subdivide_catmull_clark()
 
 				e->edge_point = M.add_vertex(edge_point);
 			}
+			else
+			{
+				// Remove start and end vertex of edge; we will
+				// not be able to connect them correctly.
+				std::vector<vertex*>::iterator it;
+				if((it = find(V.begin(), V.end(), e->get_u())) != V.end())
+					V.erase(it);
+				if((it = find(V.begin(), V.end(), e->get_v())) != V.end())
+					V.erase(it);
+			}
 		}
 
 		// Normal edge
@@ -2127,6 +2137,8 @@ void mesh::cc_create_points_p(mesh& M,
 		// will be used later for determining the real weights; for the
 		// regular case, we will always use the standard weights
 		size_t n = v->valency();
+		if(n < 3)
+			continue; // ignore degenerate vertices
 
 		double gamma	= 0.0;
 		double beta	= 0.0;
