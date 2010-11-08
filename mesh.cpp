@@ -128,7 +128,7 @@ bool mesh::load(const std::string& filename, short type)
 	// Filename given, data type identification by extension
 	if(filename.length() >= 4 && type == TYPE_EXT)
 	{
-		std::string extension = filename.substr(filename.length()-4);
+		std::string extension = filename.substr(filename.find_last_of('.')); // TODO: Handle errors
 		std::transform(extension.begin(), extension.end(), extension.begin(), (int(*)(int)) tolower);
 
 		if(extension == ".ply")
