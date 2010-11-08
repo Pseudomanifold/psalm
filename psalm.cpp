@@ -187,7 +187,7 @@ int main(int argc, char* argv[])
 	size_t steps	= 0;
 
 	int option = 0;
-	while((option = getopt_long(argc, argv, "o:n:F:V:t:a:w:e:bcph", cmd_line_opts, NULL)) != -1)
+	while((option = getopt_long(argc, argv, "o:n:F:V:t:a:w:e:sbcph", cmd_line_opts, NULL)) != -1)
 	{
 		switch(option)
 		{
