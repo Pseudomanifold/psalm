@@ -43,16 +43,20 @@ class vertex
 		void add_edge(edge* e);
 		edge* get_edge(size_t i);
 
-		void add_face(const face* f);
-		const face* get_face(size_t i) const;
+		void add_face(face* f);
+		face* get_face(size_t i) const; // FIXME: return value should be const face*
 
 		size_t get_id() const;
 		size_t valency() const;
 		size_t num_adjacent_faces() const;
 
+		bool marked;	// FIXME: For dev purposes only
+		bool boundary;	// FIXME: Boundary edge
+		bool picked;	// FIXME: Picked point (created by heuristic)
+
 	private:
 		std::vector<edge*> E;
-		std::vector<const face*> F;
+		std::vector<face*> F;
 
 		v3ctor p;
 		size_t id;
