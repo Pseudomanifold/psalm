@@ -2655,4 +2655,64 @@ std::vector<face*> mesh::sort_faces(vertex* v)
 	return(faces);
 }
 
+/*!
+	Marks elements in preparation of filling an n-sided hole. This function
+	marks the "1-ring" around an extraordinary vertex.
+*/
+
+void mesh::mark_elements()
+{
+	for(size_t i = 0; i < F.size(); i++)
+		F[i]->marked = false;
+	for(size_t i = 0; i < V.size(); i++)
+		V[i]->marked = false;
+
+	for(size_t i = 0; i < V.size(); i++)
+	{
+		// Mark extraordinary vertices
+		if(	V[i]->valency() != 4 &&
+			V[i]->valency() != 3)
+			V[i]->marked = true;
+		else
+			continue;
+
+		// Mark adjacent faces and incident edges
+		for(size_t j = 0; j < V[i]->num_adjacent_faces(); j++)
+		{
+			V[i]->get_face(j)->marked = true;
+			for(size_t k = 0; k < V[i]->get_face(j)->num_vertices(); k++)
+				const_cast<vertex*>(V[i]->get_face(j)->get_vertex(k))->marked = true;
+		}
+	}
+}
+
+/*!
+*	Creates vertices in the middle of a hole by choosing points at random.
+*	The heuristic works as follows:
+*
+*	- Pick a random point
+*	- Calculate midpoint of first point and picked point
+*	- Connect all indices between first point and picked point
+*	- Pick another point, starting from the index of the last picked point
+*	- Iterate
+*/
+
+void mesh::pick_points()
+{
+	for(size_t i = 0; i < V.size(); i++)
+		V[i]->picked = false;
+
+	// Create vector of indices that are to be picked
+	std::set<size_t> picked_indices;
+	for(size_t i = 0; i < 20; i++)
+		picked_indices.insert(random() % V.size());
+
+	size_t previously_picked = 0;
+	for(std::set<size_t>::iterator picked = picked_indices.begin(); picked != picked_indices.end(); picked++)
+	{
+		if(*picked == previously_picked)
+			continue;
+	}
+}
+
 } // end of namespace "psalm"
