@@ -120,6 +120,9 @@ class mesh
 		void cc_create_points_p(mesh& M,
 					std::pair<double, double> (*weight_function)(size_t));
 
+		void mark_elements();
+		void pick_points();
+
 		static double ds_weights_ds(size_t k, size_t i);
 		static double ds_weights_cc(size_t k, size_t i);
 		static double ds_weights_degenerate(size_t k, size_t i);

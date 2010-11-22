@@ -498,6 +498,15 @@ bool mesh::save_ply(std::ostream& out)
 	if(!out.good())
 		return(false);
 
+	// <dev>
+	size_t num_marked_faces = F.size();
+	//for(size_t i = 0; i < F.size(); i++)
+	//{
+	//	if(F[i]->marked)
+	//		num_marked_faces++;
+	//}
+	// </dev>
+
 	// header information
 	out	<< "ply\n"
 		<< "format ascii 1.0\n"
@@ -505,7 +514,10 @@ bool mesh::save_ply(std::ostream& out)
 		<< "property float x\n"
 		<< "property float y\n"
 		<< "property float z\n"
-		<< "element face " << F.size() << "\n"
+		<< "property uchar red\n"
+		<< "property uchar green\n"
+		<< "property uchar blue\n"
+		<< "element face " << num_marked_faces << "\n" // FIXME: For dev purposes only
 		<< "property list uchar int vertex_indices\n"
 		<< "end_header\n";
 
@@ -514,12 +526,22 @@ bool mesh::save_ply(std::ostream& out)
 	{
 		out << std::fixed << std::setprecision(8) << V[i]->get_position()[0] << " "
 						<< V[i]->get_position()[1] << " "
-						<< V[i]->get_position()[2] << "\n";
+						<< V[i]->get_position()[2];
+
+		// <dev>
+		if(V[i]->picked)
+			out << " 255 0 0\n";
+		else
+			out << " 255 255 255\n";
+		// </dev>
 	}
 
 	// write face list (separated by spaces)
 	for(size_t i = 0; i < F.size(); i++)
 	{
+		//if(!F[i]->marked)
+		//	continue;
+
 		out << F[i]->num_vertices() << " ";
 		for(size_t j = 0; j < F[i]->num_vertices(); j++)
 		{
@@ -871,7 +893,7 @@ bool mesh::load_pline(std::istream& in)
 	std::string line;
 	std::istringstream converter;
 
-	while(!std::getline(in, line).eof())
+	while(std::getline(in, line))
 	{
 		// Ignore lines containing a "#"
 		if(line.find_first_of('#') != std::string::npos)
@@ -899,6 +921,11 @@ bool mesh::load_pline(std::istream& in)
 
 			pline.push_back(add_vertex(x,y,z));
 		}
+
+		// Second version of algorithm: Create vertices for boundary and pick points
+		// at random.
+		pick_points();
+		break;
 
 		// First version of algorithm: Compute geometric centre of the hole and place an
 		// extraordinary vertex of sufficient valency there.
@@ -960,12 +987,18 @@ bool mesh::load_pline(std::istream& in)
 			add_face(trig_centre, midpoint1, pline[i], midpoint3);
 			add_face(trig_centre, midpoint3, pline[next], midpoint2);
 
+			// Set boundaries
+			pline[i]->boundary	= true;
+			pline[next]->boundary	= true;
+			midpoint3->boundary	= true;
+
 			previous_midpoint = midpoint2;
 		}
 
-		break;
 		converter.clear();
 		line.clear();
+
+		break;
 	}
 
 	return(true);
@@ -2059,12 +2092,23 @@ void mesh::subdivide_catmull_clark()
 		if(e->get_g() == NULL)
 		{
 			e->edge_point = NULL;
-			if(handle_creases)
+			if(handle_creases && !e->get_u()->boundary && !e->get_v()->boundary)
 			{
 				edge_point = (	e->get_u()->get_position()+
 						e->get_v()->get_position())*0.5;
 
 				e->edge_point = M.add_vertex(edge_point);
+			}
+			// <dev>
+			// Preserve the original boundaries of the object
+			// </dev>
+			else if(e->get_u()->boundary && e->get_v()->boundary)
+			{
+				edge_point = (	e->get_u()->get_position()+
+						e->get_v()->get_position())*0.5;
+
+				e->edge_point = M.add_vertex(edge_point);
+				e->edge_point->boundary = true;
 			}
 			else
 			{
@@ -2250,6 +2294,16 @@ void mesh::cc_create_points_p(mesh& M,
 	{
 		print_progress("Creating vertex points [parametrically]", std::distance(V.begin(), v_it)+1, V.size());
 		vertex* v = *v_it;
+
+		// <dev>
+		// _Keep_ boundary vertices
+		if(v->boundary)
+		{
+			v->vertex_point = M.add_vertex(v->get_position());
+			v->vertex_point->boundary = true;
+			continue;
+		}
+		// </dev>
 
 		// will be used later for determining the real weights; for the
 		// regular case, we will always use the standard weights
