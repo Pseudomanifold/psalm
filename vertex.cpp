@@ -17,6 +17,10 @@ vertex::vertex()
 {
 	vertex_point	= NULL;
 	id		= std::numeric_limits<size_t>::max();
+
+	// DEV
+	boundary	= false;
+	picked		= false;
 }
 
 /*!
@@ -52,6 +56,10 @@ void vertex::set(double x, double y, double z, size_t id)
 	// Needs to be initialized, otherwise it cannot be determined whether a
 	// vertex already has a vertex point
 	vertex_point = NULL;
+
+	// DEV
+	picked		= false;
+	boundary	= false;
 }
 
 /*!
