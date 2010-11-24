@@ -483,6 +483,29 @@ bool mesh::load_ply(std::istream& in)
 		cur_line++;
 	}
 
+	// <dev>
+	// Mark boundary vertices
+	for(size_t i = 0; i < V.size(); i++)
+	{
+		if(V[i]->valency() < 3)
+		{
+			V[i]->boundary = true;
+			V[i]->picked = true;
+		}
+		else
+		{
+			for(size_t j = 0; j < V[i]->valency(); j++)
+			{
+				if(V[i]->get_edge(j)->get_g() == NULL)
+				{
+					V[i]->boundary = true;
+					V[i]->picked = true;
+				}
+			}
+		}
+	}
+	// </dev>
+
 	return(true);
 }
 
@@ -532,7 +555,7 @@ bool mesh::save_ply(std::ostream& out)
 		if(V[i]->picked)
 			out << " 255 0 0\n";
 		else
-			out << " 255 255 255\n";
+			out << " 0 255 0\n";
 		// </dev>
 	}
 
@@ -2108,7 +2131,8 @@ void mesh::subdivide_catmull_clark()
 						e->get_v()->get_position())*0.5;
 
 				e->edge_point = M.add_vertex(edge_point);
-				e->edge_point->boundary = true;
+				e->edge_point->boundary = true; // DEV
+				e->edge_point->picked = true; // DEV
 			}
 			else
 			{
@@ -2240,6 +2264,17 @@ void mesh::cc_create_points_g(mesh& M)
 	{
 		print_progress("Creating vertex points [geometrically]", i, V.size()-1);
 
+		// <dev>
+		// _Keep_ boundary vertices
+		if(V[i]->boundary)
+		{
+			V[i]->vertex_point		= M.add_vertex(V[i]->get_position());
+			V[i]->vertex_point->boundary	= true;
+			V[i]->vertex_point->picked	= true;
+			continue;
+		}
+		// </dev>
+
 		// This follows the original terminology as described by
 		// Catmull and Clark
 
@@ -2301,6 +2336,7 @@ void mesh::cc_create_points_p(mesh& M,
 		{
 			v->vertex_point = M.add_vertex(v->get_position());
 			v->vertex_point->boundary = true;
+			v->vertex_point->picked = true;
 			continue;
 		}
 		// </dev>
