@@ -66,7 +66,7 @@ void face::add_vertex(vertex* v)
 *	@return Vertex at specified index or NULL if the index is out of range.
 */
 
-vertex* face::get_vertex(size_t i) const // FIXME: const* vertex
+const vertex* face::get_vertex(size_t i) const
 {
 	if(i >= V.size())
 		return(NULL);

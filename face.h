@@ -29,7 +29,7 @@ class face
 		size_t num_edges() const;
 		size_t num_vertices() const;
 
-		vertex* get_vertex(size_t i) const; // FIXME: For dev purposes only
+		const vertex* get_vertex(size_t i) const;
 		vertex* get_face_vertex(size_t i);
 		directed_edge& get_edge(size_t i);
 
@@ -44,11 +44,9 @@ class face
 
 		vertex* face_point;
 
-		bool marked; // FIXME: For dev purposes only
-
 	private:
 		std::vector<directed_edge> E;
-		std::vector<vertex*> V;
+		std::vector<const vertex*> V;
 
 		std::vector<vertex*> V_F;
 

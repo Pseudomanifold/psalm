@@ -121,7 +121,7 @@ size_t vertex::valency() const
 *	@warning The face is not checked for consistency.
 */
 
-void vertex::add_face(face* f) // FIXME: Type should be const face*
+void vertex::add_face(const face* f)
 {
 	F.push_back(f);
 }
@@ -133,7 +133,7 @@ void vertex::add_face(face* f) // FIXME: Type should be const face*
 *	is out of bounds.
 */
 
-face* vertex::get_face(size_t i) const // FIXME: Return type should be const face*
+const face* vertex::get_face(size_t i) const
 {
 	if(i >= F.size())
 		return(NULL);
