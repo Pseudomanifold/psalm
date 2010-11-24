@@ -50,12 +50,16 @@ class vertex
 		size_t valency() const;
 		size_t num_adjacent_faces() const;
 
+		bool is_on_boundary() const;
+		void set_on_boundary(bool boundary = true);
+
 	private:
 		std::vector<edge*> E;
 		std::vector<const face*> F;
 
 		v3ctor p;
 		size_t id;
+		bool boundary; /// Flag signalling that the vertex is a boundary vertex
 };
 
 } // end of namespace "psalm"

@@ -488,19 +488,13 @@ bool mesh::load_ply(std::istream& in)
 	for(size_t i = 0; i < V.size(); i++)
 	{
 		if(V[i]->valency() < 3)
-		{
-			V[i]->boundary = true;
-			V[i]->picked = true;
-		}
+			V[i]->set_on_boundary();
 		else
 		{
 			for(size_t j = 0; j < V[i]->valency(); j++)
 			{
 				if(V[i]->get_edge(j)->get_g() == NULL)
-				{
-					V[i]->boundary = true;
-					V[i]->picked = true;
-				}
+					V[i]->set_on_boundary();
 			}
 		}
 	}
@@ -552,7 +546,7 @@ bool mesh::save_ply(std::ostream& out)
 						<< V[i]->get_position()[2];
 
 		// <dev>
-		if(V[i]->picked)
+		if(V[i]->is_on_boundary())
 			out << " 255 0 0\n";
 		else
 			out << " 0 255 0\n";
@@ -2194,7 +2188,7 @@ void mesh::subdivide_catmull_clark()
 		if(e->get_g() == NULL)
 		{
 			e->edge_point = NULL;
-			if(handle_creases && !e->get_u()->boundary && !e->get_v()->boundary)
+			if(handle_creases && !e->get_u()->is_on_boundary() && !e->get_v()->is_on_boundary())
 			{
 				edge_point = (	e->get_u()->get_position()+
 						e->get_v()->get_position())*0.5;
@@ -2204,14 +2198,13 @@ void mesh::subdivide_catmull_clark()
 			// <dev>
 			// Preserve the original boundaries of the object
 			// </dev>
-			else if(e->get_u()->boundary && e->get_v()->boundary)
+			else if(e->get_u()->is_on_boundary() && e->get_v()->is_on_boundary())
 			{
 				edge_point = (	e->get_u()->get_position()+
 						e->get_v()->get_position())*0.5;
 
 				e->edge_point = M.add_vertex(edge_point);
-				e->edge_point->boundary = true; // DEV
-				e->edge_point->picked = true; // DEV
+				e->edge_point->set_on_boundary();
 			}
 			else
 			{
@@ -2345,11 +2338,10 @@ void mesh::cc_create_points_g(mesh& M)
 
 		// <dev>
 		// _Keep_ boundary vertices
-		if(V[i]->boundary)
+		if(V[i]->is_on_boundary())
 		{
-			V[i]->vertex_point		= M.add_vertex(V[i]->get_position());
-			V[i]->vertex_point->boundary	= true;
-			V[i]->vertex_point->picked	= true;
+			V[i]->vertex_point = M.add_vertex(V[i]->get_position());
+			V[i]->vertex_point->set_on_boundary();
 			continue;
 		}
 		// </dev>
@@ -2411,11 +2403,10 @@ void mesh::cc_create_points_p(mesh& M,
 
 		// <dev>
 		// _Keep_ boundary vertices
-		if(v->boundary)
+		if(v->is_on_boundary())
 		{
 			v->vertex_point = M.add_vertex(v->get_position());
-			v->vertex_point->boundary = true;
-			v->vertex_point->picked = true;
+			v->vertex_point->set_on_boundary();
 			continue;
 		}
 		// </dev>

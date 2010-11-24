@@ -150,4 +150,26 @@ size_t vertex::num_adjacent_faces() const
 	return(F.size());
 }
 
+/*!
+*	Returns value of flag signalling whether the vertex is a boundary
+*	vertex.
+*/
+
+bool vertex::is_on_boundary() const
+{
+	return(boundary);
+}
+
+/*!
+*	Sets value of flag signalling boundary vertices. The parameter is set
+*	to false by default in all constructors.
+*
+*	@param	boundary Current value for boundary parameter (true by default)
+*/
+
+void vertex::set_on_boundary(bool boundary)
+{
+	this->boundary = boundary;
+}
+
 } // end of namespace "psalm"
