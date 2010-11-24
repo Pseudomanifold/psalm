@@ -134,7 +134,6 @@ class mesh
 		bool load_ply(std::istream& in);
 		bool load_obj(std::istream& in);
 		bool load_off(std::istream& in);
-		bool load_pline(std::istream& in);
 
 		bool save_ply(std::ostream& out);
 		bool save_obj(std::ostream& out);

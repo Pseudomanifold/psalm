@@ -137,8 +137,6 @@ bool mesh::load(const std::string& filename, short type)
 			result = (load_obj(in) ? STATUS_OK : STATUS_ERROR);
 		else if(extension == ".off")
 			result = (load_off(in) ? STATUS_OK : STATUS_ERROR);
-		else if(extension == ".pline")
-			result = (load_pline(in) ? STATUS_OK : STATUS_ERROR);
 
 		// Unknown extension, so we fall back to PLY files (see below)
 	}
@@ -890,53 +888,6 @@ bool mesh::save_off(std::ostream& out)
 				out << " ";
 		}
 		out << "\n";
-	}
-
-	return(true);
-}
-
-/*!
-*	Loads a data file that contains polygonal lines.
-*
-*	@param	in Input stream (file, standard input)
-*	@return	true if the mesh could be loaded, else false
-*/
-
-bool mesh::load_pline(std::istream& in)
-{
-	if(!in.good())
-		return(false);
-
-	std::string line;
-	std::istringstream converter;
-
-	while(std::getline(in, line))
-	{
-		// Ignore lines containing a "#"
-		if(line.find_first_of('#') != std::string::npos)
-			continue;
-
-		converter.str(line);
-
-		// Data format is straightforward (different fields are assumed to
-		// be separated by whitespace).
-		//
-		//	Label ID | number of vertices | x1 y1 z1 x2 y2 z2 ...
-
-		size_t id_label;
-		size_t num_vertices;
-
-		// Vector of vertices for the current polygonal line
-		std::vector<vertex*> pline;
-
-		converter >> id_label >> num_vertices;
-		for(size_t i = 0; i < num_vertices; i++)
-		{
-			double x, y, z;
-			converter >> x >> y >> z;
-
-			pline.push_back(add_vertex(x,y,z));
-		}
 	}
 
 	return(true);
