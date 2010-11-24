@@ -936,6 +936,7 @@ bool mesh::load_pline(std::istream& in)
 		std::vector<vertex*> pline;
 
 		converter >> id_label >> num_vertices;
+
 		for(size_t i = 0; i < num_vertices; i++)	// ignore last point because it is a repetition of
 								// the first point
 		{
@@ -945,10 +946,16 @@ bool mesh::load_pline(std::istream& in)
 			pline.push_back(add_vertex(x,y,z));
 		}
 
+#ifdef SECOND_ALGO
+
 		// Second version of algorithm: Create vertices for boundary and pick points
 		// at random.
 		pick_points();
+
 		break;
+#endif
+
+#ifdef FIRST_ALGO
 
 		// First version of algorithm: Compute geometric centre of the hole and place an
 		// extraordinary vertex of sufficient valency there.
@@ -1018,10 +1025,82 @@ bool mesh::load_pline(std::istream& in)
 			previous_midpoint = midpoint2;
 		}
 
-		converter.clear();
-		line.clear();
+#endif
+
+#define THIRD_ALGO
+#ifdef THIRD_ALGO
+		// Third version of algorithm: Compute geometric centre of the
+		// hole and place an extraordinary vertex of sufficient valency
+		// there.
+		v3ctor centre;
+		for(size_t i = 0; i < pline.size(); i++)
+			centre += pline[i]->get_position()*(1.0/pline.size());
+
+		vertex* centre_vertex = add_vertex(centre);
+
+		// For each two adjacent vertices of the hole, create a
+		// midpoint and connect the two vertices and the midpoint with
+		// the centre vertex in order to form a simple quadrangulation
+		for(size_t i = 0; i < pline.size(); i++)
+		{
+			size_t next;
+			if(i == pline.size()-1)
+				next = 0;
+			else
+				next = i+1;
+
+			vertex* midpoint = add_vertex(	pline[i]->get_position()*0.5+
+							pline[next]->get_position()*0.5);
+
+			midpoint->boundary = true;
+			pline[i]->boundary = true;
+			pline[next]->boundary = true;
+
+			add_face(pline[i], midpoint, pline[next], centre_vertex);
+		}
+#endif
+
+#ifdef FOURTH_ALGO
+		// Fourth version of algorithm: Compute geometric centre of the
+		// hole and place an extraordinary vertex of sufficient valency
+		// there.
+		v3ctor centre;
+		for(size_t i = 0; i < pline.size(); i++)
+			centre += pline[i]->get_position()*(1.0/pline.size());
+
+		vertex* centre_vertex = add_vertex(centre);
+
+		// Scale original vertices and translate them in direction of
+		// the hole. Create quadrangular faces by connecting
+		//
+		//	vertex 1 -- copy 1 -- copy 2 -- vertex 2
+		//
+		// and adding an n-sided face afterwards.
+
+		std::vector<vertex*> pline_copy;
+		for(size_t i = 0; i < pline.size(); i++)
+			pline_copy.push_back(add_vertex(pline[i]->get_position()*0.25+centre*0.75));
+
+		for(size_t i = 0; i < pline.size(); i++)
+		{
+			size_t next;
+			if(i == pline.size()-1)
+				next = 0;
+			else
+				next = i+1;
+
+			pline[i]->boundary = true;
+			pline[next]->boundary = true;
+
+			add_face(pline_copy[i], pline_copy[next], pline[next], pline[i]);
+			add_face(pline_copy[next], pline_copy[i], centre_vertex);
+		}
+#endif
 
 		break;
+
+		converter.clear();
+		line.clear();
 	}
 
 	return(true);
@@ -2360,6 +2439,7 @@ void mesh::cc_create_points_p(mesh& M,
 		else
 		{
 			std::pair<double, double> weights = weight_function(n);
+			//std::pair<double, double> weights = std::make_pair(0.7, 0.1); // <dev>
 
 			gamma	= weights.second;
 			beta	= weights.first;
