@@ -930,92 +930,13 @@ bool mesh::load_pline(std::istream& in)
 		std::vector<vertex*> pline;
 
 		converter >> id_label >> num_vertices;
-		for(size_t i = 0; i < num_vertices; i++)	// ignore last point because it is a repetition of
-								// the first point
+		for(size_t i = 0; i < num_vertices; i++)
 		{
 			double x, y, z;
 			converter >> x >> y >> z;
 
 			pline.push_back(add_vertex(x,y,z));
 		}
-
-		// Second version of algorithm: Create vertices for boundary and pick points
-		// at random.
-		pick_points();
-		break;
-
-		// First version of algorithm: Compute geometric centre of the hole and place an
-		// extraordinary vertex of sufficient valency there.
-		v3ctor centre;
-		for(size_t i = 0; i < pline.size(); i++)
-			centre += pline[i]->get_position()*(1.0/pline.size());
-
-		vertex* hole_centre = add_vertex(centre);
-
-		// This will store the previous midpoint, namely the midpoint of the edge that is
-		// formed by the _next_ point of the polygonal line and the geometric centre of the
-		// hole. We need to store this pointer; otherwise, we will add duplicate
-		// midpoints...
-		vertex* previous_midpoint = NULL;
-		vertex* first_midpoint = NULL;	// stores first midpoint which will be midpoint2 for the
-						// _last_ face around the hole.
-
-		// Create quadrangular neighbourhood around the extraordinary
-		// vertex. Make sure that vertices are sorted correctly.
-		std::vector<vertex*> face_vertices;
-		for(size_t i = 0; i < pline.size(); i++)
-		{
-			size_t next;
-			if(i == pline.size()-1)
-				next = 0;
-			else
-				next = i+1;
-
-			// Assume that the centre of the hole and two vertices
-			// of the boundary form a triangle. Calculate geometric
-			// centre of said triangle and use it to create
-			// quadrangles around the centre of the hole.
-			vertex* trig_centre =	add_vertex(hole_centre->get_position()*1.0/3.0
-								+pline[i]->get_position()*1.0/3.0
-								+pline[next]->get_position()*1.0/3.0);
-
-			vertex* midpoint1;
-			vertex* midpoint2;
-			vertex* midpoint3;
-
-			if(previous_midpoint == NULL)
-				midpoint1 = add_vertex(pline[i]->get_position()*0.5+hole_centre->get_position()*0.5);
-			else
-				midpoint1 = previous_midpoint;
-
-			// Last face around the hole; use the stored first midpoint
-			if(i == pline.size()-1 && first_midpoint != NULL)
-				midpoint2 = first_midpoint;
-			else
-				midpoint2 = add_vertex(pline[next]->get_position()*0.5+hole_centre->get_position()*0.5);
-
-			midpoint3 = add_vertex(pline[next]->get_position()*0.5+pline[i]->get_position()*0.5);
-
-			if(first_midpoint == NULL)
-				first_midpoint = midpoint1;
-
-			// Add quadrangulated version
-			add_face(trig_centre, midpoint2, hole_centre, midpoint1);
-			add_face(trig_centre, midpoint1, pline[i], midpoint3);
-			add_face(trig_centre, midpoint3, pline[next], midpoint2);
-
-			// Set boundaries
-			pline[i]->boundary	= true;
-			pline[next]->boundary	= true;
-			midpoint3->boundary	= true;
-
-			previous_midpoint = midpoint2;
-		}
-
-		converter.clear();
-		line.clear();
-
-		break;
 	}
 
 	return(true);
