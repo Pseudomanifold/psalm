@@ -55,6 +55,7 @@ class mesh
 		void set_parametric_point_creation(bool status = true);
 		void set_bspline_weights_usage(bool status = true);
 		void set_statistics_output(bool status = true);
+		void set_boundary_preservation(bool status = true);
 
 		void set_predefined_weights(short weights);
 		void set_custom_weights(const weights_map& custom_weights);
@@ -120,9 +121,6 @@ class mesh
 		void cc_create_points_p(mesh& M,
 					std::pair<double, double> (*weight_function)(size_t));
 
-		void mark_elements();
-		void pick_points();
-
 		static double ds_weights_ds(size_t k, size_t i);
 		static double ds_weights_cc(size_t k, size_t i);
 		static double ds_weights_degenerate(size_t k, size_t i);
@@ -158,6 +156,11 @@ class mesh
 							//< on the algorithm. The CC scheme, for example, will
 							//< compute the midpoint of the crease edges in order to
 							//< obtain a new edge point.
+
+		bool preserve_boundaries;		//< Flag signalling
+							//< that border vertices are preserved. This means that subdivision
+							//< will _preserve_ the original vertices and only create
+							//< points in the middle of a boundary edge.
 
 		bool use_bspline_weights;		//< Flag signalling
 							//< that the B-spline weights are supposed to be use whenever an

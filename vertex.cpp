@@ -15,12 +15,9 @@ namespace psalm
 
 vertex::vertex()
 {
+	boundary	= false;
 	vertex_point	= NULL;
 	id		= std::numeric_limits<size_t>::max();
-
-	// DEV
-	boundary	= false;
-	picked		= false;
 }
 
 /*!
@@ -57,9 +54,9 @@ void vertex::set(double x, double y, double z, size_t id)
 	// vertex already has a vertex point
 	vertex_point = NULL;
 
-	// DEV
-	picked		= false;
-	boundary	= false;
+	// By default, no vertex is a boundary vertex. This attribute only
+	// becomes relevant if boundary vertices are to be preserved.
+	boundary = false;
 }
 
 /*!

@@ -56,6 +56,7 @@ mesh::mesh()
 	use_bspline_weights		= false;
 
 	handle_creases			= false;
+	preserve_boundaries		= false;
 }
 
 /*!
@@ -481,22 +482,26 @@ bool mesh::load_ply(std::istream& in)
 		cur_line++;
 	}
 
-	// <dev>
-	// Mark boundary vertices
-	for(size_t i = 0; i < V.size(); i++)
+	// Mark boundary vertices if the user has chosen to preserve them.
+	// Else, we do not need the additional information.
+	if(preserve_boundaries)
 	{
-		if(V[i]->valency() < 3)
-			V[i]->set_on_boundary();
-		else
+		for(size_t i = 0; i < V.size(); i++)
 		{
-			for(size_t j = 0; j < V[i]->valency(); j++)
+			if(V[i]->valency() < 3)
+				V[i]->set_on_boundary();
+			else
 			{
-				if(V[i]->get_edge(j)->get_g() == NULL)
-					V[i]->set_on_boundary();
+				// If _any_ incident edge is only part of one face, the
+				// vertex is considered a boundary vertex
+				for(size_t j = 0; j < V[i]->valency(); j++)
+				{
+					if(V[i]->get_edge(j)->get_g() == NULL)
+						V[i]->set_on_boundary();
+				}
 			}
 		}
 	}
-	// </dev>
 
 	return(true);
 }
@@ -513,15 +518,6 @@ bool mesh::save_ply(std::ostream& out)
 	if(!out.good())
 		return(false);
 
-	// <dev>
-	size_t num_marked_faces = F.size();
-	//for(size_t i = 0; i < F.size(); i++)
-	//{
-	//	if(F[i]->marked)
-	//		num_marked_faces++;
-	//}
-	// </dev>
-
 	// header information
 	out	<< "ply\n"
 		<< "format ascii 1.0\n"
@@ -532,7 +528,7 @@ bool mesh::save_ply(std::ostream& out)
 		<< "property uchar red\n"
 		<< "property uchar green\n"
 		<< "property uchar blue\n"
-		<< "element face " << num_marked_faces << "\n" // FIXME: For dev purposes only
+		<< "element face " << F.size() << "\n"
 		<< "property list uchar int vertex_indices\n"
 		<< "end_header\n";
 
@@ -554,9 +550,6 @@ bool mesh::save_ply(std::ostream& out)
 	// write face list (separated by spaces)
 	for(size_t i = 0; i < F.size(); i++)
 	{
-		//if(!F[i]->marked)
-		//	continue;
-
 		out << F[i]->num_vertices() << " ";
 		for(size_t j = 0; j < F[i]->num_vertices(); j++)
 		{
@@ -1274,6 +1267,17 @@ void mesh::set_statistics_output(bool status)
 }
 
 /*!
+*	Sets flag for preserving boundaries.
+*
+*	@param status Value for flag (true by default)
+*/
+
+void mesh::set_boundary_preservation(bool status)
+{
+	preserve_boundaries = status;
+}
+
+/*!
 *	Sets predefined set of weights for subdivision algorithms. All schemes
 *	will ignore weights that do not apply.
 *
@@ -1988,10 +1992,9 @@ void mesh::subdivide_catmull_clark()
 
 				e->edge_point = M.add_vertex(edge_point);
 			}
-			// <dev>
+
 			// Preserve the original boundaries of the object
-			// </dev>
-			else if(e->get_u()->is_on_boundary() && e->get_v()->is_on_boundary())
+			else if(preserve_boundaries && e->get_u()->is_on_boundary() && e->get_v()->is_on_boundary())
 			{
 				edge_point = (	e->get_u()->get_position()+
 						e->get_v()->get_position())*0.5;
@@ -2129,15 +2132,13 @@ void mesh::cc_create_points_g(mesh& M)
 	{
 		print_progress("Creating vertex points [geometrically]", i, V.size()-1);
 
-		// <dev>
-		// _Keep_ boundary vertices
-		if(V[i]->is_on_boundary())
+		// Keep boundary vertices if the user chose this behaviour
+		if(preserve_boundaries && V[i]->is_on_boundary())
 		{
 			V[i]->vertex_point = M.add_vertex(V[i]->get_position());
 			V[i]->vertex_point->set_on_boundary();
 			continue;
 		}
-		// </dev>
 
 		// This follows the original terminology as described by
 		// Catmull and Clark
@@ -2194,15 +2195,13 @@ void mesh::cc_create_points_p(mesh& M,
 		print_progress("Creating vertex points [parametrically]", std::distance(V.begin(), v_it)+1, V.size());
 		vertex* v = *v_it;
 
-		// <dev>
-		// _Keep_ boundary vertices
-		if(v->is_on_boundary())
+		// Keep boundary vertices if the user chose this behaviour
+		if(preserve_boundaries && v->is_on_boundary())
 		{
 			v->vertex_point = M.add_vertex(v->get_position());
 			v->vertex_point->set_on_boundary();
 			continue;
 		}
-		// </dev>
 
 		// will be used later for determining the real weights; for the
 		// regular case, we will always use the standard weights
