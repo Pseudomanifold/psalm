@@ -64,6 +64,8 @@ void show_usage()
 			<< "-n, --steps <n>\t\t\tSet number of subdivision steps to perform on\n"
 			<< "\t\t\t\tthe input mesh.\n\n"
 			<< "\t\t\t\tDefault value: 0\n\n"
+			<< "-r, --preserve-boundaries\tForces algorithms to preserve boundary\n"
+			<< "\t\t\t\tvertices.\n\n"
 			<< "--remove-faces <numbers>\tRemove faces whose number of sides matches\n"
 			<< "\t\t\t\tone of the numbers in the list. Use commas to\n"
 			<< "\t\t\t\tseparate list values.\n\n"
@@ -170,6 +172,7 @@ int main(int argc, char* argv[])
 		{"statistics",		no_argument,		NULL,	's'},
 		{"parametric",		no_argument,		NULL,	'p'},
 		{"handle-creases",	no_argument,		NULL,	'c'},
+		{"preserve-boundaries",	no_argument,		NULL,	'r'},
 		{"b-spline-weights",	no_argument,		NULL,	'b'},
 		{"help",		no_argument,		NULL,	'h'},
 
@@ -187,7 +190,7 @@ int main(int argc, char* argv[])
 	size_t steps	= 0;
 
 	int option = 0;
-	while((option = getopt_long(argc, argv, "o:n:F:V:t:a:w:e:sbcph", cmd_line_opts, NULL)) != -1)
+	while((option = getopt_long(argc, argv, "o:n:F:V:t:a:w:e:sbrcph", cmd_line_opts, NULL)) != -1)
 	{
 		switch(option)
 		{
@@ -338,6 +341,10 @@ int main(int argc, char* argv[])
 
 			case 's':
 				scene_mesh.set_statistics_output();
+				break;
+
+			case 'r':
+				scene_mesh.set_boundary_preservation();
 				break;
 
 			case 'h':
