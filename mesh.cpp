@@ -1466,6 +1466,14 @@ void mesh::subdivide_loop()
 	{
 		print_progress("Creating vertex points", i, V.size()-1);
 
+		// Preserve boundary vertices if necessary
+		if(preserve_boundaries && V[i]->is_on_boundary())
+		{
+			V[i]->vertex_point = M.add_vertex(V[i]->get_position());
+			V[i]->vertex_point->set_on_boundary();
+			continue;
+		}
+
 		// Find neighbours
 
 		size_t n = V[i]->valency();
@@ -1525,6 +1533,8 @@ void mesh::subdivide_loop()
 		}
 
 		e->edge_point = M.add_vertex(edge_point);
+		if(preserve_boundaries && (v1 == NULL || v2 == NULL))
+			e->edge_point->set_on_boundary();
 	}
 
 	// Create topology for new mesh
