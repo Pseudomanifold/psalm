@@ -2004,13 +2004,18 @@ void mesh::subdivide_catmull_clark()
 			}
 
 			// Preserve the original boundaries of the object
-			else if(preserve_boundaries && e->get_u()->is_on_boundary() && e->get_v()->is_on_boundary())
+			else if(preserve_boundaries && e->is_on_boundary())
+			// FIXME: else if(preserve_boundaries && e->get_u()->is_on_boundary() && e->get_v()->is_on_boundary())
 			{
+				/*
 				edge_point = (	e->get_u()->get_position()+
 						e->get_v()->get_position())*0.5;
 
 				e->edge_point = M.add_vertex(edge_point);
 				e->edge_point->set_on_boundary();
+				*/
+
+				e->edge_point = NULL;
 			}
 			else
 			{
@@ -2102,7 +2107,70 @@ void mesh::subdivide_catmull_clark()
 			// skipped, of course.
 			if(	e1->edge_point == NULL ||
 				e2->edge_point == NULL)
-				continue;
+			{
+				if(preserve_boundaries)
+				{
+					bool u1 = (e1->get_u() == V[i]);
+					bool u2 = (e2->get_u() == V[i]);
+
+					vertex* v10;
+					vertex* v11;
+					vertex* v20;
+					vertex* v21;
+
+					if(e1->edge_point == NULL && e2->edge_point == NULL)
+					{
+						v10 = M.add_vertex(e1->get_u()->get_position());
+						v11 = M.add_vertex(e1->get_v()->get_position());
+						v20 = M.add_vertex(e2->get_u()->get_position());
+						v21 = M.add_vertex(e2->get_v()->get_position());
+
+						v10->set_on_boundary();
+						v11->set_on_boundary();
+						v20->set_on_boundary();
+						v21->set_on_boundary();
+
+						M.add_face(v10, f->face_point, v11);
+						M.add_face(v20, f->face_point, v21);
+					}
+					else if(e1->edge_point != NULL)
+					{
+						M.add_face(V[i]->vertex_point, f->face_point, e1->edge_point);
+						if(u2)
+						{
+							v20 = M.add_vertex(e2->get_v()->get_position());
+							v20->set_on_boundary();
+							M.add_face(V[i]->vertex_point, f->face_point, v20);
+						}
+						else
+						{
+							v20 = M.add_vertex(e2->get_u()->get_position());
+							v20->set_on_boundary();
+							M.add_face(V[i]->vertex_point, f->face_point, v20);
+						}
+					}
+					else
+					{
+						M.add_face(V[i]->vertex_point, f->face_point, e2->edge_point);
+						if(u1)
+						{
+							v10 = M.add_vertex(e1->get_v()->get_position());
+							v10->set_on_boundary();
+							M.add_face(V[i]->vertex_point, f->face_point, v10);
+						}
+						else
+						{
+							v10 = M.add_vertex(e1->get_u()->get_position());
+							v10->set_on_boundary();
+							M.add_face(V[i]->vertex_point, f->face_point, v10);
+						}
+					}
+
+					continue;
+				}
+				else
+					continue; // skip it if boundaries are _not_ to be preserved
+			}
 
 			/*
 				Check which edge needs to be used first in
