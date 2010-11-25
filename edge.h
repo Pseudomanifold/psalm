@@ -47,12 +47,18 @@ class edge
 
 		vertex* edge_point;
 
+		bool is_on_boundary(); //FIXME: Should be const
+		void set_on_boundary(bool boundary = true);
+
 	private:
 		const vertex* u;	///< Pointer to start vertex
 		const vertex* v;	///< Pointer to end vertex
 
 		face* f;		///< Pointer to first adjacent face
 		face* g;		///< Pointer to second adjacent face
+
+		bool boundary;		///< Flag signalling that the edge is a
+					///< boundary edge
 };
 
 } // end of namespace "psalm"

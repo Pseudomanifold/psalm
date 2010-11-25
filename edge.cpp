@@ -148,4 +148,32 @@ const face* edge::get_g() const
 	return(g);
 }
 
+/*!
+*	Returns value of flag signalling whether the edge is a boundary edge.
+*	This flag is supposed to be set by the user.
+*
+*	@see edge::set_on_boundary()
+*/
+
+bool edge::is_on_boundary()
+{
+	// <dev>
+	// Edge may decide for itself whether it is a boundary edge or not...
+	// </dev>
+	boundary = (f == NULL || g == NULL);
+	return(boundary);
+}
+
+/*!
+*	Sets value of flag signalling boundary edges. The parameter is set to
+*	false by default in all constructors.
+*
+*	@param	boundary Current value for boundary parameter (true by default)
+*/
+
+void edge::set_on_boundary(bool boundary)
+{
+	this->boundary = boundary;
+}
+
 } // end of namespace "psalm"
