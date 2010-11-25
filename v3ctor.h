@@ -32,6 +32,8 @@
 #ifndef __V3CTOR_H__
 #define __V3CTOR_H__
 
+#include <ostream>
+
 /*!
 *	@class v3ctor
 *	@brief Simple 3-dimensional vector class implementation. Allows some
@@ -60,6 +62,8 @@ class v3ctor
 
 		v3ctor normalize() const;
 		double length() const;
+
+		friend std::ostream& operator<<(std::ostream& o, const v3ctor& v);
 
 	private:
 		double x;

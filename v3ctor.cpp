@@ -31,6 +31,7 @@
 
 #include <cmath>
 #include <stdexcept>
+#include <iomanip>
 
 #include "v3ctor.h"
 
@@ -247,4 +248,26 @@ v3ctor v3ctor::normalize() const
 double v3ctor::length() const
 {
 	return(sqrt(x*x+y*y+z*z));
+}
+
+/*!
+*	Provides a simple output capability for v3ctor objects: All
+*	components of the vector are separated by spaces. Afterwards,
+*	an std::endl will be added.
+*
+*	@warning	This function uses std::fixed and std::setprecision(8)
+*			for the output stream.
+*
+*	@param	o	Stream for output
+*	@param	v	V3ctor object for output
+*
+*	@return	Stream containing data of v3ctor v.
+*/
+
+std::ostream& operator<<(std::ostream& o, const v3ctor& v)
+{
+	return(o	<< std::fixed << std::setprecision(8)
+			<< v.x << " "
+			<< v.y << " "
+			<< v.z << std::endl);
 }
