@@ -2775,16 +2775,27 @@ void mesh::trace(size_t i, size_t k, size_t** O)
 double mesh::objective_function(vertex* v1, vertex* v2, vertex* v3)
 {
 	if(v1 == NULL || v2 == NULL || v3 == NULL)
-		return(0.0); // TODO: Should be numerical limit...
+		return(std::numeric_limits<double>::max());	// ensure that invalid data does not
+								// appear in the weighted triangulation
 
 	v3ctor A = v1->get_position();
 	v3ctor B = v2->get_position();
 	v3ctor C = v3->get_position();
 
 	// This formula is wrong by design. Multiplication with 0.5 is _not_
-	// necessary because the objective function is minimized anyway and we
-	// are not interested in the _absolute_ values, anyway.
-	return(((A-B)|(C-A)).length());
+	// necessary because the objective function is minimized and we are not
+	// interested in the _absolute_ values, anyway.
+	double area	= ((B-A)|(C-A)).length();
+
+	double alpha	= (B-A).normalize()*(C-A).normalize();
+	double beta	= (A-B).normalize()*(C-B).normalize();
+	double gamma	= (B-C).normalize()*(A-C).normalize();
+
+	double min_cos = std::min(alpha, std::min(beta, gamma));
+	if(min_cos != 0.0)
+		return(area*(1.0/min_cos));
+	else
+		return(area);
 }
 
 } // end of namespace "psalm"
