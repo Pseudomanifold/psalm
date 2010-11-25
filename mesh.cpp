@@ -138,6 +138,8 @@ bool mesh::load(const std::string& filename, short type)
 			result = (load_obj(in) ? STATUS_OK : STATUS_ERROR);
 		else if(extension == ".off")
 			result = (load_off(in) ? STATUS_OK : STATUS_ERROR);
+		else if(extension == ".pline")
+			result = (load_pline(in) ? STATUS_OK : STATUS_ERROR);
 
 		// Unknown extension, so we fall back to PLY files (see below)
 	}
