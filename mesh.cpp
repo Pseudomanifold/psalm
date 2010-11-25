@@ -946,157 +946,6 @@ bool mesh::load_pline(std::istream& in)
 			pline.push_back(add_vertex(x,y,z));
 		}
 
-#ifdef SECOND_ALGO
-
-		// Second version of algorithm: Create vertices for boundary and pick points
-		// at random.
-		pick_points();
-
-		break;
-#endif
-
-#ifdef FIRST_ALGO
-
-		// First version of algorithm: Compute geometric centre of the hole and place an
-		// extraordinary vertex of sufficient valency there.
-		v3ctor centre;
-		for(size_t i = 0; i < pline.size(); i++)
-			centre += pline[i]->get_position()*(1.0/pline.size());
-
-		vertex* hole_centre = add_vertex(centre);
-
-		// This will store the previous midpoint, namely the midpoint of the edge that is
-		// formed by the _next_ point of the polygonal line and the geometric centre of the
-		// hole. We need to store this pointer; otherwise, we will add duplicate
-		// midpoints...
-		vertex* previous_midpoint = NULL;
-		vertex* first_midpoint = NULL;	// stores first midpoint which will be midpoint2 for the
-						// _last_ face around the hole.
-
-		// Create quadrangular neighbourhood around the extraordinary
-		// vertex. Make sure that vertices are sorted correctly.
-		std::vector<vertex*> face_vertices;
-		for(size_t i = 0; i < pline.size(); i++)
-		{
-			size_t next;
-			if(i == pline.size()-1)
-				next = 0;
-			else
-				next = i+1;
-
-			// Assume that the centre of the hole and two vertices
-			// of the boundary form a triangle. Calculate geometric
-			// centre of said triangle and use it to create
-			// quadrangles around the centre of the hole.
-			vertex* trig_centre =	add_vertex(hole_centre->get_position()*1.0/3.0
-								+pline[i]->get_position()*1.0/3.0
-								+pline[next]->get_position()*1.0/3.0);
-
-			vertex* midpoint1;
-			vertex* midpoint2;
-			vertex* midpoint3;
-
-			if(previous_midpoint == NULL)
-				midpoint1 = add_vertex(pline[i]->get_position()*0.5+hole_centre->get_position()*0.5);
-			else
-				midpoint1 = previous_midpoint;
-
-			// Last face around the hole; use the stored first midpoint
-			if(i == pline.size()-1 && first_midpoint != NULL)
-				midpoint2 = first_midpoint;
-			else
-				midpoint2 = add_vertex(pline[next]->get_position()*0.5+hole_centre->get_position()*0.5);
-
-			midpoint3 = add_vertex(pline[next]->get_position()*0.5+pline[i]->get_position()*0.5);
-
-			if(first_midpoint == NULL)
-				first_midpoint = midpoint1;
-
-			// Add quadrangulated version
-			add_face(trig_centre, midpoint2, hole_centre, midpoint1);
-			add_face(trig_centre, midpoint1, pline[i], midpoint3);
-			add_face(trig_centre, midpoint3, pline[next], midpoint2);
-
-			// Set boundaries
-			pline[i]->boundary	= true;
-			pline[next]->boundary	= true;
-			midpoint3->boundary	= true;
-
-			previous_midpoint = midpoint2;
-		}
-
-#endif
-
-#define THIRD_ALGO
-#ifdef THIRD_ALGO
-		// Third version of algorithm: Compute geometric centre of the
-		// hole and place an extraordinary vertex of sufficient valency
-		// there.
-		v3ctor centre;
-		for(size_t i = 0; i < pline.size(); i++)
-			centre += pline[i]->get_position()*(1.0/pline.size());
-
-		vertex* centre_vertex = add_vertex(centre);
-
-		// For each two adjacent vertices of the hole, create a
-		// midpoint and connect the two vertices and the midpoint with
-		// the centre vertex in order to form a simple quadrangulation
-		for(size_t i = 0; i < pline.size(); i++)
-		{
-			size_t next;
-			if(i == pline.size()-1)
-				next = 0;
-			else
-				next = i+1;
-
-			vertex* midpoint = add_vertex(	pline[i]->get_position()*0.5+
-							pline[next]->get_position()*0.5);
-
-			midpoint->boundary = true;
-			pline[i]->boundary = true;
-			pline[next]->boundary = true;
-
-			add_face(pline[i], midpoint, pline[next], centre_vertex);
-		}
-#endif
-
-#ifdef FOURTH_ALGO
-		// Fourth version of algorithm: Compute geometric centre of the
-		// hole and place an extraordinary vertex of sufficient valency
-		// there.
-		v3ctor centre;
-		for(size_t i = 0; i < pline.size(); i++)
-			centre += pline[i]->get_position()*(1.0/pline.size());
-
-		vertex* centre_vertex = add_vertex(centre);
-
-		// Scale original vertices and translate them in direction of
-		// the hole. Create quadrangular faces by connecting
-		//
-		//	vertex 1 -- copy 1 -- copy 2 -- vertex 2
-		//
-		// and adding an n-sided face afterwards.
-
-		std::vector<vertex*> pline_copy;
-		for(size_t i = 0; i < pline.size(); i++)
-			pline_copy.push_back(add_vertex(pline[i]->get_position()*0.25+centre*0.75));
-
-		for(size_t i = 0; i < pline.size(); i++)
-		{
-			size_t next;
-			if(i == pline.size()-1)
-				next = 0;
-			else
-				next = i+1;
-
-			pline[i]->boundary = true;
-			pline[next]->boundary = true;
-
-			add_face(pline_copy[i], pline_copy[next], pline[next], pline[i]);
-			add_face(pline_copy[next], pline_copy[i], centre_vertex);
-		}
-#endif
-
 		break;
 
 		converter.clear();
@@ -2772,62 +2621,23 @@ std::vector<face*> mesh::sort_faces(vertex* v)
 }
 
 /*!
-	Marks elements in preparation of filling an n-sided hole. This function
-	marks the "1-ring" around an extraordinary vertex.
 */
 
-void mesh::mark_elements()
 {
-	for(size_t i = 0; i < F.size(); i++)
-		F[i]->marked = false;
-	for(size_t i = 0; i < V.size(); i++)
-		V[i]->marked = false;
 
-	for(size_t i = 0; i < V.size(); i++)
 	{
-		// Mark extraordinary vertices
-		if(	V[i]->valency() != 4 &&
-			V[i]->valency() != 3)
-			V[i]->marked = true;
-		else
-			continue;
 
-		// Mark adjacent faces and incident edges
-		for(size_t j = 0; j < V[i]->num_adjacent_faces(); j++)
 		{
-			V[i]->get_face(j)->marked = true;
-			for(size_t k = 0; k < V[i]->get_face(j)->num_vertices(); k++)
-				const_cast<vertex*>(V[i]->get_face(j)->get_vertex(k))->marked = true;
 		}
 	}
 }
 
 /*!
-*	Creates vertices in the middle of a hole by choosing points at random.
-*	The heuristic works as follows:
-*
-*	- Pick a random point
-*	- Calculate midpoint of first point and picked point
-*	- Connect all indices between first point and picked point
-*	- Pick another point, starting from the index of the last picked point
-*	- Iterate
 */
 
-void mesh::pick_points()
 {
-	for(size_t i = 0; i < V.size(); i++)
-		V[i]->picked = false;
 
-	// Create vector of indices that are to be picked
-	std::set<size_t> picked_indices;
-	for(size_t i = 0; i < 20; i++)
-		picked_indices.insert(random() % V.size());
 
-	size_t previously_picked = 0;
-	for(std::set<size_t>::iterator picked = picked_indices.begin(); picked != picked_indices.end(); picked++)
-	{
-		if(*picked == previously_picked)
-			continue;
 	}
 }
 
