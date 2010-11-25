@@ -887,6 +887,61 @@ bool mesh::save_off(std::ostream& out)
 }
 
 /*!
+*	Loads a data file that contains polygonal lines.
+*
+*	@param	in Input stream (file, standard input)
+*	@return	true if the mesh could be loaded, else false
+*/
+
+bool mesh::load_pline(std::istream& in)
+{
+	if(!in.good())
+		return(false);
+
+	std::string line;
+	std::istringstream converter;
+
+	while(std::getline(in, line))
+	{
+		// Ignore lines containing a "#"
+		if(line.find_first_of('#') != std::string::npos)
+			continue;
+
+		converter.str(line);
+
+		// Data format is straightforward (different fields are assumed to
+		// be separated by whitespace).
+		//
+		//	Label ID | number of vertices | x1 y1 z1 x2 y2 z2 ...
+
+		size_t id_label;
+		size_t num_vertices;
+
+		// Vector of vertices for the current polygonal line
+		std::vector<vertex*> pline;
+
+		converter >> id_label >> num_vertices;
+
+		for(size_t i = 0; i < num_vertices; i++)	// ignore last point because it is a repetition of
+								// the first point
+		{
+			double x, y, z;
+			converter >> x >> y >> z;
+
+			pline.push_back(add_vertex(x,y,z));
+		}
+
+		triangulate_hole();
+		break;
+
+		converter.clear();
+		line.clear();
+	}
+
+	return(true);
+}
+
+/*!
 *	Destroys the mesh and all related data structures and frees up used
 *	memory.
 */
@@ -2629,6 +2684,105 @@ std::vector<face*> mesh::sort_faces(vertex* v)
 		reverse(faces.begin(), faces.end());
 
 	return(faces);
+}
+
+/*!
+*	Creates a minimum-weight triangulation of a hole. This uses the
+*	algorithm of Barequet and Sharir.
+*/
+
+void mesh::triangulate_hole()
+{
+	// Assumption: The mesh does _not_ yet contain any faces or edges, but
+	// only a list of vertices.
+
+	size_t n = V.size();
+	double** W = new double*[n];	// stores weights
+	for(size_t i = 0; i < n; i++)
+		W[i] = new double[n];
+
+	size_t** O = new size_t*[n];	// stores minimal indices
+	for(size_t i = 0; i < n; i++)
+		O[i] = new size_t[n];
+
+	// 1st step: Initialization
+	for(size_t i = 0; i < n-1; i++)
+	{
+		W[i][i+1] = 0;
+		if(i < n-2)
+			W[i][i+2] = objective_function(V[i], V[i+1], V[i+2]);
+	}
+
+	// 2nd step: Compute minima
+	size_t j = 2;
+	while(j++ < n-1)
+	{
+		for(size_t i = 0; i < n-j; i++)
+		{
+			size_t k = i+j;
+
+			double min = 1000.0;		// TODO: Use numerical limit
+			size_t min_index = 1000;	// TODO: Use numerical limit
+			for(size_t m = i+1; m < k; m++)
+			{
+				double res = W[i][m]+W[m][k]+objective_function(V[i], V[m], V[k]);
+				if(res < min)
+				{
+					min = res;
+					min_index = m;
+				}
+			}
+
+			W[i][k] = min;
+			O[i][k] = min_index;
+		}
+	}
+
+	// W[0][n-1] contains the weight of the minimal triangulation. Create
+	// triangulation using the stores indices.
+
+	trace(0, n-1, O);
+}
+
+/*!
+*	TODO: Document me, you lazy bastard. Basterd.
+*/
+
+void mesh::trace(size_t i, size_t k, size_t** O)
+{
+	if(i+2 == k)
+		add_face(V[i], V[i+1], V[k]);
+	else
+	{
+		size_t o = O[i][k];
+		if(o != i+1)
+			trace(i,o, O);
+
+		add_face(V[i], V[o], V[k]);
+
+		if(o != k-1)
+			trace(o, k, O);
+	}
+}
+
+/*!
+*	Objective function for the triangulation algorithm of Barequet and
+*	Sharir: Computation of the _area_ of the triangle.
+*/
+
+double mesh::objective_function(vertex* v1, vertex* v2, vertex* v3)
+{
+	if(v1 == NULL || v2 == NULL || v3 == NULL)
+		return(0.0); // TODO: Should be numerical limit...
+
+	v3ctor A = v1->get_position();
+	v3ctor B = v2->get_position();
+	v3ctor C = v3->get_position();
+
+	// This formula is wrong by design. Multiplication with 0.5 is _not_
+	// necessary because the objective function is minimized anyway and we
+	// are not interested in the _absolute_ values, anyway.
+	return(((A-B)|(C-A)).length());
 }
 
 } // end of namespace "psalm"
