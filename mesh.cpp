@@ -2791,9 +2791,10 @@ double mesh::objective_function(vertex* v1, vertex* v2, vertex* v3)
 	double beta	= (A-B).normalize()*(C-B).normalize();
 	double gamma	= (B-C).normalize()*(A-C).normalize();
 
-	double min_cos = std::min(alpha, std::min(beta, gamma));
-	if(min_cos != 0.0)
-		return(area*(1.0/min_cos));
+	double penalty = std::max(alpha, std::max(beta, gamma))/cos(M_PI/3.0);
+	penalty = 1.0;
+	if(penalty != 0)
+		return(area*penalty);
 	else
 		return(area);
 }
