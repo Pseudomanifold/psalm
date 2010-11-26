@@ -934,6 +934,7 @@ bool mesh::load_pline(std::istream& in)
 		}
 
 		triangulate_hole();
+		mark_boundaries();
 		break;
 
 		converter.clear();
@@ -2797,6 +2798,28 @@ double mesh::objective_function(vertex* v1, vertex* v2, vertex* v3)
 		return(area*penalty);
 	else
 		return(area);
+}
+
+/*!
+*	Marks all boundary vertices and edges in the mesh.
+*/
+
+void mesh::mark_boundaries()
+{
+	for(size_t i = 0; i < V.size(); i++)
+	{
+		for(size_t j = 0; j < V[i]->valency(); j++)
+		{
+			edge* e = V[i]->get_edge(j);
+			if(	e->get_f() == NULL ||
+				e->get_g() == NULL)
+			{
+				e->set_on_boundary();
+				V[i]->set_on_boundary();
+				break;
+			}
+		}
+	}
 }
 
 } // end of namespace "psalm"
