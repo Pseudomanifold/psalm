@@ -18,6 +18,7 @@ face::face()
 {
 	face_point	= NULL;
 	id		= std::numeric_limits<size_t>::max();
+	boundary	= false;
 }
 
 /*!
@@ -119,6 +120,28 @@ vertex* face::get_face_vertex(size_t i)
 		return(NULL);
 	else
 		return(V_F[i]);
+}
+
+/*!
+*	Returns value of flag signalling whether the face is a boundary face.
+*	Value of flag is supposed to be set by the user.
+*/
+
+bool face::is_on_boundary() const
+{
+	return(boundary);
+}
+
+/*!
+*	Sets value of flag signalling boundary faces. The parameter is set to
+*	false by default in all constructors.
+*
+*	@param	boundary Current value for boundary parameter (true by default)
+*/
+
+void face::set_on_boundary(bool boundary)
+{
+	this->boundary = boundary;
 }
 
 } // end of namespace "psalm"
