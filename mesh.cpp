@@ -1590,15 +1590,46 @@ void mesh::subdivide_loop()
 					(v1->get_position()+v2->get_position())*0.125;
 		}
 
-		e->edge_point = M.add_vertex(edge_point);
-		if(preserve_boundaries && (v1 == NULL || v2 == NULL))
-			e->edge_point->set_on_boundary();
+		if(v1 != NULL && v2 != NULL)
+			e->edge_point = M.add_vertex(edge_point);
+		else
+			e->edge_point = NULL;
+
+		//if(preserve_boundaries && (v1 == NULL || v2 == NULL))
+		//	e->edge_point->set_on_boundary();
 	}
 
 	// Create topology for new mesh
 	for(size_t i = 0; i < F.size(); i++)
 	{
 		print_progress("Creating topology", i, F.size()-1);
+
+		// Check whether the face contains any boundary edges. In this
+		// case, normal subdivision rules are not applicable.
+		if(	F[i]->get_edge(0).e->is_on_boundary() ||
+			F[i]->get_edge(1).e->is_on_boundary() ||
+			F[i]->get_edge(2).e->is_on_boundary())
+		{
+			vertex* v1 = M.add_vertex(F[i]->get_vertex(0)->get_position());
+			vertex* v2 = M.add_vertex(F[i]->get_vertex(1)->get_position());
+			vertex* v3 = M.add_vertex(F[i]->get_vertex(2)->get_position());
+
+			v3ctor centroid = (	v1->get_position()+
+						v2->get_position()+
+						v3->get_position())*(1.0/3.0);
+
+			vertex* v_centre = M.add_vertex(centroid);
+
+			// Replace triangle by three smaller triangles. The
+			// order is correct because the vertices of the face
+			// are sorted correctly.
+
+			M.add_face(v_centre, v1, v2);
+			M.add_face(v_centre, v2, v3);
+			M.add_face(v_centre, v3, v1);
+
+			continue;
+		}
 
 		// ...go through all vertices of the face
 		for(size_t j = 0; j < F[i]->num_vertices(); j++)
