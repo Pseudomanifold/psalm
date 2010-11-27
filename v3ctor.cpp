@@ -114,7 +114,7 @@ v3ctor v3ctor::operator*(const double& a) const
 }
 
 /*!
-*	Multiplies current vector by scalar value. 
+*	Multiplies current vector by scalar value.
 */
 
 v3ctor& v3ctor::operator*=(const double& a)
@@ -235,10 +235,11 @@ const double& v3ctor::operator[](short i) const
 
 v3ctor v3ctor::normalize() const
 {
-	if(length() == 0)
+	double len = length();
+	if(len == 0)
 		return(*this);
 	else
-		return(operator/(length()));
+		return(operator/(len));
 }
 
 /*!
