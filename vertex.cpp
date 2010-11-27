@@ -60,15 +60,6 @@ void vertex::set(double x, double y, double z, size_t id)
 }
 
 /*!
-*	@return Const reference to vertex position.
-*/
-
-const v3ctor& vertex::get_position() const
-{
-	return(p);
-}
-
-/*!
 *	@return ID of the vertex
 */
 

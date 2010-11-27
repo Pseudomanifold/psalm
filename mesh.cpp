@@ -1095,55 +1095,6 @@ void mesh::add_face(std::vector<vertex*> vertices)
 }
 
 /*!
-*	Adds a triangular face to the mesh. This function allows the caller to
-*	specify 3 vertices that will form the new triangle. Thus, specifying a
-*	vector of pointers is not necessary.
-*
-*	@param v1 Pointer to 1st vertex of new face
-*	@param v2 Pointer to 2nd vertex of new face
-*	@param v3 Pointer to 3rd vertex of new face
-*
-*	@warning The vertex pointers are not checked for consistency.
-*/
-
-inline void mesh::add_face(vertex* v1, vertex* v2, vertex* v3)
-{
-	std::vector<vertex*> vertices;
-
-	vertices.push_back(v1);
-	vertices.push_back(v2);
-	vertices.push_back(v3);
-
-	add_face(vertices);
-}
-
-/*!
-*	Adds a quadrangular face to the mesh. This function allows the caller
-*	to specify 4 vertices that will form the new quadrangle. Thus,
-*	specifying a vector of pointers is not necessary.
-*
-*	@param v1 Pointer to 1st vertex of new face
-*	@param v2 Pointer to 2nd vertex of new face
-*	@param v3 Pointer to 3rd vertex of new face
-*	@param v4 Pointer to 4th vertex of new face
-*
-*	@warning The vertex pointers are not checked for consistency and
-*	planarity.
-*/
-
-inline void mesh::add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4)
-{
-	std::vector<vertex*> vertices;
-
-	vertices.push_back(v1);
-	vertices.push_back(v2);
-	vertices.push_back(v3);
-	vertices.push_back(v4);
-
-	add_face(vertices);
-}
-
-/*!
 *	Tries to add an edge to the current mesh. The edge is described by
 *	pointers to its start and end vertices.
 *

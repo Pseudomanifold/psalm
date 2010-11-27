@@ -62,6 +62,16 @@ class vertex
 		bool boundary; /// Flag signalling that the vertex is a boundary vertex
 };
 
+/*!
+*	@return Const reference to vertex position.
+*/
+
+inline const v3ctor& vertex::get_position() const
+{
+	return(p);
+}
+
+
 } // end of namespace "psalm"
 
 #endif
