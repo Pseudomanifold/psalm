@@ -121,10 +121,6 @@ class mesh
 		void cc_create_points_p(mesh& M,
 					std::pair<double, double> (*weight_function)(size_t));
 
-		void trace(size_t i, size_t k, size_t** O);
-		void triangulate_hole();
-		double objective_function(vertex* v1, vertex* v2, vertex* v3);
-
 		static double ds_weights_ds(size_t k, size_t i);
 		static double ds_weights_cc(size_t k, size_t i);
 		static double ds_weights_degenerate(size_t k, size_t i);
