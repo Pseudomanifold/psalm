@@ -76,7 +76,7 @@ class mesh
 		static const short W_DOO_SABIN;		///< Represents Doo-Sabin weights for the DS scheme
 		static const short W_DEGENERATE;	///< Represents degenerate weights for the DS scheme
 
-	private:
+	protected:
 
 		// Data variables
 
