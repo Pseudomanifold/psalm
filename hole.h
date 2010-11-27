@@ -23,7 +23,7 @@ class hole : public mesh
 		void triangulate();
 
 	protected:
-		inline double objective_function(vertex* v1, vertex* v2, vertex* v3);
+		double objective_function(const vertex* v1, const vertex* v2, const vertex* v3) const;
 
 	private:
 		size_t** indices;	///< Stores the index that achieves the

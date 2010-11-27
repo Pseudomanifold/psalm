@@ -134,7 +134,7 @@ void hole::construct_triangulation(size_t i, size_t k)
 *			"skinny" triangles.
 */
 
-double hole::objective_function(vertex* v1, vertex* v2, vertex* v3)
+double hole::objective_function(const vertex* v1, const vertex* v2, const vertex* v3) const
 {
 	if(v1 == NULL || v2 == NULL || v3 == NULL)
 		return(std::numeric_limits<double>::max());	// ensure that invalid data does not
