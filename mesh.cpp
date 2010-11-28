@@ -485,23 +485,7 @@ bool mesh::load_ply(std::istream& in)
 	// Mark boundary vertices if the user has chosen to preserve them.
 	// Else, we do not need the additional information.
 	if(preserve_boundaries)
-	{
-		for(size_t i = 0; i < V.size(); i++)
-		{
-			if(V[i]->valency() < 3)
-				V[i]->set_on_boundary();
-			else
-			{
-				// If _any_ incident edge is only part of one face, the
-				// vertex is considered a boundary vertex
-				for(size_t j = 0; j < V[i]->valency(); j++)
-				{
-					if(V[i]->get_edge(j)->get_g() == NULL)
-						V[i]->set_on_boundary();
-				}
-			}
-		}
-	}
+		mark_boundaries();
 
 	return(true);
 }
