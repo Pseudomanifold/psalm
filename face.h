@@ -44,6 +44,9 @@ class face
 
 		vertex* face_point;
 
+		bool is_on_boundary() const;
+		void set_on_boundary(bool boundary = true);
+
 	private:
 		std::vector<directed_edge> E;
 		std::vector<const vertex*> V;
@@ -51,6 +54,9 @@ class face
 		std::vector<vertex*> V_F;
 
 		size_t id;
+
+		bool boundary;	///< Flag signalling that the face is a
+				///< boundary face.
 };
 
 } // end of namespace "psalm"

@@ -1483,9 +1483,13 @@ void mesh::subdivide_loop()
 					(v1->get_position()+v2->get_position())*0.125;
 		}
 
-		e->edge_point = M.add_vertex(edge_point);
-		if(preserve_boundaries && (v1 == NULL || v2 == NULL))
-			e->edge_point->set_on_boundary();
+		if(v1 != NULL && v2 != NULL)
+			e->edge_point = M.add_vertex(edge_point);
+		else
+			e->edge_point = NULL;
+
+		//if(preserve_boundaries && (v1 == NULL || v2 == NULL))
+		//	e->edge_point->set_on_boundary();
 	}
 
 	// Create topology for new mesh
@@ -1493,13 +1497,81 @@ void mesh::subdivide_loop()
 	{
 		print_progress("Creating topology", i, F.size()-1);
 
+		// Check whether the face contains any boundary edges. In this
+		// case, normal subdivision rules are not applicable.
+		if(	F[i]->get_edge(0).e->is_on_boundary() ||
+			F[i]->get_edge(1).e->is_on_boundary() ||
+			F[i]->get_edge(2).e->is_on_boundary())
+		{
+			// Use the vertex points. For boundary vertices, these
+			// are already marked as boundary vertices. For
+			// interior vertices, these are _slightly_ translated
+			// (depending on the structure of the mesh) -- which is
+			// a good thing. Otherwise, the subdivision process
+			// would be too static.
+
+			vertex* v1 = F[i]->get_vertex(0)->vertex_point;
+			vertex* v2 = F[i]->get_vertex(1)->vertex_point;
+			vertex* v3 = F[i]->get_vertex(2)->vertex_point;
+
+			v3ctor centroid = (	v1->get_position()+
+						v2->get_position()+
+						v3->get_position())*(1.0/3.0);
+
+			vertex* v_centre = M.add_vertex(centroid);
+
+			// Replace triangle by three smaller triangles. The
+			// order is correct because the vertices of the face
+			// are sorted correctly.
+
+			M.add_face(v_centre, v1, v2);
+			M.add_face(v_centre, v2, v3);
+			M.add_face(v_centre, v3, v1);
+
+			// Check whether an edge already has an edge point. In
+			// this case, a new triangle must be created -- else,
+			// the resulting mesh would contain holes.
+
+			for(size_t j = 0; j < 3; j++)
+			{
+				edge* e = F[i]->get_edge(j).e;
+				if(e->edge_point)
+				{
+					// For each of the edges, we need to
+					// check whether the _second_ adjacent
+					// face is also a boundary face. In
+					// this case, no new face can be
+					// created -- otherwise,
+					// self-intersections occur.
+
+					bool on_boundary = false;
+					if(e->get_f() == F[i])
+						on_boundary = e->get_g()->is_on_boundary();
+					else
+						on_boundary = e->get_f()->is_on_boundary();
+
+					if(!on_boundary)
+					{
+						if(j == 0)
+							M.add_face(v2, v1, e->edge_point);
+						else if(j == 1)
+							M.add_face(v3, v2, e->edge_point);
+						else if(j == 2)
+							M.add_face(v1, v3, e->edge_point);
+					}
+				}
+			}
+
+			continue;
+		}
+
 		// ...go through all vertices of the face
 		for(size_t j = 0; j < F[i]->num_vertices(); j++)
 		{
 			/*
-				F[i].V[j] is the current vertex of a face. We
-				now need to find the _two_ adjacent edges for
-				the face. This yields one new triangle.
+				Using the jth vertex of the ith face, we now
+				need to find the _two_ adjacent edges for the
+				face. This yields one new triangle.
 			*/
 
 			size_t n = F[i]->num_edges(); // number of edges in face
@@ -1535,7 +1607,7 @@ void mesh::subdivide_loop()
 			vertex* v3 = d_e2.e->edge_point;
 
 			/*
-				 Create vertices for _new_ face. It is
+				 Create vertices for the _new_ face. It is
 				 important to determine the proper order of the
 				 edges here. The new edges should run "along"
 				 the old ones.
@@ -1585,6 +1657,7 @@ void mesh::subdivide_loop()
 	}
 
 	this->replace_with(M);
+	this->mark_boundaries(); // dev
 }
 
 /*!
@@ -2580,6 +2653,32 @@ std::vector<face*> mesh::sort_faces(vertex* v)
 		reverse(faces.begin(), faces.end());
 
 	return(faces);
+}
+
+/*!
+*	Marks all boundary vertices and edges in the mesh.
+*/
+
+void mesh::mark_boundaries()
+{
+	for(size_t i = 0; i < V.size(); i++)
+	{
+		for(size_t j = 0; j < V[i]->valency(); j++)
+		{
+			edge* e = V[i]->get_edge(j);
+
+			// checking using get_g() is sufficient as get_f()
+			// returns the _first_ face an edge is part of, and all
+			// edges are assumed to be part of at least one face.
+			if(e->get_g() == NULL)
+			{
+				e->set_on_boundary();
+				e->get_f()->set_on_boundary();
+
+				V[i]->set_on_boundary();
+			}
+		}
+	}
 }
 
 } // end of namespace "psalm"
