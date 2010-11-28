@@ -27,6 +27,7 @@ class vertex
 		vertex(double x, double y, double z, size_t id);
 
 		void set(double x, double y, double z, size_t id);
+		void set_position(const v3ctor& v);
 		const v3ctor& get_position() const;
 
 		/*!
@@ -65,6 +66,20 @@ class vertex
 		size_t id;
 		bool boundary; /// Flag signalling that the vertex is a boundary vertex
 };
+
+/*!
+*	Sets a new position for the vertex. All other attributes of the vertex
+*	remain unchanged.
+*
+*	@param p New vertex position
+*/
+
+inline void vertex::set_position(const v3ctor& p)
+{
+	this->p[0] = p[0];
+	this->p[1] = p[1];
+	this->p[2] = p[2];
+}
 
 /*!
 *	@return Const reference to vertex position.
