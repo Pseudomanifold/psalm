@@ -5,6 +5,7 @@
 
 #include <limits>
 #include "vertex.h"
+#include "edge.h"
 
 namespace psalm
 {
@@ -172,6 +173,55 @@ bool vertex::is_on_boundary() const
 void vertex::set_on_boundary(bool boundary)
 {
 	this->boundary = boundary;
+}
+
+/*!
+*	Calculates discrete Laplacian operator as the vertex position
+*	subtracted from the average of adjacent vertices.
+*/
+
+v3ctor vertex::discrete_laplacian() const
+{
+	v3ctor res;
+	v3ctor average;
+
+	size_t n = this->valency();
+	for(size_t i = 0; i < n; i++)
+	{
+		const edge* e = get_edge(i);
+		if(e->get_u() == const_cast<const vertex*>(this))
+			average += this->get_edge(i)->get_v()->get_position()/static_cast<double>(n);
+		else
+			average += this->get_edge(i)->get_u()->get_position()/static_cast<double>(n);
+	}
+
+	res = average-this->get_position();
+	return(res);
+}
+
+/*!
+*	Calculates discrete bilaplacian operator as the discrete Laplacian of
+*	the vertex position subtracted from the average of the discrete
+*	Laplacian of adjacent vertices.
+*/
+
+v3ctor vertex::discrete_bilaplacian() const
+{
+	v3ctor res;
+	v3ctor average;
+
+	size_t n = this->valency();
+	for(size_t i = 0; i < n; i++)
+	{
+		const edge* e = get_edge(i);
+		if(e->get_u() == const_cast<const vertex*>(this))
+			average += this->get_edge(i)->get_v()->discrete_laplacian()/static_cast<double>(n);
+		else
+			average += this->get_edge(i)->get_u()->discrete_laplacian()/static_cast<double>(n);
+	}
+
+	res = average-this->discrete_laplacian();
+	return(res);
 }
 
 } // end of namespace "psalm"

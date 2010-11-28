@@ -54,6 +54,9 @@ class vertex
 		bool is_on_boundary() const;
 		void set_on_boundary(bool boundary = true);
 
+		v3ctor discrete_laplacian() const;
+		v3ctor discrete_bilaplacian() const;
+
 	private:
 		std::vector<edge*> E;
 		std::vector<const face*> F;
