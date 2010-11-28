@@ -94,6 +94,20 @@ edge* vertex::get_edge(size_t i)
 }
 
 /*!
+*	@param i Edge index
+*	@return Constant pointer to incident edge or NULL if the index is out
+*		of bounds.
+*/
+
+const edge* vertex::get_edge(size_t i) const
+{
+	if(i >= E.size())
+		return(NULL);
+	else
+		return(E[i]);
+}
+
+/*!
 *	@return Valency of the vertex, i.e., the number of incident edges.
 */
 

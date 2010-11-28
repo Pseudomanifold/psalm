@@ -42,6 +42,7 @@ class vertex
 
 		void add_edge(edge* e);
 		edge* get_edge(size_t i);
+		const edge* get_edge(size_t i) const;
 
 		void add_face(const face* f);
 		const face* get_face(size_t i) const;
