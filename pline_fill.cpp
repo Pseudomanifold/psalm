@@ -90,9 +90,10 @@ void process_pline_file(std::string filename)
 		// Construct filename
 		converter.str("");
 		converter.clear();
-		converter	<< std::setw(4) << std::setfill('0')
-				<< filename << "_"
+		converter	<< filename << "_"
+				<< std::setw(4) << std::setfill('0')
 				<< curr_id << "_"
+				<< std::setw(4) << std::setfill('0')
 				<< counter << ".ply";
 
 		H.save(converter.str());
