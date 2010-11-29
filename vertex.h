@@ -70,6 +70,10 @@ class vertex
 		bool boundary;		///< Flag signalling that the vertex is a boundary vertex
 
 		double scale_attribute;	///< Scale attribute for Liepa's refinement scheme
+
+		// XXX: Required for swapping edges -- can this be solved
+		// better?
+		friend class mesh;
 };
 
 /*!
