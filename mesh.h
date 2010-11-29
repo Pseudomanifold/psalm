@@ -120,6 +120,9 @@ class mesh
 		void cc_create_points_p(mesh& M,
 					std::pair<double, double> (*weight_function)(size_t));
 
+
+		void relax_edge(edge* e);
+
 		void mark_boundaries();
 
 		static double ds_weights_ds(size_t k, size_t i);

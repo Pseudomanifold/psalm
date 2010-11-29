@@ -2548,6 +2548,112 @@ void mesh::subdivide_liepa()
 }
 
 /*!
+*	Relaxes an edge by performing the following test:
+*
+*		-	Only run if the edge is adjacent to two triangles
+*		-	Check that each of the two non-mutual vertices of
+*			the triangles lie outside the circumcircle of the
+*			opposing triangle
+*		-	If this test fails, swap the edge
+*
+*	@param e Edge to relax
+*/
+
+void mesh::relax_edge(edge* e)
+{
+	if(!e->get_f() || !e->get_g())
+		return;
+
+	// TODO: Ensure that faces are triangles.
+
+	face* faces[3];
+	faces[0] = e->get_f();
+	faces[1] = e->get_g();
+	faces[2] = e->get_f();	// repeated so that faces[i+1] is well-defined
+				// within the for-loop
+
+	// The new vertices forming start and end vertex of the edge
+	vertex* v1 = NULL;
+	vertex* v2 = NULL;
+
+	bool swap = false;
+	for(size_t i = 0; i < 2; i++)
+	{
+		// Compute circumcircle of triangle
+
+		const v3ctor& A = faces[i]->get_vertex(0)->get_position();
+		const v3ctor& B = faces[i]->get_vertex(1)->get_position();
+		const v3ctor& C = faces[i]->get_vertex(2)->get_position();
+
+		v3ctor a = A-C;
+		v3ctor b = B-C;
+
+		double theta = acos(a.normalize()*b.normalize());	// interior angle between a and b
+		double r = (A-B).length()/(2*sin(theta));		// circumradius
+
+		// Compute circumcenter
+		v3ctor c = (b*a.length()*a.length() - a*b.length()*b.length()) | (a | b);
+		c /= 2*(a|b).length()*(a|b).length();
+		c += C;
+
+		// Find remaining vertex...
+		for(size_t j = 0; j < 3; j++)
+		{
+			vertex* v = const_cast<vertex*>(faces[i+1]->get_vertex(j)); // XXX: Evil. Should be implemented better.
+			if(v != e->get_u() && v != e->get_v())
+			{
+				// ...and check whether it is outside the circumcircle
+				swap = (v->get_position() - c).length() <= r;
+
+				// Set new vertices
+				if(v1)
+					v2 = v;
+				else
+					v1 = v;
+			}
+		}
+	}
+
+	if(!swap)
+		return;
+
+	// Swap it!
+
+	// 1st step: Delete edge from the list of incident edges of its start
+	// and end vertices
+
+	vertex* vertices[2];
+	vertices[0] = const_cast<vertex*>(e->get_u()); // XXX: Evil. Should be implemented better.
+	vertices[1] = const_cast<vertex*>(e->get_v());
+
+	// Search vector of incident edges and remove all occurrences of e
+	for(size_t i = 0; i < 2; i++)
+	{
+		for(std::vector<edge*>::iterator e_it = vertices[i]->E.begin(); e_it < vertices[i]->E.end(); e_it++)
+		{
+			if(*e_it == e)
+			{
+				vertices[i]->E.erase(e_it);
+				break;
+			}
+		}
+	}
+
+	// 2nd step: Set new vertices for edge and add the edge as an incident
+	// edge to both vertices
+
+	e->set(v1, v2);
+	v1->E.push_back(e);
+	v2->E.push_back(e);
+
+	// 3rd step: Reconstruct faces
+	faces[0]->reconstruct_from_edges();
+	faces[1]->reconstruct_from_edges();
+
+	// TODO: Remove edge from edge table?
+}
+
+/*!
 *	Given an edge and a triangular face (where the edge is supposed to be
 *	part of the face), return the remaining vertex of the face. This
 *	function is used for Loop subdivision.
