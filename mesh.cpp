@@ -989,7 +989,14 @@ face* mesh::add_face(std::vector<vertex*> vertices)
 		// Edge already known; update second adjacent face
 		if(edge.inverted)
 		{
-			edge.e->set_g(f);
+			if(edge.e->get_g() == NULL)
+				edge.e->set_g(f);
+
+			// XXX: If the face has been replaced by another face,
+			// the _first_ face might be set to NULL
+			else
+				edge.e->set_f(f);
+
 			u->add_face(f);
 		}
 
@@ -1011,7 +1018,14 @@ face* mesh::add_face(std::vector<vertex*> vertices)
 					warning_shown = true;
 				}
 
-				edge.e->set_g(f);
+				if(edge.e->get_f())
+					edge.e->set_g(f);
+
+				// XXX: If the face has been replaced by
+				// another face, the _first_ face might be set
+				// to NULL.
+				else
+					edge.e->set_f(f);
 			}
 
 			u->add_face(f);
