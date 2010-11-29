@@ -110,6 +110,7 @@ class mesh
 		void subdivide_loop();
 		void subdivide_doo_sabin();
 		void subdivide_catmull_clark();
+		void subdivide_liepa();
 
 		void ds_create_points_g(mesh& M);
 		void ds_create_points_p(mesh& M,

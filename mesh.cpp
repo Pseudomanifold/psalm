@@ -2433,6 +2433,121 @@ inline std::pair<double, double> mesh::cc_weights_degenerate(size_t n)
 }
 
 /*!
+*	Implementation of Liepa's mesh refinement algorithm, which is based on
+*	centroid subdivision.
+*/
+
+void mesh::subdivide_liepa()
+{
+	// Compute scale attribute as the average length of the edges adjacent
+	// to a vertex.
+	//
+	// ASSUMPTION: Mesh consists of a single triangulated hole, i.e. _all_
+	// vertices are boundary vertices.
+	for(std::vector<vertex*>::iterator v_it = V.begin(); v_it < V.end(); v_it++)
+	{
+		vertex* v = *v_it;
+		size_t n = v->valency();
+
+		double attribute = 0.0;
+		for(size_t i = 0; i < n; i++)
+			attribute += v->get_edge(i)->calc_length()/n;
+
+		v->set_scale_attribute(attribute);
+	}
+
+	bool created_new_triangle;
+	do
+	{
+		// if no new triangle has been created, the algorithm
+		// terminates
+		created_new_triangle = false;
+
+		// Need to store the number of faces here because new faces
+		// might be created within the for-loop below. These must _not_
+		// be considered in the same iteration.
+		size_t num_faces = F.size();
+
+		// Compute scale attribute for each face of the mesh
+		for(size_t i = 0; i < num_faces; i++)
+		{
+			// TODO: Check that the face is a triangle
+
+			vertex* vertices[3];
+			vertices[0] = const_cast<vertex*>(F[i]->get_vertex(0)); // XXX: Evil. Should be implemented as a function of "face" class
+			vertices[1] = const_cast<vertex*>(F[i]->get_vertex(1));
+			vertices[2] = const_cast<vertex*>(F[i]->get_vertex(2));
+
+			// Compute centroid and scale attribute. If the scale
+			// attribute test fails, replace the triangle.
+
+			v3ctor centroid_pos;
+			double centroid_scale_attribute = 0.0;
+
+			for(size_t j = 0; j < 3; j++)
+			{
+				centroid_pos += vertices[j]->get_position()/3.0;
+				centroid_scale_attribute += vertices[j]->get_scale_attribute()/3.0;
+			}
+
+			// TODO: Should be user-configurable
+			double alpha = sqrt(2);
+
+			bool test_failed = false;
+			for(size_t j = 0; j < 3; j++)
+			{
+				double scaled_distance = alpha*(centroid_pos - vertices[j]->get_position()).length();
+				if(	scaled_distance > centroid_scale_attribute &&
+					scaled_distance > vertices[j]->get_scale_attribute())
+				{
+					test_failed = true;
+					break;
+				}
+			}
+
+			// Replace old triangle with three smaller triangles
+			if(test_failed)
+			{
+				created_new_triangle = true;
+
+				vertex* centroid_vertex = add_vertex(centroid_pos);
+				centroid_vertex->set_scale_attribute(centroid_scale_attribute);
+
+				edge* edges[3]; // we need to loop over
+						// these edges, hence
+						// the array
+
+				edges[0] = F[i]->get_edge(0).e;
+				edges[1] = F[i]->get_edge(1).e;
+				edges[2] = F[i]->get_edge(2).e;
+
+				// Update edges before adding the new faces
+				for(size_t j = 0; j < 3; j++)
+				{
+					if(edges[j]->get_f() == F[i])
+						edges[j]->set_f(NULL);
+					else
+						edges[j]->set_g(NULL);
+				}
+
+				face* faces[3];	// ditto (see above)
+
+				faces[0] = add_face(vertices[0], vertices[1], centroid_vertex);
+				faces[1] = add_face(vertices[0], centroid_vertex, vertices[2]);
+				faces[2] = add_face(centroid_vertex, vertices[1], vertices[2]);
+
+				// Remove old face
+				F.erase(F.begin()+i);
+				num_faces--;
+			}
+		}
+
+		break; // FIXME: Remove me!
+	}
+	while(created_new_triangle);
+}
+
+/*!
 *	Given an edge and a triangular face (where the edge is supposed to be
 *	part of the face), return the remaining vertex of the face. This
 *	function is used for Loop subdivision.
