@@ -1364,6 +1364,7 @@ void mesh::subdivide(	short algorithm,
 			break;
 		case ALG_LOOP:
 			subdivision_algorithm = &mesh::subdivide_loop;
+			subdivision_algorithm = &mesh::subdivide_liepa; // XXX: Just temporarily.
 			break;
 		default:
 			break;
