@@ -64,7 +64,7 @@ class vertex
 
 		v3ctor p;
 		size_t id;
-		bool boundary; /// Flag signalling that the vertex is a boundary vertex
+		bool boundary;		///< Flag signalling that the vertex is a boundary vertex
 };
 
 /*!
