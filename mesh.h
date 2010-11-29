@@ -90,9 +90,9 @@ class mesh
 
 		vertex* get_vertex(size_t id);
 
-		void add_face(std::vector<vertex*> vertices);
-		void add_face(vertex* v1, vertex* v2, vertex* v3);
-		void add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4);
+		face* add_face(std::vector<vertex*> vertices);
+		face* add_face(vertex* v1, vertex* v2, vertex* v3);
+		face* add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4);
 
 		directed_edge add_edge(const vertex* u, const vertex* v);
 
@@ -185,9 +185,11 @@ class mesh
 *	@param v3 Pointer to 3rd vertex of new face
 *
 *	@warning The vertex pointers are not checked for consistency.
+*
+*	@returns Pointer to new face
 */
 
-inline void mesh::add_face(vertex* v1, vertex* v2, vertex* v3)
+inline face* mesh::add_face(vertex* v1, vertex* v2, vertex* v3)
 {
 	std::vector<vertex*> vertices;
 
@@ -195,7 +197,7 @@ inline void mesh::add_face(vertex* v1, vertex* v2, vertex* v3)
 	vertices.push_back(v2);
 	vertices.push_back(v3);
 
-	add_face(vertices);
+	return(add_face(vertices));
 }
 
 /*!
@@ -210,9 +212,11 @@ inline void mesh::add_face(vertex* v1, vertex* v2, vertex* v3)
 *
 *	@warning The vertex pointers are not checked for consistency and
 *	planarity.
+*
+*	@returns Pointer to new face
 */
 
-inline void mesh::add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4)
+inline face* mesh::add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4)
 {
 	std::vector<vertex*> vertices;
 
@@ -221,7 +225,7 @@ inline void mesh::add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4)
 	vertices.push_back(v3);
 	vertices.push_back(v4);
 
-	add_face(vertices);
+	return(add_face(vertices));
 }
 
 } // end of namespace "psalm"

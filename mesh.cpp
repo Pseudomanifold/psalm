@@ -939,9 +939,11 @@ void mesh::replace_with(mesh& M)
 *
 *	@warning The orientation of the vertices around the face is _not_
 *	checked, but left as a task for the calling function.
+*
+*	@returns Pointer to new face
 */
 
-void mesh::add_face(std::vector<vertex*> vertices)
+face* mesh::add_face(std::vector<vertex*> vertices)
 {
 	static bool warning_shown = false;
 
@@ -949,7 +951,7 @@ void mesh::add_face(std::vector<vertex*> vertices)
 	vertex* v = NULL;
 
 	if(vertices.size() == 0)
-		return;
+		return(NULL);
 
 	face* f = new face;
 
@@ -1021,6 +1023,7 @@ void mesh::add_face(std::vector<vertex*> vertices)
 	}
 
 	F.push_back(f);
+	return(f);
 }
 
 /*!
