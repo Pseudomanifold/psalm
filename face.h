@@ -47,6 +47,8 @@ class face
 		bool is_on_boundary() const;
 		void set_on_boundary(bool boundary = true);
 
+		void reconstruct_from_edges();
+
 	private:
 		std::vector<directed_edge> E;
 		std::vector<const vertex*> V;
