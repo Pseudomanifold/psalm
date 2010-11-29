@@ -50,6 +50,8 @@ class edge
 		bool is_on_boundary(); //FIXME: Should be const
 		void set_on_boundary(bool boundary = true);
 
+		double calc_length() const;
+
 	private:
 		const vertex* u;	///< Pointer to start vertex
 		const vertex* v;	///< Pointer to end vertex
@@ -60,6 +62,17 @@ class edge
 		bool boundary;		///< Flag signalling that the edge is a
 					///< boundary edge
 };
+
+/*!
+*	@returns Length of the edge as the Euclidean distance between its start
+*	and end vector.
+*/
+
+inline double edge::calc_length() const
+{
+	v3ctor d = u->get_position() - v->get_position();
+	return(d.length());
+}
 
 } // end of namespace "psalm"
 
