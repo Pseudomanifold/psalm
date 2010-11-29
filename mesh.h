@@ -90,9 +90,7 @@ class mesh
 
 		vertex* get_vertex(size_t id);
 
-		void add_face(const std::vector<size_t>& vertices);
 		void add_face(std::vector<vertex*> vertices);
-
 		void add_face(vertex* v1, vertex* v2, vertex* v3);
 		void add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4);
 
