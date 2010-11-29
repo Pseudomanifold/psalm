@@ -3,6 +3,7 @@
 *	@brief	Functions for representing a polygonal hole
 */
 
+#include <limits>
 #include <cmath>
 #include "hole.h"
 
