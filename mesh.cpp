@@ -2536,13 +2536,25 @@ void mesh::subdivide_liepa()
 				faces[1] = add_face(vertices[0], centroid_vertex, vertices[2]);
 				faces[2] = add_face(centroid_vertex, vertices[1], vertices[2]);
 
+				// Relax edges
+				relax_edge(edges[0]);
+				relax_edge(edges[1]);
+				relax_edge(edges[2]);
+
 				// Remove old face
 				F.erase(F.begin()+i);
 				num_faces--;
 			}
 		}
 
-		break; // FIXME: Remove me!
+		// Relax interior edges
+		for(std::vector<edge*>::iterator e_it = E.begin(); e_it < E.end(); e_it++)
+		{
+			if((*e_it)->is_on_boundary())
+				continue;
+
+			relax_edge(*e_it);
+		}
 	}
 	while(created_new_triangle);
 }
