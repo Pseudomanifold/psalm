@@ -58,6 +58,9 @@ class vertex
 		v3ctor discrete_laplacian() const;
 		v3ctor discrete_bilaplacian() const;
 
+		void set_scale_attribute(double value);
+		double get_scale_attribute() const;
+
 	private:
 		std::vector<edge*> E;
 		std::vector<const face*> F;
@@ -65,6 +68,8 @@ class vertex
 		v3ctor p;
 		size_t id;
 		bool boundary;		///< Flag signalling that the vertex is a boundary vertex
+
+		double scale_attribute;	///< Scale attribute for Liepa's refinement scheme
 };
 
 /*!
@@ -88,6 +93,27 @@ inline void vertex::set_position(const v3ctor& p)
 inline const v3ctor& vertex::get_position() const
 {
 	return(p);
+}
+
+/*!
+*	Sets scale attribute for vertex. The attribute needs to be calculated
+*	somewhere else.
+*
+*	@param value Attribute value
+*/
+
+inline void vertex::set_scale_attribute(double value)
+{
+	this->scale_attribute = value;
+}
+
+/*!
+*	@return Current value of scale attribute
+*/
+
+inline double vertex::get_scale_attribute() const
+{
+	return(scale_attribute);
 }
 
 
