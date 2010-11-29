@@ -1,7 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(psalm) 
 
-ADD_DEFINITIONS(-Wall -pedantic)
+ADD_DEFINITIONS(-Wall -pedantic -g)
 
 SET(PSALM_SRC
 	psalm.cpp
