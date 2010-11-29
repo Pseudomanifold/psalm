@@ -83,7 +83,6 @@ const vertex* edge::get_v() const
 
 void edge::set_f(face* f)
 {
-	assert(g == NULL && this->f == NULL);
 	this->f = f;
 }
 
@@ -99,7 +98,8 @@ void edge::set_f(face* f)
 void edge::set_g(face* g)
 {
 	static bool warning_shown = false;
-	if(f != NULL && this->g != NULL)
+	if(	f != NULL && this->g != NULL &&
+		g != NULL) // warning is not shown if the second face is _reset_
 	{
 		if(!warning_shown)
 		{
