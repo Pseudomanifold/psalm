@@ -989,12 +989,12 @@ face* mesh::add_face(std::vector<vertex*> vertices)
 		// Edge already known; update second adjacent face
 		if(edge.inverted)
 		{
-			if(edge.e->get_g() == NULL)
+			if(edge.e->get_g() == NULL && edge.e->get_f() != NULL)
 				edge.e->set_g(f);
 
 			// XXX: If the face has been replaced by another face,
 			// the _first_ face might be set to NULL
-			else
+			else if(edge.e->get_f() == NULL)
 				edge.e->set_f(f);
 
 			u->add_face(f);
@@ -2581,12 +2581,21 @@ void mesh::subdivide_liepa()
 				edges[2] = F[i]->get_edge(2).e;
 
 				// Update edges before adding the new faces
+				bool is_second_face[3] = {false, false, false};
+				face* other_face[3] = {NULL, NULL, NULL};
 				for(size_t j = 0; j < 3; j++)
 				{
 					if(edges[j]->get_f() == F[i])
+					{
 						edges[j]->set_f(NULL);
+						other_face[j] = edges[j]->get_g();
+					}
 					else
+					{
+						is_second_face[j] = true;
 						edges[j]->set_g(NULL);
+						other_face[j] = edges[j]->get_f();
+					}
 				}
 
 				face* faces[3];	// ditto (see above)
@@ -2595,16 +2604,34 @@ void mesh::subdivide_liepa()
 				faces[1] = add_face(vertices[0], centroid_vertex, vertices[2]);
 				faces[2] = add_face(centroid_vertex, vertices[1], vertices[2]);
 
+				// XXX: Just checking...
+				for(size_t j = 0; j < 3; j++)
+				{
+					if(is_second_face[j])
+					{
+						edges[j]->set_g(faces[j]);
+						edges[j]->set_f(other_face[j]);
+					}
+					else
+					{
+						edges[j]->set_f(faces[j]);
+						edges[j]->set_g(other_face[j]);
+					}
+				}
+
 				// Relax edges
 				relax_edge(edges[0]);
 				relax_edge(edges[1]);
 				relax_edge(edges[2]);
 
 				// Remove old face
-				F.erase(F.begin()+i);
+				F.erase(F.begin()+i); // TODO: Should call delete, too...
 				num_faces--;
+				i--;
 			}
 		}
+
+		mark_boundaries();
 
 		// Relax interior edges
 		for(std::vector<edge*>::iterator e_it = E.begin(); e_it < E.end(); e_it++)
@@ -2614,6 +2641,8 @@ void mesh::subdivide_liepa()
 
 			relax_edge(*e_it);
 		}
+
+		mark_boundaries();
 	}
 	while(created_new_triangle);
 }
@@ -2685,8 +2714,8 @@ void mesh::relax_edge(edge* e)
 		}
 	}
 
-	if(!swap)
-		return;
+	//if(!swap)
+	//	return;
 
 	// Swap it!
 
@@ -2713,15 +2742,64 @@ void mesh::relax_edge(edge* e)
 	// 2nd step: Set new vertices for edge and add the edge as an incident
 	// edge to both vertices
 
-	e->set(v1, v2);
+	// 3rd step: Identify edges which ought to be swapped
+	const vertex* lost_vertices[2];
+	lost_vertices[0] = e->get_v();
+	lost_vertices[1] = e->get_u();
+
+	size_t j1 = 0;
+	size_t j2 = 0;
+	for(size_t i = 0; i < 2; i++)
+	{
+		for(size_t j = 0; j < faces[i]->num_edges(); j++)
+		{
+			directed_edge& d_e = faces[i]->get_edge(j);
+			if(d_e.e != e && (d_e.e->get_u() == lost_vertices[i] || d_e.e->get_v() == lost_vertices[i]))
+			{
+				if(i == 0)
+					j1 = j;
+				else
+					j2 = j;
+
+				break;
+			}
+		}
+	}
+
+	std::swap(faces[0]->E[j1], faces[1]->E[j2]);
+
+	// Find edge position in faces and swap with the next edge. Indices are
+	// calculated modulo 3.
+	size_t e_1 = 0;
+	size_t e_2 = 0;
+	for(size_t i = 0; i < 2; i++)
+	{
+		for(size_t j = 0; j < faces[i]->num_edges(); j++)
+		{
+			directed_edge& d_e = faces[i]->get_edge(j);
+			if(d_e.e == e)
+			{
+				if(i == 0)
+					e_1 = j;
+				else
+					e_2 = j;
+
+				break;
+			}
+
+		}
+	}
+
+	std::swap(faces[0]->E[e_1], faces[0]->E[(e_1-1)%3]);
+	std::swap(faces[1]->E[e_2], faces[1]->E[(e_2-1)%3]);
+
+	replace_edge(e, v1, v2);
 	v1->E.push_back(e);
 	v2->E.push_back(e);
 
-	// 3rd step: Reconstruct faces
+	// 4th step: Reconstruct faces
 	faces[0]->reconstruct_from_edges();
 	faces[1]->reconstruct_from_edges();
-
-	// TODO: Remove edge from edge table?
 }
 
 /*!

@@ -95,6 +95,7 @@ class mesh
 		face* add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4);
 
 		directed_edge add_edge(const vertex* u, const vertex* v);
+		void replace_edge(edge* e, const vertex* u, const vertex* v);
 
 		vertex* add_vertex(double x, double y, double z);
 		vertex* add_vertex(const v3ctor& pos);

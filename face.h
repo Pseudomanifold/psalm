@@ -59,6 +59,10 @@ class face
 
 		bool boundary;	///< Flag signalling that the face is a
 				///< boundary face.
+
+		// XXX: Access required for swapping edges. Can this be solved
+		// better?
+		friend class mesh;
 };
 
 } // end of namespace "psalm"
