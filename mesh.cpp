@@ -1115,6 +1115,64 @@ directed_edge mesh::add_edge(const vertex* u, const vertex* v)
 }
 
 /*!
+*	Given an edge and two vertices, replaces the start and end vertex of
+*	the edge and updates its ID in the edge map. Further parameters of the
+*	original directed_edge object will _not_ be altered. In particular, the
+*	new vertices u and v will _not_ be updated.
+*
+*	It is assumed that the edge that is supposed to be replaced already
+*	exists, i.e. there is a directed_edge object corresponding to it.
+*
+*	@param e Edge that is to be updated
+*	@param u New start vertex of edge
+*	@param v New end vertex of edge
+*/
+
+void mesh::replace_edge(edge* e, const vertex* u, const vertex* v)
+{
+	// Compute ID and retrieve the corresponding directed_edge object
+
+	size_t u_id = e->get_u()->get_id();
+	size_t v_id = e->get_v()->get_id();
+
+	// TODO: This should become a function
+	std::pair<size_t, size_t> id;
+	if(u_id < v_id)
+	{
+		id.first = u_id;
+		id.second = v_id;
+	}
+	else
+	{
+		id.first = v_id;
+		id.second = u_id;
+	}
+
+	E_M.erase(E_M.find(id));	// Remove old edge ID from edge map
+	e->set_u(u);			// Update edge
+	e->set_v(v);
+
+	// Create new ID and store it in the edge map
+
+	u_id = u->get_id();
+	v_id = v->get_id();
+
+	// TODO: This should become a function
+	if(u_id < v_id)
+	{
+		id.first = u_id;
+		id.second = v_id;
+	}
+	else
+	{
+		id.first = v_id;
+		id.second = u_id;
+	}
+
+	E_M[id] = e;
+}
+
+/*!
 *	Given a vertex ID, return the appropriate vertex. This function is
 *	meant to serve as an interface for any vertex queries, regardless of
 *	what storage container the mesh uses.
