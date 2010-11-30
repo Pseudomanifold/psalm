@@ -2527,6 +2527,7 @@ void mesh::subdivide_liepa()
 		// be considered in the same iteration.
 		size_t num_faces = F.size();
 
+		/*
 		// Compute scale attribute for each face of the mesh
 		for(size_t i = 0; i < num_faces; i++)
 		{
@@ -2630,6 +2631,7 @@ void mesh::subdivide_liepa()
 				i--;
 			}
 		}
+		*/
 
 		mark_boundaries();
 
@@ -2726,6 +2728,9 @@ void mesh::relax_edge(edge* e)
 	vertices[0] = const_cast<vertex*>(e->get_u()); // XXX: Evil. Should be implemented better.
 	vertices[1] = const_cast<vertex*>(e->get_v());
 
+	std::cout	<< "REPLACING: " << e->get_u()->get_id() << " " << e->get_v()->get_id() << " with "
+			<< v1->get_id() << " " << v2->get_id() << "\n";
+
 	// Search vector of incident edges and remove all occurrences of e
 	for(size_t i = 0; i < 2; i++)
 	{
@@ -2747,8 +2752,8 @@ void mesh::relax_edge(edge* e)
 	lost_vertices[0] = e->get_v();
 	lost_vertices[1] = e->get_u();
 
-	size_t j1 = 0;
-	size_t j2 = 0;
+	size_t j1 = std::numeric_limits<size_t>::max();
+	size_t j2 = std::numeric_limits<size_t>::max();
 	for(size_t i = 0; i < 2; i++)
 	{
 		for(size_t j = 0; j < faces[i]->num_edges(); j++)
@@ -2756,6 +2761,8 @@ void mesh::relax_edge(edge* e)
 			directed_edge& d_e = faces[i]->get_edge(j);
 			if(d_e.e != e && (d_e.e->get_u() == lost_vertices[i] || d_e.e->get_v() == lost_vertices[i]))
 			{
+				std::cout << "LOSING EDGE: " << d_e.e->get_u()->get_id() << " "
+					<< d_e.e->get_v()->get_id() << "\n";
 				if(i == 0)
 					j1 = j;
 				else
@@ -2766,7 +2773,27 @@ void mesh::relax_edge(edge* e)
 		}
 	}
 
+	// XXX: Why is it possible that the edge cannot be found at all?
+	if(	j1 == std::numeric_limits<size_t>::max() ||
+		j2 == std::numeric_limits<size_t>::max())
+		return;
+
+	// Change the references to the faces of the edges that are to be
+	// swapped...
+
+	if(faces[0]->E[j1].e->get_f() == faces[0])
+		faces[0]->E[j1].e->set_f(faces[1]);
+	else
+		faces[0]->E[j1].e->set_g(faces[1]);
+
+	if(faces[1]->E[j2].e->get_f() == faces[1])
+		faces[1]->E[j2].e->set_f(faces[0]);
+	else
+		faces[1]->E[j2].e->set_g(faces[0]);
+
+	// ...and swap them. Face references are correct at this point.
 	std::swap(faces[0]->E[j1], faces[1]->E[j2]);
+
 
 	// Find edge position in faces and swap with the next edge. Indices are
 	// calculated modulo 3.
@@ -2790,7 +2817,7 @@ void mesh::relax_edge(edge* e)
 		}
 	}
 
-	std::swap(faces[0]->E[e_1], faces[0]->E[(e_1-1)%3]);
+	std::swap(faces[0]->E[e_1], faces[0]->E[(e_1+1)%3]);
 	std::swap(faces[1]->E[e_2], faces[1]->E[(e_2-1)%3]);
 
 	replace_edge(e, v1, v2);

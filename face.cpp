@@ -157,11 +157,11 @@ void face::set_on_boundary(bool boundary)
 void face::reconstruct_from_edges()
 {
 	V.clear();
-	std::cout << "HAVE:\n";
+	std::cout << "HAVE: ";
 	for(std::vector<directed_edge>::iterator e_it = E.begin(); e_it < E.end(); e_it++)
 	{
-		std::cout << e_it->e->get_u()->get_id() << "\n";
-		std::cout << e_it->e->get_v()->get_id() << "\n";
+		std::cout << e_it->e->get_u()->get_id() << " ";
+		std::cout << e_it->e->get_v()->get_id() << " ";
 
 		// Only store the first vertex of an edge -- this will yield
 		// _all_ vertices upon traversal
@@ -170,8 +170,9 @@ void face::reconstruct_from_edges()
 		else
 			add_vertex(const_cast<vertex*>(e_it->e->get_u()));
 	}
+	std::cout << "\n";
 
-	std::cout << "RECONSTRUCTED:\n";
+	std::cout << "\tRECONSTRUCTED: ";
 	for(size_t i = 0; i < V.size(); i++)
 		std::cout << V[i]->get_id() << " ";
 
