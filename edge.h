@@ -28,6 +28,9 @@ class edge
 		const vertex* get_u() const;
 		const vertex* get_v() const;
 
+		void set_u(const vertex* u);
+		void set_v(const vertex* v);
+
 		void set_f(face* f);
 		void set_g(face* g);
 

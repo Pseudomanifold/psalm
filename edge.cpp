@@ -64,12 +64,34 @@ const vertex* edge::get_u() const
 }
 
 /*!
+*	Sets new start vertex. Does not alter remaining attributes.
+*
+*	@param Pointer to new start vertex
+*/
+
+void edge::set_u(const vertex* u)
+{
+	this->u = u;
+}
+
+/*!
 *	@return Pointer to end vertex
 */
 
 const vertex* edge::get_v() const
 {
 	return(v);
+}
+
+/*!
+*	Sets new end vertex. Does not alter remaining attributes.
+*
+*	@param Pointer to new end vertex
+*/
+
+void edge::set_v(const vertex* v)
+{
+	this->v = v;
 }
 
 /*!
