@@ -1085,7 +1085,7 @@ directed_edge mesh::add_edge(const vertex* u, const vertex* v)
 	{
 		// Edge has been found, check whether the proper direction has
 		// been stored.
-		if(it->second->get_u()->get_id() != u_id)
+		if(it->second->get_u() != u)
 			result.inverted = true;
 		else
 			result.inverted = false;
