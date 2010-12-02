@@ -3,6 +3,7 @@
 *	@brief	Functions for mesh faces
 */
 
+#include <set>
 #include <iostream>
 #include <stdexcept>
 #include <limits>
@@ -172,9 +173,17 @@ void face::reconstruct_from_edges()
 	}
 	std::cout << "\n";
 
+	std::set<size_t> V_IDs;
+
 	std::cout << "\tRECONSTRUCTED: ";
 	for(size_t i = 0; i < V.size(); i++)
+	{
 		std::cout << V[i]->get_id() << " ";
+		V_IDs.insert(V[i]->get_id());
+	}
+
+	if(V_IDs.size() < 3)
+		std::cout << "DISASTER.\n";
 
 	std::cout << "\n";
 }

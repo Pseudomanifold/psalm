@@ -122,7 +122,7 @@ class mesh
 					std::pair<double, double> (*weight_function)(size_t));
 
 
-		void relax_edge(edge* e);
+		bool relax_edge(edge* e);
 
 		void mark_boundaries();
 

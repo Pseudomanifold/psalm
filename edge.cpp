@@ -128,7 +128,12 @@ void edge::set_g(face* g)
 			std::cerr << "psalm: Warning: Mesh might be non-manifold.\n";
 			warning_shown = true;
 		}
-		return;
+
+		throw("FOO\n");
+
+		// XXX: Should add a parameter here that specifies that the
+		// face is allowed to be overwritten.
+		//return;
 	}
 
 	this->g = g;
