@@ -946,6 +946,7 @@ void mesh::replace_with(mesh& M)
 
 face* mesh::add_face(std::vector<vertex*> vertices)
 {
+	std::cout << "BEGIN of mesh::add_face()\n";
 	static bool warning_shown = false;
 
 	vertex* u = NULL;
@@ -961,6 +962,8 @@ face* mesh::add_face(std::vector<vertex*> vertices)
 
 	for(it = vertices.begin(); it != vertices.end(); it++)
 	{
+		std::cout << "#\n";
+
 		// Handle last vertex; should be the edge v--u
 		if((it+1) == vertices.end())
 		{
@@ -1040,6 +1043,8 @@ face* mesh::add_face(std::vector<vertex*> vertices)
 		// here
 		u = v;
 	}
+
+	std::cout << "END of mesh::add_face()\n";
 
 	F.push_back(f);
 	return(f);
@@ -2531,7 +2536,7 @@ void mesh::subdivide_liepa()
 
 		double attribute = 0.0;
 		for(size_t i = 0; i < n; i++)
-			attribute += v->get_edge(i)->calc_length()/n;
+			attribute += v->get_edge(i)->calc_length()/static_cast<double>(n);
 
 		v->set_scale_attribute(attribute);
 	}
@@ -2575,22 +2580,23 @@ void mesh::subdivide_liepa()
 			}
 
 			// TODO: Should be user-configurable
-			double alpha = sqrt(2);
+			double alpha = 20; 
 
-			bool test_failed = false;
+			size_t tests_failed = 0;
 			for(size_t j = 0; j < 3; j++)
 			{
 				double scaled_distance = alpha*(centroid_pos - vertices[j]->get_position()).length();
 				if(	scaled_distance > centroid_scale_attribute &&
 					scaled_distance > vertices[j]->get_scale_attribute())
 				{
-					test_failed = true;
-					break;
+					// We will replace the triangle only if
+					// _all_ three tests failed
+					tests_failed++;
 				}
 			}
 
 			// Replace old triangle with three smaller triangles
-			if(test_failed)
+			if(tests_failed == 3)
 			{
 				created_new_triangle = true;
 
@@ -2691,14 +2697,10 @@ void mesh::subdivide_liepa()
 				num_faces--;
 				i--;
 
-				std::cout << "VALENCIES AFTER: " << vertices[0]->valency() << " "
-								<< vertices[1]->valency() << " "
-								<< vertices[2]->valency() << "\n";
-
 				// Relax edges
-				//relax_edge(edges[0]);
-				//relax_edge(edges[1]);
-				//relax_edge(edges[2]);
+				relax_edge(edges[0]);
+				relax_edge(edges[1]);
+				relax_edge(edges[2]);
 
 				//relax_edge(faces[0]->get_edge(0).e);
 				//relax_edge(faces[1]->get_edge(2).e);
@@ -2746,11 +2748,9 @@ void mesh::subdivide_liepa()
 					relaxed_edge = true;
 			}
 
-			break;
+			save("../temp.ply");
 		}
 		while(relaxed_edge);
-
-		break;
 
 		// Calculate new scaling attributes. TODO: This should become a
 		// function.
@@ -2759,9 +2759,12 @@ void mesh::subdivide_liepa()
 			vertex* v = *v_it;
 			size_t n = v->valency();
 
+			if(!v->is_on_boundary())
+				continue;
+
 			double attribute = 0.0;
 			for(size_t i = 0; i < n; i++)
-				attribute += v->get_edge(i)->calc_length()/n;
+				attribute += v->get_edge(i)->calc_length()/static_cast<double>(n);
 
 			v->set_scale_attribute(attribute);
 		}
@@ -2896,9 +2899,15 @@ bool mesh::relax_edge(edge* e)
 		for(size_t j = 0; j < 2; j++)
 		{
 			if(edges[i]->get_f() == faces[j])
+			{
 				edges[i]->set_f(NULL);
+				std::cout << "Set NULL [j = " << j << "]\n";
+			}
 			else if(edges[i]->get_g() == faces[j])
+			{
 				edges[i]->set_g(NULL);
+				std::cout << "Set NULL [j = " << j << "]\n";
+			}
 		}
 	}
 
@@ -2959,7 +2968,12 @@ bool mesh::relax_edge(edge* e)
 	}
 
 	face* new_f1 = add_face(new_v11, new_v12, v1);
+	std::cout << "new_f1 added\n";
 	face* new_f2 = add_face(new_v21, new_v22, v2);
+	std::cout << "new_f2 added\n";
+
+	std::cout << "SET FLIPPED FOR " << new_f1->get_edge(2).e->get_u()->get_id() << " "
+					<< new_f1->get_edge(2).e->get_v()->get_id() << "\n";
 
 	new_f1->reconstruct_from_edges();
 	new_f2->reconstruct_from_edges();

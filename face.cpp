@@ -190,7 +190,7 @@ void face::reconstruct_from_edges()
 	{
 		std::cout << *it << " ";
 	}
-	std::cout << "] " << this << "\n";
+	std::cout << "] " << "\n";
 
 	if(V_IDs.size() < 3)
 		std::cout << "DISASTER.\n";
