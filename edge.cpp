@@ -129,6 +129,7 @@ void edge::set_g(face* g)
 			warning_shown = true;
 		}
 
+		std::cerr << "FOO\n";
 		throw("FOO\n");
 
 		// XXX: Should add a parameter here that specifies that the

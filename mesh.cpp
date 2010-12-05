@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <string>
 #include <limits>
+#include <stdexcept>
 
 #include <ctime>
 #include <cmath>
@@ -997,6 +998,10 @@ face* mesh::add_face(std::vector<vertex*> vertices)
 			else if(edge.e->get_f() == NULL)
 				edge.e->set_f(f);
 
+			// XXX: For debugging purposes
+			else if(edge.e->get_g() != NULL)
+				throw(std::runtime_error("mesh::add_face(): Attempted overwrite for inverted edge"));
+
 			u->add_face(f);
 		}
 
@@ -1343,6 +1348,9 @@ void mesh::set_custom_weights(const weights_map& custom_weights)
 
 void mesh::prune(const std::set<size_t>& remove_faces, const std::set<size_t>& remove_vertices)
 {
+	if(remove_faces.size() == 0 && remove_vertices.size() == 0)
+		return;
+
 	for(std::vector<face*>::iterator it = F.begin(); it != F.end(); it++)
 	{
 		if(remove_faces.find((*it)->num_edges()) != remove_faces.end())
@@ -2542,11 +2550,11 @@ void mesh::subdivide_liepa()
 		// be considered in the same iteration.
 		size_t num_faces = F.size();
 
-		num_faces = 0; // XXX: REMOVE ME
-
 		// Compute scale attribute for each face of the mesh
 		for(size_t i = 0; i < num_faces; i++)
 		{
+			std::cout << "BEGIN checking face " << i << "\n";
+
 			// TODO: Check that the face is a triangle
 
 			vertex* vertices[3];
@@ -2589,6 +2597,13 @@ void mesh::subdivide_liepa()
 				vertex* centroid_vertex = add_vertex(centroid_pos);
 				centroid_vertex->set_scale_attribute(centroid_scale_attribute);
 
+				std::cout << "ADDED CENTROID " << centroid_vertex->get_id() << " OF ";
+				for(size_t j = 0; j < 3; j++)
+				{
+					std::cout << F[i]->get_vertex(j)->get_id() << " ";
+				}
+				std::cout << "\n";
+
 				edge* edges[3]; // we need to loop over
 						// these edges, hence
 						// the array
@@ -2596,6 +2611,13 @@ void mesh::subdivide_liepa()
 				edges[0] = F[i]->get_edge(0).e;
 				edges[1] = F[i]->get_edge(1).e;
 				edges[2] = F[i]->get_edge(2).e;
+
+				/*
+				std::cout	<< "edges[0] = " << edges[0]->get_f() << " " << edges[0]->get_g() << "\n"
+						<< "edges[1] = " << edges[1]->get_f() << " " << edges[1]->get_g() << "\n"
+						<< "edges[2] = " << edges[2]->get_f() << " " << edges[2]->get_g() << "\n";
+				*/
+
 
 				// Update edges before adding the new faces
 				bool is_second_face[3] = {false, false, false};
@@ -2607,19 +2629,36 @@ void mesh::subdivide_liepa()
 						edges[j]->set_f(NULL);
 						other_face[j] = edges[j]->get_g();
 					}
-					else
+					else if(edges[j]->get_g() == F[i])
 					{
 						is_second_face[j] = true;
 						edges[j]->set_g(NULL);
 						other_face[j] = edges[j]->get_f();
 					}
+					else
+						throw(std::runtime_error("mesh::subdivide_liepa(): Unable to find face for edge"));
 				}
 
 				face* faces[3];	// ditto (see above)
 
 				faces[0] = add_face(vertices[0], vertices[1], centroid_vertex);
-				faces[1] = add_face(vertices[0], centroid_vertex, vertices[2]);
-				faces[2] = add_face(centroid_vertex, vertices[1], vertices[2]);
+				faces[1] = add_face(centroid_vertex, vertices[1], vertices[2]);
+				faces[2] = add_face(vertices[0], centroid_vertex, vertices[2]);
+
+				for(size_t k = 0; k < 3; k++)
+				{
+					// XXX: For debugging purposes
+					std::vector<size_t> V_IDs;
+					for(size_t j = 0; j < faces[k]->num_vertices(); j++)
+						V_IDs.push_back(faces[k]->get_vertex(j)->get_id());
+
+					std::sort(V_IDs.begin(), V_IDs.end());
+					std::cout << "ADDED FACE: ";
+					for(size_t j = 0; j < faces[k]->num_vertices(); j++)
+						std::cout << V_IDs[j] << " ";
+					std::cout << "\n";
+				}
+
 
 				/*
 				// XXX: Just checking...
@@ -2627,32 +2666,47 @@ void mesh::subdivide_liepa()
 				{
 					if(is_second_face[j])
 					{
+						edges[j]->set_g(NULL);
 						edges[j]->set_g(faces[j]);
 						edges[j]->set_f(other_face[j]);
 					}
 					else
 					{
 						edges[j]->set_f(faces[j]);
+						edges[j]->set_g(NULL);
 						edges[j]->set_g(other_face[j]);
 					}
 				}
 				*/
 
+				// Remove references of old face from vertices
+				vertices[0]->F.erase(std::find(vertices[0]->F.begin(), vertices[0]->F.end(), F[i]));
+				vertices[1]->F.erase(std::find(vertices[1]->F.begin(), vertices[1]->F.end(), F[i]));
+				vertices[2]->F.erase(std::find(vertices[2]->F.begin(), vertices[2]->F.end(), F[i]));
+
+				// Remove old face
+				face* to_delete = F[i];
+				F.erase(std::find(F.begin(), F.end(), to_delete));
+				delete(to_delete);
+				num_faces--;
+				i--;
+
+				std::cout << "VALENCIES AFTER: " << vertices[0]->valency() << " "
+								<< vertices[1]->valency() << " "
+								<< vertices[2]->valency() << "\n";
+
 				// Relax edges
-				relax_edge(edges[0]);
-				relax_edge(edges[1]);
-				relax_edge(edges[2]);
+				//relax_edge(edges[0]);
+				//relax_edge(edges[1]);
+				//relax_edge(edges[2]);
 
 				//relax_edge(faces[0]->get_edge(0).e);
 				//relax_edge(faces[1]->get_edge(2).e);
 				//relax_edge(faces[2]->get_edge(1).e);
 
-				// Remove old face
-				delete(F[i]);
-				F.erase(F.begin()+i);
-				num_faces--;
-				i--;
 			}
+
+			std::cout << "DONE checking face " << i << "\n";
 		}
 
 		/*
@@ -2678,10 +2732,8 @@ void mesh::subdivide_liepa()
 		}
 		*/
 
-		//if(!created_new_triangle)
-		//	return;
-
-		mark_boundaries();
+		if(!created_new_triangle)
+			return;
 
 		// Relax interior edges
 		bool relaxed_edge;
@@ -2690,14 +2742,15 @@ void mesh::subdivide_liepa()
 			relaxed_edge = false;
 			for(std::vector<edge*>::iterator e_it = E.begin(); e_it < E.end(); e_it++)
 			{
-				if((*e_it)->is_on_boundary())
-					continue;
-
 				if(relax_edge(*e_it))
 					relaxed_edge = true;
 			}
+
+			break;
 		}
 		while(relaxed_edge);
+
+		break;
 
 		// Calculate new scaling attributes. TODO: This should become a
 		// function.
@@ -2737,7 +2790,7 @@ void mesh::subdivide_liepa()
 
 bool mesh::relax_edge(edge* e)
 {
-	std::cout << "mesh::relax_edge()\n";
+	std::cout << "mesh::relax_edge(): " << e->get_u()->get_id() << " " << e->get_v()->get_id() << "\n";
 
 	if(!e->get_f() || !e->get_g())
 		return(false);
@@ -2757,9 +2810,11 @@ bool mesh::relax_edge(edge* e)
 	bool swap = false;
 	for(size_t i = 0; i < 2; i++)
 	{
+		/*
 		std::cout << "Circumcircle from: " << faces[i]->get_vertex(0)->get_id()
 			<< " " << faces[i]->get_vertex(1)->get_id() << " "
 			<< faces[i]->get_vertex(2)->get_id() << "\n";
+		*/
 
 		// Compute circumcircle of triangle
 
@@ -2785,13 +2840,15 @@ bool mesh::relax_edge(edge* e)
 			if(v != e->get_u() && v != e->get_v())
 			{
 				// ...and check whether it is outside the circumcircle
-				swap = (v->get_position() - c).length() <= r;
+				swap = (v->get_position() - c).length() < r;
 
 				// Set new vertices
 				if(v1)
 					v2 = v;
 				else
 					v1 = v;
+
+				break;
 			}
 		}
 	}
@@ -2806,11 +2863,135 @@ bool mesh::relax_edge(edge* e)
 			std::cout << e->get_g()->get_vertex(i)->get_id() << " ";
 		std::cout << "\n";
 
+		throw(std::runtime_error("mesh::relax_edge(): v1 == v2"));
 		return(false);
 	}
 
 	if(!swap)
 		return(false);
+
+	std::cout << "Losing: v2 = " << v2->get_id() << " v1 = " << v1->get_id() << "\n";
+
+	face* old_f = e->get_f();
+	face* old_g = e->get_g();
+
+	// Remove pointers to _old_ faces from edges
+	edge* edges[5] = {NULL, NULL, NULL, NULL, NULL};
+	edges[0] = faces[0]->get_edge(0).e;
+	edges[1] = faces[0]->get_edge(1).e;
+	edges[2] = faces[0]->get_edge(2).e;
+	for(size_t i = 0; i < 3; i++)
+	{
+		if(faces[1]->get_edge(i).e != e)
+		{
+			if(edges[3])
+				edges[4] = faces[1]->get_edge(i).e;
+			else
+				edges[3] = faces[1]->get_edge(i).e;
+		}
+	}
+
+	for(size_t i = 0; i < 5; i++)
+	{
+		for(size_t j = 0; j < 2; j++)
+		{
+			if(edges[i]->get_f() == faces[j])
+				edges[i]->set_f(NULL);
+			else if(edges[i]->get_g() == faces[j])
+				edges[i]->set_g(NULL);
+		}
+	}
+
+	// Create two new faces using the vertices from the old faces
+	vertex* new_v11 = NULL;
+	vertex* new_v12 = NULL;
+	for(size_t i = 0; i < 3; i++)
+	{
+		/*
+		if(faces[0]->get_vertex(i) != e->get_u())
+		{
+			if(new_v11)
+				new_v12 = const_cast<vertex*>(faces[0]->get_vertex(i));
+			else
+				new_v11 = const_cast<vertex*>(faces[0]->get_vertex(i));
+		}
+		*/
+
+		directed_edge& d_e = faces[0]->get_edge(i);
+		if(d_e.e != e && d_e.e->get_v() != e->get_v() && d_e.e->get_u() != e->get_v())
+		{
+			if(d_e.inverted)
+			{
+				new_v11 = const_cast<vertex*>(d_e.e->get_v());
+				new_v12 = const_cast<vertex*>(d_e.e->get_u());
+			}
+			else
+			{
+				new_v11 = const_cast<vertex*>(d_e.e->get_u());
+				new_v12 = const_cast<vertex*>(d_e.e->get_v());
+			}
+
+			break;
+		}
+
+	}
+
+	vertex* new_v21 = NULL;
+	vertex* new_v22 = NULL;
+	for(size_t i = 0; i < 3; i++)
+	{
+		directed_edge& d_e = faces[1]->get_edge(i);
+		if(d_e.e != e && d_e.e->get_v() != e->get_u() && d_e.e->get_u() != e->get_u())
+		{
+			if(d_e.inverted)
+			{
+				new_v21 = const_cast<vertex*>(d_e.e->get_v());
+				new_v22 = const_cast<vertex*>(d_e.e->get_u());
+			}
+			else
+			{
+				new_v21 = const_cast<vertex*>(d_e.e->get_u());
+				new_v22 = const_cast<vertex*>(d_e.e->get_v());
+			}
+
+			break;
+		}
+	}
+
+	face* new_f1 = add_face(new_v11, new_v12, v1);
+	face* new_f2 = add_face(new_v21, new_v22, v2);
+
+	new_f1->reconstruct_from_edges();
+	new_f2->reconstruct_from_edges();
+
+	// Remove old faces
+
+	F.erase(std::find(F.begin(), F.end(), old_f));
+	F.erase(std::find(F.begin(), F.end(), old_g));
+
+	delete old_f;
+	delete old_g;
+
+	// Remove old edge
+
+	vertex* u = const_cast<vertex*>(e->get_u());
+	vertex* v = const_cast<vertex*>(e->get_v());
+	u->E.erase(std::find(u->E.begin(), u->E.end(), e));
+	v->E.erase(std::find(v->E.begin(), v->E.end(), e));
+
+	E.erase(std::find(E.begin(), E.end(), e));
+
+	std::pair<size_t, size_t> id;
+	id.first = (e->get_u()->get_id() < e->get_v()->get_id()? e->get_u()->get_id() : e->get_v()->get_id());
+	id.second = (e->get_u()->get_id() > e->get_v()->get_id()? e->get_u()->get_id() : e->get_v()->get_id());
+	std::cout << id.first << " " << id.second << "\n";
+	E_M.erase(id);
+
+	delete e;
+
+	return(true);
+
+	// HERE BE DRAGONS
 
 	// Swap it!
 
@@ -2845,6 +3026,8 @@ bool mesh::relax_edge(edge* e)
 	lost_vertices[0] = e->get_v();
 	lost_vertices[1] = e->get_u();
 
+	std::cout << "LOSING VERTICES: " << e->get_u()->get_id() << " " << e->get_v()->get_id() << "\n";
+
 	size_t j1 = std::numeric_limits<size_t>::max();
 	size_t j2 = std::numeric_limits<size_t>::max();
 	for(size_t i = 0; i < 2; i++)
@@ -2870,6 +3053,7 @@ bool mesh::relax_edge(edge* e)
 	if(	j1 == std::numeric_limits<size_t>::max() ||
 		j2 == std::numeric_limits<size_t>::max())
 	{
+		throw(std::runtime_error("mesh::relax_edge(): Unable to find edge -- seriously fracked up"));
 		std::cout << "********** O CRAP O CRAP\n";
 		return(false);
 	}

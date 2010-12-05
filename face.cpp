@@ -161,6 +161,9 @@ void face::reconstruct_from_edges()
 	std::cout << "HAVE: ";
 	for(std::vector<directed_edge>::iterator e_it = E.begin(); e_it < E.end(); e_it++)
 	{
+		if(e_it->inverted)
+			std::cout << "* ";
+
 		std::cout << e_it->e->get_u()->get_id() << " ";
 		std::cout << e_it->e->get_v()->get_id() << " ";
 
@@ -182,10 +185,16 @@ void face::reconstruct_from_edges()
 		V_IDs.insert(V[i]->get_id());
 	}
 
+	std::cout << " [ SORTED: ";
+	for(std::set<size_t>::iterator it = V_IDs.begin(); it != V_IDs.end(); it++)
+	{
+		std::cout << *it << " ";
+	}
+	std::cout << "] " << this << "\n";
+
 	if(V_IDs.size() < 3)
 		std::cout << "DISASTER.\n";
 
-	std::cout << "\n";
 }
 
 } // end of namespace "psalm"

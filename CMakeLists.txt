@@ -25,7 +25,9 @@ SET(PLINE_FILL_SRC
 )
 
 ADD_EXECUTABLE(psalm ${PSALM_SRC})
-ADD_EXECUTABLE(pline_fill ${PLINE_FILL_SRC})
+#
+#
+#ADD_EXECUTABLE(pline_fill ${PLINE_FILL_SRC})
 
 # Create subdivided test data using "meshlab"
 ADD_CUSTOM_TARGET(	test
