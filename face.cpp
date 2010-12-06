@@ -169,26 +169,4 @@ void face::set_on_boundary(bool boundary)
 	this->boundary = boundary;
 }
 
-/*!
-*	Reconstructs the face from its edges:
-*
-*	- Delete vertices
-*	- Traverse edges
-*	- Store vertices in the order specified by the edges
-*/
-
-void face::reconstruct_from_edges()
-{
-	V.clear();
-	for(std::vector<directed_edge>::iterator e_it = E.begin(); e_it < E.end(); e_it++)
-	{
-		// Only store the first vertex of an edge -- this will yield
-		// _all_ vertices upon traversal
-		if(e_it->inverted)
-			add_vertex(const_cast<vertex*>(e_it->e->get_v())); // XXX: Evil. face::add_vertex() should be fixed
-		else
-			add_vertex(const_cast<vertex*>(e_it->e->get_u()));
-	}
-}
-
 } // end of namespace "psalm"
