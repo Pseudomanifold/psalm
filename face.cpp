@@ -168,15 +168,8 @@ void face::set_on_boundary(bool boundary)
 void face::reconstruct_from_edges()
 {
 	V.clear();
-	std::cout << "HAVE: ";
 	for(std::vector<directed_edge>::iterator e_it = E.begin(); e_it < E.end(); e_it++)
 	{
-		if(e_it->inverted)
-			std::cout << "* ";
-
-		std::cout << e_it->e->get_u()->get_id() << " ";
-		std::cout << e_it->e->get_v()->get_id() << " ";
-
 		// Only store the first vertex of an edge -- this will yield
 		// _all_ vertices upon traversal
 		if(e_it->inverted)
@@ -184,27 +177,6 @@ void face::reconstruct_from_edges()
 		else
 			add_vertex(const_cast<vertex*>(e_it->e->get_u()));
 	}
-	std::cout << "\n";
-
-	std::set<size_t> V_IDs;
-
-	std::cout << "\tRECONSTRUCTED: ";
-	for(size_t i = 0; i < V.size(); i++)
-	{
-		std::cout << V[i]->get_id() << " ";
-		V_IDs.insert(V[i]->get_id());
-	}
-
-	std::cout << " [ SORTED: ";
-	for(std::set<size_t>::iterator it = V_IDs.begin(); it != V_IDs.end(); it++)
-	{
-		std::cout << *it << " ";
-	}
-	std::cout << "] " << "\n";
-
-	if(V_IDs.size() < 3)
-		std::cout << "DISASTER.\n";
-
 }
 
 } // end of namespace "psalm"
