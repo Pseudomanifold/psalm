@@ -2538,8 +2538,6 @@ inline std::pair<double, double> mesh::cc_weights_degenerate(size_t n)
 
 void mesh::subdivide_liepa()
 {
-	std::cout << "mesh::subdivide_liepa()\n";
-
 	// Compute scale attribute as the average length of the edges adjacent
 	// to a vertex.
 	//
@@ -2560,8 +2558,6 @@ void mesh::subdivide_liepa()
 	bool created_new_triangle;
 	do
 	{
-		std::cout << "CHECKING " << F.size() << " faces\n";
-
 		// if no new triangle has been created, the algorithm
 		// terminates
 		created_new_triangle = false;
@@ -2574,8 +2570,6 @@ void mesh::subdivide_liepa()
 		// Compute scale attribute for each face of the mesh
 		for(size_t i = 0; i < num_faces; i++)
 		{
-			std::cout << "BEGIN checking face " << i << "\n";
-
 			// TODO: Check that the face is a triangle
 
 			vertex* vertices[3];
@@ -2596,7 +2590,7 @@ void mesh::subdivide_liepa()
 			}
 
 			// TODO: Should be user-configurable
-			double alpha = 20; 
+			double alpha = 20;
 
 			size_t tests_failed = 0;
 			for(size_t j = 0; j < 3; j++)
@@ -2618,13 +2612,6 @@ void mesh::subdivide_liepa()
 
 				vertex* centroid_vertex = add_vertex(centroid_pos);
 				centroid_vertex->set_scale_attribute(centroid_scale_attribute);
-
-				std::cout << "ADDED CENTROID " << centroid_vertex->get_id() << " OF ";
-				for(size_t j = 0; j < 3; j++)
-				{
-					std::cout << F[i]->get_vertex(j)->get_id() << " ";
-				}
-				std::cout << "\n";
 
 				edge* edges[3]; // we need to loop over
 						// these edges, hence
@@ -2667,21 +2654,6 @@ void mesh::subdivide_liepa()
 				faces[1] = add_face(centroid_vertex, vertices[1], vertices[2]);
 				faces[2] = add_face(vertices[0], centroid_vertex, vertices[2]);
 
-				for(size_t k = 0; k < 3; k++)
-				{
-					// XXX: For debugging purposes
-					std::vector<size_t> V_IDs;
-					for(size_t j = 0; j < faces[k]->num_vertices(); j++)
-						V_IDs.push_back(faces[k]->get_vertex(j)->get_id());
-
-					std::sort(V_IDs.begin(), V_IDs.end());
-					std::cout << "ADDED FACE: ";
-					for(size_t j = 0; j < faces[k]->num_vertices(); j++)
-						std::cout << V_IDs[j] << " ";
-					std::cout << "\n";
-				}
-
-
 				/*
 				// XXX: Just checking...
 				for(size_t j = 0; j < 3; j++)
@@ -2723,8 +2695,6 @@ void mesh::subdivide_liepa()
 				//relax_edge(faces[2]->get_edge(1).e);
 
 			}
-
-			std::cout << "DONE checking face " << i << "\n";
 		}
 
 		/*
@@ -2786,10 +2756,7 @@ void mesh::subdivide_liepa()
 		}
 
 		if(!relaxed_edge)
-		{
-			std::cout << "New iteration\n";
 			continue;
-		}
 	}
 	while(created_new_triangle);
 }
