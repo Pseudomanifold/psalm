@@ -2611,13 +2611,25 @@ void mesh::subdivide_liepa()
 				vertex* centroid_vertex = add_vertex(centroid_pos);
 				centroid_vertex->set_scale_attribute(centroid_scale_attribute);
 
+				// Remove old face and replace it by three new
+				// faces. Calling remove_face() will ensure
+				// that the edges are updated correctly.
 
+				face* old_face = F[i];
+				remove_face(old_face);
+				delete old_face;
 
+				face* new_face1 = add_face(vertices[0], vertices[1], centroid_vertex);
+				face* new_face2 = add_face(centroid_vertex, vertices[1], vertices[2]);
+				face* new_face3 = add_face(vertices[0], centroid_vertex, vertices[2]);
 
 				num_faces--;
 				i--;
 
 				// Relax edges
+				relax_edge(new_face1->get_edge(0).e);
+				relax_edge(new_face2->get_edge(1).e);
+				relax_edge(new_face3->get_edge(2).e);
 			}
 		}
 
