@@ -1164,7 +1164,7 @@ directed_edge mesh::add_edge(const vertex* u, const vertex* v)
 /*!
 *	Removes a given edge from the mesh. This deletes _all_ pointers to the
 *	edge from adjacent vertices. As a last step, the edge is removed from
-*	the edge map of the mesh and allocated memory is freed.
+*	the edge map of the mesh.
 *
 *	@param	e Edge that is going to be removed from the mesh
 *
@@ -1206,14 +1206,11 @@ void mesh::remove_edge(edge* e)
 	else
 		E_M.erase(edge_id);
 
-	// Remove reference of edge from start and end vertex and free
-	// allocated memory
+	// Remove reference of edge from start and end vertex. This is
+	// necessary to avoid stale pointers.
 
 	u->remove_edge(e);
 	v->remove_edge(e);
-
-	delete e;
-
 }
 
 /*!
