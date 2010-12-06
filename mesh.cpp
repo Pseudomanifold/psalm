@@ -2788,7 +2788,7 @@ bool mesh::relax_edge(edge* e)
 }
 
 /*!
-*	Given an vertex and a triangular face (where the edge is supposed to be
+*	Given a vertex and a triangular face (where the edge is supposed to be
 *	part of the face), return the two vertices that remain after removing
 *	the given vertex in correct order. Correct order means that the
 *	vertices are pushed in a vector depending on the edges of the face,
