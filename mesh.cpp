@@ -2891,12 +2891,28 @@ bool mesh::relax_edge(edge* e)
 	if(!swap)
 		return(false);
 
+	// Remove both of the old faces and the corresponding edge...
 
+	face* old_face_1 = e->get_f();
+	face* old_face_2 = e->get_g();
 
+	remove_face(old_face_1);
+	remove_face(old_face_2);
 
+	remove_edge(e);
 
+	// ...find the remaining pair of vertices and create the new faces...
 
+	std::pair<vertex*, vertex*> vertices_1st_face = find_remaining_vertices(e->get_v(), old_face_1);
+	std::pair<vertex*, vertex*> vertices_2nd_face = find_remaining_vertices(e->get_u(), old_face_2);
 
+	add_face(vertices_1st_face.first, vertices_1st_face.second, v1);
+	add_face(vertices_2nd_face.first, vertices_2nd_face.second, v2);
+
+	// ...and free some memory.
+
+	delete(old_face_1);
+	delete(old_face_2);
 	delete(e);
 
 	return(true);
