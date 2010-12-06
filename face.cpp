@@ -45,6 +45,16 @@ void face::add_edge(const directed_edge& result)
 
 directed_edge& face::get_edge(size_t i)
 {
+	return(const_cast<directed_edge&>(static_cast<const face*>(this)->get_edge(i)));
+}
+
+/*!
+*	@param	i Index of edge
+*	@return	Const reference to edge at specified index
+*/
+
+const directed_edge& face::get_edge(size_t i) const
+{
 	if(i >= E.size())
 		throw std::out_of_range("face::get_edge(): Invalid edge index");
 	else

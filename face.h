@@ -32,6 +32,7 @@ class face
 		const vertex* get_vertex(size_t i) const;
 		vertex* get_face_vertex(size_t i);
 		directed_edge& get_edge(size_t i);
+		const directed_edge& get_edge(size_t i) const;
 
 		/*!
 		*	@brief Pointer to face point.
