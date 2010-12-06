@@ -1051,6 +1051,41 @@ face* mesh::add_face(std::vector<vertex*> vertices)
 }
 
 /*!
+*	Removes a given face from the mesh. This deletes _all_ pointers to the
+*	face from adjacent vertices or adjacent faces. As a last step, the face
+*	is removed from the face vector of the mesh.
+*
+*	@param	f Face that is going to be removed from the mesh
+*
+*	@throws std::runtime_error if the face could not be found in the face
+*	vector. This signifies a very degenerate situation.
+*/
+
+void mesh::remove_face(face* f)
+{
+	// Remove face from face vector
+
+	std::vector<face*>::iterator face_pos = std::find(F.begin(), F.end(), f);
+	if(face_pos == F.end())
+		throw(std::runtime_error("mesh::remove_face(): Unable to find face in face vector"));
+	else
+		F.erase(face_pos);
+
+	// Remove references to face from edges
+
+	for(size_t i = 0; i < f->num_edges(); i++)
+	{
+		directed_edge& d_e = f->get_edge(i);
+		if(d_e.e->get_f() == f)
+			d_e.e->set_f(NULL);
+		else if(d_e.e->get_g() == f)
+			d_e.e->set_g(NULL);
+		else
+			throw(std::runtime_error("mesh::remove_face(): Unable to find reference to face in edge vector"));
+	}
+}
+
+/*!
 *	Tries to add an edge to the current mesh. The edge is described by
 *	pointers to its start and end vertices.
 *

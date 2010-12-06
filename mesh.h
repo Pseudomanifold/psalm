@@ -93,6 +93,7 @@ class mesh
 		face* add_face(std::vector<vertex*> vertices);
 		face* add_face(vertex* v1, vertex* v2, vertex* v3);
 		face* add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4);
+		void remove_face(face* f);
 
 		directed_edge add_edge(const vertex* u, const vertex* v);
 		void remove_edge(edge* e);
