@@ -2611,56 +2611,13 @@ void mesh::subdivide_liepa()
 				vertex* centroid_vertex = add_vertex(centroid_pos);
 				centroid_vertex->set_scale_attribute(centroid_scale_attribute);
 
-				edge* edges[3]; // we need to loop over
-						// these edges, hence
-						// the array
 
-				edges[0] = F[i]->get_edge(0).e;
-				edges[1] = F[i]->get_edge(1).e;
-				edges[2] = F[i]->get_edge(2).e;
 
-				// Update edges before adding the new faces
-				bool is_second_face[3] = {false, false, false};
-				face* other_face[3] = {NULL, NULL, NULL};
-				for(size_t j = 0; j < 3; j++)
-				{
-					if(edges[j]->get_f() == F[i])
-					{
-						edges[j]->set_f(NULL);
-						other_face[j] = edges[j]->get_g();
-					}
-					else if(edges[j]->get_g() == F[i])
-					{
-						is_second_face[j] = true;
-						edges[j]->set_g(NULL);
-						other_face[j] = edges[j]->get_f();
-					}
-					else
-						throw(std::runtime_error("mesh::subdivide_liepa(): Unable to find face for edge"));
-				}
 
-				face* faces[3];	// ditto (see above)
-
-				faces[0] = add_face(vertices[0], vertices[1], centroid_vertex);
-				faces[1] = add_face(centroid_vertex, vertices[1], vertices[2]);
-				faces[2] = add_face(vertices[0], centroid_vertex, vertices[2]);
-
-				// Remove references of old face from vertices
-				vertices[0]->F.erase(std::find(vertices[0]->F.begin(), vertices[0]->F.end(), F[i]));
-				vertices[1]->F.erase(std::find(vertices[1]->F.begin(), vertices[1]->F.end(), F[i]));
-				vertices[2]->F.erase(std::find(vertices[2]->F.begin(), vertices[2]->F.end(), F[i]));
-
-				// Remove old face
-				face* to_delete = F[i];
-				F.erase(std::find(F.begin(), F.end(), to_delete));
-				delete(to_delete);
 				num_faces--;
 				i--;
 
 				// Relax edges
-				relax_edge(edges[0]);
-				relax_edge(edges[1]);
-				relax_edge(edges[2]);
 			}
 		}
 
