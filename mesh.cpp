@@ -1129,8 +1129,6 @@ directed_edge mesh::add_edge(const vertex* u, const vertex* v)
 	std::map<std::pair<size_t, size_t>, edge*>::iterator it;
 	if((it = E_M.find(id)) == E_M.end())
 	{
-		std::cout << "NEW EDGE: " << id.first << " " << id.second << "\n";
-
 		// Edge not found, create an edge from the _original_ edge and
 		// add it to the map
 		edge* new_edge = new edge(u, v);
