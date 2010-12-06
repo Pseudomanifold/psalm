@@ -2619,13 +2619,6 @@ void mesh::subdivide_liepa()
 				edges[1] = F[i]->get_edge(1).e;
 				edges[2] = F[i]->get_edge(2).e;
 
-				/*
-				std::cout	<< "edges[0] = " << edges[0]->get_f() << " " << edges[0]->get_g() << "\n"
-						<< "edges[1] = " << edges[1]->get_f() << " " << edges[1]->get_g() << "\n"
-						<< "edges[2] = " << edges[2]->get_f() << " " << edges[2]->get_g() << "\n";
-				*/
-
-
 				// Update edges before adding the new faces
 				bool is_second_face[3] = {false, false, false};
 				face* other_face[3] = {NULL, NULL, NULL};
@@ -2652,25 +2645,6 @@ void mesh::subdivide_liepa()
 				faces[1] = add_face(centroid_vertex, vertices[1], vertices[2]);
 				faces[2] = add_face(vertices[0], centroid_vertex, vertices[2]);
 
-				/*
-				// XXX: Just checking...
-				for(size_t j = 0; j < 3; j++)
-				{
-					if(is_second_face[j])
-					{
-						edges[j]->set_g(NULL);
-						edges[j]->set_g(faces[j]);
-						edges[j]->set_f(other_face[j]);
-					}
-					else
-					{
-						edges[j]->set_f(faces[j]);
-						edges[j]->set_g(NULL);
-						edges[j]->set_g(other_face[j]);
-					}
-				}
-				*/
-
 				// Remove references of old face from vertices
 				vertices[0]->F.erase(std::find(vertices[0]->F.begin(), vertices[0]->F.end(), F[i]));
 				vertices[1]->F.erase(std::find(vertices[1]->F.begin(), vertices[1]->F.end(), F[i]));
@@ -2687,36 +2661,8 @@ void mesh::subdivide_liepa()
 				relax_edge(edges[0]);
 				relax_edge(edges[1]);
 				relax_edge(edges[2]);
-
-				//relax_edge(faces[0]->get_edge(0).e);
-				//relax_edge(faces[1]->get_edge(2).e);
-				//relax_edge(faces[2]->get_edge(1).e);
-
 			}
 		}
-
-		/*
-
-		XXX Maybe we need this...
-
-		for(size_t i = 0; i < E.size(); i++)
-		{
-			size_t faces = 0;
-			for(size_t j = 0; j < F.size(); j++)
-			{
-				for(size_t k = 0; k < F[j]->num_edges(); k++)
-				{
-					if(F[j]->get_edge(k).e == E[i])
-						faces++;
-				}
-			}
-
-			if(faces > 2)
-			{
-				std::cout << "******* Non-manifold edge: " << E[i]->get_u()->get_id() << " " << E[i]->get_v()->get_id() << "\n";
-			}
-		}
-		*/
 
 		if(!created_new_triangle)
 			return;
