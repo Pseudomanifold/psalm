@@ -6,7 +6,10 @@
 #ifndef __VERTEX_H__
 #define __VERTEX_H__
 
+#include <algorithm>
 #include <vector>
+#include <stdexcept>
+
 #include "v3ctor.h"
 
 namespace psalm
@@ -42,6 +45,8 @@ class vertex
 		vertex* vertex_point;
 
 		void add_edge(edge* e);
+		void remove_edge(const edge* e);
+
 		edge* get_edge(size_t i);
 		const edge* get_edge(size_t i) const;
 
@@ -120,6 +125,25 @@ inline double vertex::get_scale_attribute() const
 	return(scale_attribute);
 }
 
+/*!
+*	Removes an edge from the edge references of this vertex. This function
+*	is required for operations that change the structure of the mesh.
+*	Otherwise, stale edge references would be used in calculations.
+*
+*	@param	e Edge that is going to be removed
+*	@throws	std::runtime_error if the edge could not be found in the edge
+*		references of the vertex. This is meant to change errors in
+*		performing edge removals.
+*/
+
+inline void vertex::remove_edge(const edge* e)
+{
+	std::vector<edge*>::iterator edge_pos = std::find(E.begin(), E.end(), e);
+	if(edge_pos == E.end())
+		throw(std::runtime_error("vertex::remove_edge(): Unable to find edge in edge vector"));
+	else
+		E.erase(edge_pos);
+}
 
 } // end of namespace "psalm"
 
