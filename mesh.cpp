@@ -2813,8 +2813,6 @@ void mesh::subdivide_liepa()
 
 bool mesh::relax_edge(edge* e)
 {
-	std::cout << "mesh::relax_edge(): " << e->get_u()->get_id() << " " << e->get_v()->get_id() << "\n";
-
 	if(!e->get_f() || !e->get_g())
 		return(false);
 
@@ -2893,19 +2891,11 @@ bool mesh::relax_edge(edge* e)
 	if(!swap)
 		return(false);
 
-	std::cout << "Losing: v2 = " << v2->get_id() << " v1 = " << v1->get_id() << "\n";
 
 
 
 
 
-	std::cout << "SET FLIPPED FOR " << new_f1->get_edge(2).e->get_u()->get_id() << " "
-					<< new_f1->get_edge(2).e->get_v()->get_id() << "\n";
-
-	new_f1->reconstruct_from_edges();
-	new_f2->reconstruct_from_edges();
-
-	remove_edge(e);
 
 	delete(e);
 
