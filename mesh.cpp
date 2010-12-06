@@ -2895,102 +2895,9 @@ bool mesh::relax_edge(edge* e)
 
 	std::cout << "Losing: v2 = " << v2->get_id() << " v1 = " << v1->get_id() << "\n";
 
-	face* old_f = e->get_f();
-	face* old_g = e->get_g();
 
-	// Remove pointers to _old_ faces from edges
-	edge* edges[5] = {NULL, NULL, NULL, NULL, NULL};
-	edges[0] = faces[0]->get_edge(0).e;
-	edges[1] = faces[0]->get_edge(1).e;
-	edges[2] = faces[0]->get_edge(2).e;
-	for(size_t i = 0; i < 3; i++)
-	{
-		if(faces[1]->get_edge(i).e != e)
-		{
-			if(edges[3])
-				edges[4] = faces[1]->get_edge(i).e;
-			else
-				edges[3] = faces[1]->get_edge(i).e;
-		}
-	}
 
-	for(size_t i = 0; i < 5; i++)
-	{
-		for(size_t j = 0; j < 2; j++)
-		{
-			if(edges[i]->get_f() == faces[j])
-			{
-				edges[i]->set_f(NULL);
-				std::cout << "Set NULL [j = " << j << "]\n";
-			}
-			else if(edges[i]->get_g() == faces[j])
-			{
-				edges[i]->set_g(NULL);
-				std::cout << "Set NULL [j = " << j << "]\n";
-			}
-		}
-	}
 
-	// Create two new faces using the vertices from the old faces
-	vertex* new_v11 = NULL;
-	vertex* new_v12 = NULL;
-	for(size_t i = 0; i < 3; i++)
-	{
-		/*
-		if(faces[0]->get_vertex(i) != e->get_u())
-		{
-			if(new_v11)
-				new_v12 = const_cast<vertex*>(faces[0]->get_vertex(i));
-			else
-				new_v11 = const_cast<vertex*>(faces[0]->get_vertex(i));
-		}
-		*/
-
-		directed_edge& d_e = faces[0]->get_edge(i);
-		if(d_e.e != e && d_e.e->get_v() != e->get_v() && d_e.e->get_u() != e->get_v())
-		{
-			if(d_e.inverted)
-			{
-				new_v11 = const_cast<vertex*>(d_e.e->get_v());
-				new_v12 = const_cast<vertex*>(d_e.e->get_u());
-			}
-			else
-			{
-				new_v11 = const_cast<vertex*>(d_e.e->get_u());
-				new_v12 = const_cast<vertex*>(d_e.e->get_v());
-			}
-
-			break;
-		}
-
-	}
-
-	vertex* new_v21 = NULL;
-	vertex* new_v22 = NULL;
-	for(size_t i = 0; i < 3; i++)
-	{
-		directed_edge& d_e = faces[1]->get_edge(i);
-		if(d_e.e != e && d_e.e->get_v() != e->get_u() && d_e.e->get_u() != e->get_u())
-		{
-			if(d_e.inverted)
-			{
-				new_v21 = const_cast<vertex*>(d_e.e->get_v());
-				new_v22 = const_cast<vertex*>(d_e.e->get_u());
-			}
-			else
-			{
-				new_v21 = const_cast<vertex*>(d_e.e->get_u());
-				new_v22 = const_cast<vertex*>(d_e.e->get_v());
-			}
-
-			break;
-		}
-	}
-
-	face* new_f1 = add_face(new_v11, new_v12, v1);
-	std::cout << "new_f1 added\n";
-	face* new_f2 = add_face(new_v21, new_v22, v2);
-	std::cout << "new_f2 added\n";
 
 	std::cout << "SET FLIPPED FOR " << new_f1->get_edge(2).e->get_u()->get_id() << " "
 					<< new_f1->get_edge(2).e->get_v()->get_id() << "\n";
@@ -2998,37 +2905,9 @@ bool mesh::relax_edge(edge* e)
 	new_f1->reconstruct_from_edges();
 	new_f2->reconstruct_from_edges();
 
-	// Remove old faces
-
-	F.erase(std::find(F.begin(), F.end(), old_f));
-	F.erase(std::find(F.begin(), F.end(), old_g));
-
-	delete old_f;
-	delete old_g;
-
-	// Remove old edge
-
-	vertex* u = const_cast<vertex*>(e->get_u());
-	vertex* v = const_cast<vertex*>(e->get_v());
-	u->E.erase(std::find(u->E.begin(), u->E.end(), e));
-	v->E.erase(std::find(v->E.begin(), v->E.end(), e));
-
-	E.erase(std::find(E.begin(), E.end(), e));
-
-	std::pair<size_t, size_t> id;
-	id.first = (e->get_u()->get_id() < e->get_v()->get_id()? e->get_u()->get_id() : e->get_v()->get_id());
-	id.second = (e->get_u()->get_id() > e->get_v()->get_id()? e->get_u()->get_id() : e->get_v()->get_id());
-	std::cout << id.first << " " << id.second << "\n";
-	E_M.erase(id);
-
-	delete e;
-	*/
-
 	remove_edge(e);
 
 	delete(e);
-	delete(old_f);
-	delete(old_g);
 
 	return(true);
 }
