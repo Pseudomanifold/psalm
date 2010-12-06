@@ -29,8 +29,10 @@ class face
 		size_t num_edges() const;
 		size_t num_vertices() const;
 
+		vertex* get_vertex(size_t i);
 		const vertex* get_vertex(size_t i) const;
 		vertex* get_face_vertex(size_t i);
+
 		directed_edge& get_edge(size_t i);
 		const directed_edge& get_edge(size_t i) const;
 
@@ -52,7 +54,7 @@ class face
 
 	private:
 		std::vector<directed_edge> E;
-		std::vector<const vertex*> V;
+		std::vector<vertex*> V;
 
 		std::vector<vertex*> V_F;
 
@@ -60,10 +62,6 @@ class face
 
 		bool boundary;	///< Flag signalling that the face is a
 				///< boundary face.
-
-		// XXX: Access required for swapping edges. Can this be solved
-		// better?
-		friend class mesh;
 };
 
 } // end of namespace "psalm"

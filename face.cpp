@@ -56,7 +56,7 @@ directed_edge& face::get_edge(size_t i)
 const directed_edge& face::get_edge(size_t i) const
 {
 	if(i >= E.size())
-		throw std::out_of_range("face::get_edge(): Invalid edge index");
+		throw std::out_of_range("face::get_edge(): Index out of range");
 	else
 		return(E[i]);
 }
@@ -76,14 +76,26 @@ void face::add_vertex(vertex* v)
 }
 
 /*!
+*	@param	i Index of vertex
+*	@return	Vertex at specified index
+*	@throws	std::out_of_range if the index is out of range
+*/
+
+vertex* face::get_vertex(size_t i)
+{
+	return(const_cast<vertex*>(static_cast<const face*>(this)->get_vertex(i)));
+}
+
+/*!
 *	@param i Index of vertex
 *	@return Vertex at specified index or NULL if the index is out of range.
+*	@throws	std::out_of_range if the index is out of range
 */
 
 const vertex* face::get_vertex(size_t i) const
 {
 	if(i >= V.size())
-		return(NULL);
+		throw(std::out_of_range("face::get_vertex(): Index out of range"));
 	else
 		return(V[i]);
 }
