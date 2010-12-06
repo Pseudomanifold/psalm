@@ -98,6 +98,8 @@ class mesh
 		directed_edge add_edge(const vertex* u, const vertex* v);
 		void remove_edge(edge* e);
 
+		std::pair<size_t, size_t> calc_edge_id(const vertex* u, const vertex* v);
+
 		vertex* add_vertex(double x, double y, double z);
 		vertex* add_vertex(const v3ctor& pos);
 
@@ -232,6 +234,32 @@ inline face* mesh::add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4)
 	vertices.push_back(v4);
 
 	return(add_face(vertices));
+}
+
+/*!
+*	@returns ID of the edge described by vertices u and v, which is given
+*	as an std::pair sorted by vertex IDs.
+*/
+
+inline std::pair<size_t, size_t> mesh::calc_edge_id(const vertex* u, const vertex* v)
+{
+	std::pair<size_t, size_t> id;
+
+	size_t u_id = u->get_id();
+	size_t v_id = v->get_id();
+
+	if(u_id < v_id)
+	{
+		id.first = u_id;
+		id.second = v_id;
+	}
+	else
+	{
+		id.first = v_id;
+		id.second = u_id;
+	}
+
+	return(id);
 }
 
 } // end of namespace "psalm"
