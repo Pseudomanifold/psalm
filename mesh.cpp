@@ -1027,9 +1027,8 @@ face* mesh::add_face(std::vector<vertex*> vertices)
 				if(edge.e->get_f())
 					edge.e->set_g(f);
 
-				// XXX: If the face has been replaced by
-				// another face, the _first_ face might be set
-				// to NULL.
+				// If the face has been replaced by another
+				// face, the _first_ face might be set to NULL.
 				else
 					edge.e->set_f(f);
 			}
