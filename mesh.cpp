@@ -1109,24 +1109,11 @@ directed_edge mesh::add_edge(const vertex* u, const vertex* v)
 		it requires a conversion step.
 	*/
 
-	size_t u_id = u->get_id();
-	size_t v_id = v->get_id();
-
-	std::pair<size_t, size_t> id;
-	if(u_id < v_id)
-	{
-		id.first = u_id;
-		id.second = v_id;
-	}
-	else
-	{
-		id.first = v_id;
-		id.second = u_id;
-	}
+	std::pair<size_t, size_t> id = calc_edge_id(u, v);
 
 	// Check whether edge exists
-	std::map<std::pair<size_t, size_t>, edge*>::iterator it;
-	if((it = E_M.find(id)) == E_M.end())
+	std::map<std::pair<size_t, size_t>, edge*>::iterator edge_it;
+	if((edge_it = E_M.find(id)) == E_M.end())
 	{
 		// Edge not found, create an edge from the _original_ edge and
 		// add it to the map
@@ -1142,13 +1129,13 @@ directed_edge mesh::add_edge(const vertex* u, const vertex* v)
 	{
 		// Edge has been found, check whether the proper direction has
 		// been stored.
-		if(it->second->get_u() != u)
+		if(edge_it->second->get_u() != u)
 			result.inverted = true;
 		else
 			result.inverted = false;
 
 		result.new_edge = false;
-		result.e = it->second;
+		result.e = edge_it->second;
 	}
 
 	return(result);
