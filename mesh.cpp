@@ -2570,9 +2570,9 @@ void mesh::subdivide_liepa()
 			// TODO: Check that the face is a triangle
 
 			vertex* vertices[3];
-			vertices[0] = const_cast<vertex*>(F[i]->get_vertex(0)); // XXX: Evil. Should be implemented as a function of "face" class
-			vertices[1] = const_cast<vertex*>(F[i]->get_vertex(1));
-			vertices[2] = const_cast<vertex*>(F[i]->get_vertex(2));
+			vertices[0] = F[i]->get_vertex(0);
+			vertices[1] = F[i]->get_vertex(1);
+			vertices[2] = F[i]->get_vertex(2);
 
 			// Compute centroid and scale attribute. If the scale
 			// attribute test fails, replace the triangle.
@@ -2726,7 +2726,7 @@ bool mesh::relax_edge(edge* e)
 		// Find remaining vertex...
 		for(size_t j = 0; j < 3; j++)
 		{
-			vertex* v = const_cast<vertex*>(faces[i+1]->get_vertex(j)); // XXX: Evil. Should be implemented better.
+			vertex* v = faces[i+1]->get_vertex(j);
 			if(v != e->get_u() && v != e->get_v())
 			{
 				// ...and check whether it is outside the circumcircle
