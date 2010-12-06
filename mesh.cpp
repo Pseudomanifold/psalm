@@ -946,7 +946,6 @@ void mesh::replace_with(mesh& M)
 
 face* mesh::add_face(std::vector<vertex*> vertices)
 {
-	std::cout << "BEGIN of mesh::add_face()\n";
 	static bool warning_shown = false;
 
 	vertex* u = NULL;
@@ -962,8 +961,6 @@ face* mesh::add_face(std::vector<vertex*> vertices)
 
 	for(it = vertices.begin(); it != vertices.end(); it++)
 	{
-		std::cout << "#\n";
-
 		// Handle last vertex; should be the edge v--u
 		if((it+1) == vertices.end())
 		{
@@ -1043,8 +1040,6 @@ face* mesh::add_face(std::vector<vertex*> vertices)
 		// here
 		u = v;
 	}
-
-	std::cout << "END of mesh::add_face()\n";
 
 	F.push_back(f);
 	return(f);
