@@ -2567,7 +2567,11 @@ void mesh::subdivide_liepa()
 		// Compute scale attribute for each face of the mesh
 		for(size_t i = 0; i < num_faces; i++)
 		{
-			// TODO: Check that the face is a triangle
+			if(F[i]->num_edges() != 3)
+			{
+				std::cerr << "psalm: Input mesh contains non-triangular face. Liepa's subdivision scheme is not applicable.\n";
+				return;
+			}
 
 			vertex* vertices[3];
 			vertices[0] = F[i]->get_vertex(0);
@@ -2689,13 +2693,18 @@ bool mesh::relax_edge(edge* e)
 	if(!e->get_f() || !e->get_g())
 		return(false);
 
-	// TODO: Ensure that faces are triangles.
-
 	face* faces[3];
 	faces[0] = e->get_f();
 	faces[1] = e->get_g();
 	faces[2] = e->get_f();	// repeated so that faces[i+1] is well-defined
 				// within the for-loop
+
+	// Ensure that faces are triangles; otherwise, do not relax the edge.
+	// We do not throw an exception here because edge relaxation may be
+	// performed locally.
+	if(	faces[0]->num_edges() != 3 ||
+		faces[1]->num_edges() != 3)
+		return(false);
 
 	// These are the corresponding vertices of the _other_ face, i.e. v1 is
 	// the vertex that is part of face g, but not part of face f, and vice
