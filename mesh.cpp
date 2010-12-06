@@ -2646,8 +2646,6 @@ void mesh::subdivide_liepa()
 				if(relax_edge(*e_it))
 					relaxed_edge = true;
 			}
-
-			save("../temp.ply");
 		}
 		while(relaxed_edge);
 
