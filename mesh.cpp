@@ -993,14 +993,15 @@ face* mesh::add_face(std::vector<vertex*> vertices)
 			if(edge.e->get_g() == NULL && edge.e->get_f() != NULL)
 				edge.e->set_g(f);
 
-			// XXX: If the face has been replaced by another face,
-			// the _first_ face might be set to NULL
+			// If the face has been replaced by another face, the
+			// _first_ face might be set to NULL. This is relevant
+			// for Liepa's subdivision scheme, for example.
 			else if(edge.e->get_f() == NULL)
 				edge.e->set_f(f);
 
-			// XXX: For debugging purposes
+			// In this case, we cannot proceed -- the mesh would become degenerate
 			else if(edge.e->get_g() != NULL)
-				throw(std::runtime_error("mesh::add_face(): Attempted overwrite for inverted edge"));
+				throw(std::runtime_error("mesh::add_face(): Attempted overwrite of the face references of an edge"));
 
 			u->add_face(f);
 		}
