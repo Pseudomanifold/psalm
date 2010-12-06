@@ -2824,19 +2824,15 @@ bool mesh::relax_edge(edge* e)
 	faces[2] = e->get_f();	// repeated so that faces[i+1] is well-defined
 				// within the for-loop
 
-	// The new vertices forming start and end vertex of the edge
+	// These are the corresponding vertices of the _other_ face, i.e. v1 is
+	// the vertex that is part of face g, but not part of face f, and vice
+	// versa for vertex v2.
 	vertex* v1 = NULL;
 	vertex* v2 = NULL;
 
 	bool swap = false;
 	for(size_t i = 0; i < 2; i++)
 	{
-		/*
-		std::cout << "Circumcircle from: " << faces[i]->get_vertex(0)->get_id()
-			<< " " << faces[i]->get_vertex(1)->get_id() << " "
-			<< faces[i]->get_vertex(2)->get_id() << "\n";
-		*/
-
 		// Compute circumcircle of triangle
 
 		const v3ctor& A = faces[i]->get_vertex(0)->get_position();
@@ -2874,19 +2870,10 @@ bool mesh::relax_edge(edge* e)
 		}
 	}
 
+	// If this occurs, the mesh has become degenerate and no edge swap may
+	// be performed.
 	if(v1 == v2)
-	{
-		std::cout << "WTF: " << e->get_f() << " " << e->get_g() << "\n";
-		for(size_t i = 0; i < 3; i++)
-			std::cout << e->get_f()->get_vertex(i)->get_id() << " ";
-		std::cout << "\n";
-		for(size_t i = 0; i < 3; i++)
-			std::cout << e->get_g()->get_vertex(i)->get_id() << " ";
-		std::cout << "\n";
-
-		throw(std::runtime_error("mesh::relax_edge(): v1 == v2"));
-		return(false);
-	}
+		throw(std::runtime_error("mesh::relax_edge(): Mesh is degenerate -- cannot swap edge"));
 
 	if(!swap)
 		return(false);
