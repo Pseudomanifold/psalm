@@ -82,28 +82,26 @@ void vertex::add_edge(edge* e)
 }
 
 /*!
-*	@param i Edge index
-*	@return Pointer to incident edge or NULL if the index is out of bounds.
+*	@param	i Edge index
+*	@return Pointer to incident edge
+*	@throws	std::out_of_range if the index is out of range
 */
 
 edge* vertex::get_edge(size_t i)
 {
-	if(i >= E.size())
-		return(NULL);
-	else
-		return(E[i]);
+	return(const_cast<edge*>(static_cast<const vertex*>(this)->get_edge(i)));
 }
 
 /*!
 *	@param i Edge index
-*	@return Constant pointer to incident edge or NULL if the index is out
-*		of bounds.
+*	@return Constant pointer to incident edge
+*	@throws	std::out_of_range if the index is out of range
 */
 
 const edge* vertex::get_edge(size_t i) const
 {
 	if(i >= E.size())
-		return(NULL);
+		throw(std::out_of_range("vertex::get_edge(): Index out of range"));
 	else
 		return(E[i]);
 }
@@ -130,16 +128,15 @@ void vertex::add_face(const face* f)
 }
 
 /*!
-*	@param i Index of adjacent face
-*
-*	@return Pointer to an adjacent face of the vertex or NULL if the index
-*	is out of bounds.
+*	@param	i Index of adjacent face
+*	@return Pointer to an adjacent face of the vertex
+*	@throws	std::out_of_range if the index is out of bounds
 */
 
 const face* vertex::get_face(size_t i) const
 {
 	if(i >= F.size())
-		return(NULL);
+		throw(std::out_of_range("vertex::get_face(): Index out of range"));
 	else
 		return(F[i]);
 }
