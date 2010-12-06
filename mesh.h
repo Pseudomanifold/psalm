@@ -104,6 +104,7 @@ class mesh
 		vertex* add_vertex(const v3ctor& pos);
 
 		const vertex* find_remaining_vertex(const edge* e, const face* f);
+		std::pair<vertex*, vertex*> find_remaining_vertices(const vertex* v, const face* f);
 		vertex* find_face_vertex(face* f, const vertex* v);
 
 		std::vector<const vertex*> sort_vertices(face* f, const vertex* v);

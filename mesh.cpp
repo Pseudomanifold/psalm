@@ -3025,8 +3025,69 @@ bool mesh::relax_edge(edge* e)
 	E_M.erase(id);
 
 	delete e;
+	*/
+
+	remove_edge(e);
+
+	delete(e);
+	delete(old_f);
+	delete(old_g);
 
 	return(true);
+}
+
+/*!
+*	Given an vertex and a triangular face (where the edge is supposed to be
+*	part of the face), return the two vertices that remain after removing
+*	the given vertex in correct order. Correct order means that the
+*	vertices are pushed in a vector depending on the edges of the face,
+*	i.e. if an edge (u,v) is part of the face f, vertex u will be the
+*	directed predecessor of the vertex v in the results vector.
+*
+*	@param v Vertex that is assumed to be removed from the face
+*	@param f Face of which vertex v is a part of
+*
+*	@returns A pair of vertices, sorted in correct order.
+*
+*	@throws	std::runtime_error if the function is applied to non-triangular
+*		faces.
+*/
+
+std::pair<vertex*, vertex*> mesh::find_remaining_vertices(const vertex* v, const face* f)
+{
+	std::pair<vertex*, vertex*> res;
+	res.first	= NULL;
+	res.second	= NULL;
+
+	if(v == NULL || f == NULL)
+		return(res);
+
+	if(f->num_edges() != 3)
+		throw(std::runtime_error("mesh::find_remaining_vertices(): Number of edges != 3"));
+
+	for(size_t i = 0; i < 3; i++)
+	{
+		// Check for candidate edges, i.e. edges that do _not_ contain
+		// the vertex that is going to be removed
+		const directed_edge& d_e = f->get_edge(i);
+		if(d_e.e->get_v() != v && d_e.e->get_u() != v)
+		{
+			if(d_e.inverted)
+			{
+				res.first	= const_cast<vertex*>(d_e.e->get_v()); // XXX: Can this be solved better?
+				res.second	= const_cast<vertex*>(d_e.e->get_u());
+			}
+			else
+			{
+				res.first	= const_cast<vertex*>(d_e.e->get_u());
+				res.second	= const_cast<vertex*>(d_e.e->get_v());
+			}
+
+			break;
+		}
+	}
+
+	return(res);
 }
 
 /*!
