@@ -1127,6 +1127,61 @@ directed_edge mesh::add_edge(const vertex* u, const vertex* v)
 }
 
 /*!
+*	Removes a given edge from the mesh. This deletes _all_ pointers to the
+*	edge from adjacent vertices. As a last step, the edge is removed from
+*	the edge map of the mesh and allocated memory is freed.
+*
+*	@param	e Edge that is going to be removed from the mesh
+*
+*	@throws	std::runtime_error if degenerate situations occur (edge cannot
+*		be found, edge is still referenced in faces etc.).
+*
+*	@warning	This function does not update the adjacent faces of the
+*			edge. It is assumed that both the first and the second
+*			face of the edge are already NULL. If this is not the
+*			case, an exception is thrown.
+*
+*/
+
+void mesh::remove_edge(edge* e)
+{
+	// Check feasibility of edge removal. If references still exist, the
+	// edge may not be removed.
+	if(e->get_f() || e->get_g())
+		throw(std::runtime_error("mesh::remove_edge(): Edge is still referenced in faces"));
+
+	// Remove edge from edge vector
+
+	std::vector<edge*>::iterator edge_pos = std::find(E.begin(), E.end(), e);
+	if(edge_pos == E.end())
+		throw(std::runtime_error("mesh::remove_edge(): Unable to find edge in edge vector"));
+	else
+		E.erase(edge_pos);
+
+	// Remove edge from edge map
+
+	vertex* u = const_cast<vertex*>(e->get_u()); // XXX: Can this be solved better?
+	vertex* v = const_cast<vertex*>(e->get_v());
+
+	std::pair<size_t, size_t> edge_id = calc_edge_id(u, v);
+
+	std::map<std::pair<size_t,size_t>, edge*>::iterator edge_map_pos = E_M.find(edge_id);
+	if(edge_map_pos == E_M.end())
+		throw(std::runtime_error("mesh::remove_edge(): Unable to find edge in edge map"));
+	else
+		E_M.erase(edge_id);
+
+	// Remove reference of edge from start and end vertex and free
+	// allocated memory
+
+	u->remove_edge(e);
+	v->remove_edge(e);
+
+	delete e;
+
+}
+
+/*!
 *	Given a vertex ID, return the appropriate vertex. This function is
 *	meant to serve as an interface for any vertex queries, regardless of
 *	what storage container the mesh uses.
