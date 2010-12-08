@@ -252,6 +252,8 @@ bool mesh::save(const std::string& filename, short type)
 			result = (save_obj(out) ? STATUS_OK : STATUS_ERROR);
 		else if(extension == ".off")
 			result = (save_off(out) ? STATUS_OK : STATUS_ERROR);
+		else if(extension == ".hole")
+			result = (save_hole(out) ? STATUS_OK : STATUS_ERROR);
 
 		// Unknown extension, so we fall back to PLY files (see below)
 	}
@@ -865,6 +867,58 @@ bool mesh::save_off(std::ostream& out)
 		{
 			out << (*it)->get_vertex(i)->get_id();
 			if(i < (*it)->num_vertices()-1)
+				out << " ";
+		}
+		out << "\n";
+	}
+
+	return(true);
+}
+
+/*!
+*	Saves the mesh in a special format for holes. The file format is
+*	reminiscent of Wavefront OBJ: First, a list of non-boundary vertices is
+*	written in the form "v x y z". Afterwards, faces are written out as "f
+*	i j k", where i,j,k refers to the vertices that form the face. A
+*	negative vertex index indicates a boundary vertex that has been left
+*	out of the vertex list. A positive vertex index, starting at 0, refers
+*	to the vertices that were written to the file.
+*
+*	@param	out Stream for data output
+*	@return	true if the mesh could be stored, else false.
+*/
+
+bool mesh::save_hole(std::ostream& out)
+{
+	size_t num_boundary_vertices = 0;
+	for(std::vector<vertex*>::const_iterator v_it = V.begin(); v_it < V.end(); v_it++)
+	{
+		vertex* v = *v_it;
+		if(v->is_on_boundary())
+			num_boundary_vertices++;
+		else
+			out << "v " << v->get_position();
+	}
+
+	// num_boundary_vertices is used to adjust the offsets of vertices when
+	// writing the indexed faces
+	for(std::vector<face*>::const_iterator f_it = F.begin(); f_it < F.end(); f_it++)
+	{
+		out << "f ";
+		for(size_t i = 0; i < (*f_it)->num_vertices(); i++)
+		{
+			vertex* v = (*f_it)->get_vertex(i);
+			if(v->is_on_boundary())
+				out << "-" << v->get_id();
+			else
+				// If the offset is subtracted, all new vertices are in
+				// the range of [num_boundary_vertices, ...]. Hence, the
+				// range is adjusted by subtracting num_boundary_vertices
+				// again.
+				out << (v->get_id() - id_offset - num_boundary_vertices);
+
+			// No trailing spaces for the last entry
+			if(i < (*f_it)->num_vertices()-1)
 				out << " ";
 		}
 		out << "\n";

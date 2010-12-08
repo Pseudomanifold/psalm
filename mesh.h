@@ -149,6 +149,7 @@ class mesh
 		bool save_ply(std::ostream& out);
 		bool save_obj(std::ostream& out);
 		bool save_off(std::ostream& out);
+		bool save_hole(std::ostream& out);
 
 		// Status variables and options
 
