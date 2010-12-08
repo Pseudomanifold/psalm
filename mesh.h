@@ -86,6 +86,8 @@ class mesh
 
 		std::map<std::pair<size_t,size_t>, edge*> E_M;
 
+		size_t id_offset;
+
 		// Functions
 
 		vertex* get_vertex(size_t id);

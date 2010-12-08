@@ -58,6 +58,8 @@ mesh::mesh()
 
 	handle_creases			= false;
 	preserve_boundaries		= false;
+
+	id_offset			= 0;
 }
 
 /*!
