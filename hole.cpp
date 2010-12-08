@@ -99,6 +99,15 @@ void hole::triangulate()
 
 	delete[] weights;
 	delete[] indices;
+
+	/*
+		Mark _all_ vertices as boundary vertices. Upon subdivision, the
+		boundary vertices will not be changed and we need to identify
+		them when storing the subdivided mesh.
+	*/
+
+	for(std::vector<vertex*>::iterator v_it = V.begin(); v_it < V.end(); v_it++)
+		(*v_it)->set_on_boundary();
 }
 
 /*!
