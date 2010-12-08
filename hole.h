@@ -19,7 +19,7 @@ namespace psalm
 class hole : public mesh
 {
 	public:
-		void initialize(const std::vector<v3ctor>& vertices);
+		void initialize(const std::vector< std::pair<v3ctor, size_t> >& indexed_vertices);
 		void triangulate();
 
 	protected:

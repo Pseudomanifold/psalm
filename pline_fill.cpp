@@ -10,6 +10,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <limits>
 
 #include <getopt.h>
 
@@ -56,13 +57,13 @@ void process_pline_file(std::string filename)
 		// Data format is straightforward (different fields are assumed to
 		// be separated by whitespace).
 		//
-		//	Label ID | number of vertices | x1 y1 z1 x2 y2 z2 ...
+		//	Label ID | number of vertices | id1 x1 y1 z1 n1 n2 n3 id2 x2 y2 z2 ...
 
 		size_t num_vertices;
 
-		// Vector of vertices (actually, only the _positions_) for the
-		// current polygonal line
-		std::vector<v3ctor> vertices;
+		// Vector of vertices (actually, only the _positions_ and
+		// vertex IDs) for the current polygonal line
+		std::vector< std::pair<v3ctor, size_t> > vertices;
 
 		converter >> curr_id >> num_vertices;
 		if(curr_id == prev_id)
@@ -70,17 +71,24 @@ void process_pline_file(std::string filename)
 		else
 			counter = 0; // reset counter if the next group of plines is reached
 
-		for(size_t i = 0; i < num_vertices; i++)	// ignore last point because it is a repetition of
+		for(size_t i = 0; i < num_vertices-1; i++)	// ignore last point because it is a repetition of
 								// the first point
 		{
-			v3ctor v;
-			converter >> v[0] >> v[1] >> v[2];
+			std::pair<v3ctor, size_t> vertex_w_id;
+			vertex_w_id.second = std::numeric_limits<size_t>::max();
+
+			converter >> vertex_w_id.second >> vertex_w_id.first[0] >> vertex_w_id.first[1] >> vertex_w_id.first[2];
+			if(vertex_w_id.second == std::numeric_limits<size_t>::max())
+			{
+				std::cerr << "pline_fill: Could not parse .pline file -- missing a vertex ID\n";
+				return;
+			}
 
 			// XXX: Ignore normals
 			double dummy;
 			converter >> dummy >> dummy >> dummy;
 
-			vertices.push_back(v);
+			vertices.push_back(vertex_w_id);
 		}
 
 		psalm::hole H;

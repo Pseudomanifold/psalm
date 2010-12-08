@@ -18,14 +18,24 @@ namespace psalm
 *	The hole is stored _without_ any connectivity information, so the mesh
 *	only contains a list of vertices after calling this function.
 *
-*	@param vertices List of vertex positions
+*	@param vertices List of vertex positions and vertex IDs
 */
 
-void hole::initialize(const std::vector<v3ctor>& vertices)
+void hole::initialize(const std::vector< std::pair<v3ctor, size_t> >& indexed_vertices)
 {
 	destroy();
-	for(std::vector<v3ctor>::const_iterator vertex = vertices.begin(); vertex < vertices.end(); vertex++)
-		add_vertex(*vertex);
+	size_t max_id = 0;
+	for(std::vector< std::pair<v3ctor, size_t> >::const_iterator indexed_vertex = indexed_vertices.begin(); indexed_vertex < indexed_vertices.end(); indexed_vertex++)
+	{
+		add_vertex(indexed_vertex->first, indexed_vertex->second);
+		if(indexed_vertex->second > max_id)
+			max_id = indexed_vertex->second;
+	}
+
+	// The IDs of new vertices must be larger than the IDs of their
+	// predecessors. Otherwise, ID clashes will occur. The id_offset is
+	// used for every mesh::add_vertex() operation.
+	id_offset = max_id;
 }
 
 /*!
