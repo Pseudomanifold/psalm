@@ -183,9 +183,9 @@ int main(int argc, char* argv[])
 		{NULL, 0, NULL, 0}
 	};
 
-	short type	= psalm::mesh::TYPE_EXT;
-	short algorithm	= psalm::mesh::ALG_CATMULL_CLARK;
-	short weights	= psalm::mesh::W_DEFAULT;
+	psalm::mesh::file_type type			= psalm::mesh::TYPE_EXT;
+	psalm::mesh::subdivision_algorithm algorithm	= psalm::mesh::ALG_CATMULL_CLARK;
+	psalm::mesh::algorithm_weights weights		= psalm::mesh::W_DEFAULT;
 
 	std::set<size_t> remove_faces;
 	std::set<size_t> remove_vertices;

@@ -23,26 +23,6 @@
 namespace psalm
 {
 
-// Initialization of some static member variables
-
-const short mesh::TYPE_EXT		= 0;
-const short mesh::TYPE_PLY		= 1;
-const short mesh::TYPE_OBJ		= 2;
-const short mesh::TYPE_OFF		= 3;
-
-const short mesh::STATUS_OK		= 0;
-const short mesh::STATUS_ERROR		= 1;
-const short mesh::STATUS_UNDEFINED	= 2;
-
-const short mesh::ALG_CATMULL_CLARK	= 0;
-const short mesh::ALG_DOO_SABIN		= 1;
-const short mesh::ALG_LOOP		= 2;
-
-const short mesh::W_DEFAULT		= 0;
-const short mesh::W_CATMULL_CLARK	= 1;
-const short mesh::W_DOO_SABIN		= 2;
-const short mesh::W_DEGENERATE		= 3;
-
 /*!
 *	Sets some default values.
 */
@@ -107,9 +87,9 @@ mesh::~mesh()
 *	@return	true if the mesh could be loaded, else false
 */
 
-bool mesh::load(const std::string& filename, short type)
+bool mesh::load(const std::string& filename, file_type type)
 {
-	short result = STATUS_UNDEFINED;
+	status result = STATUS_UNDEFINED;
 
 	std::ifstream in;
 	if(filename.length() > 0)
@@ -164,6 +144,9 @@ bool mesh::load(const std::string& filename, short type)
 
 			case TYPE_OFF:
 				result = (load_off(input_stream) ? STATUS_OK : STATUS_ERROR);
+				break;
+
+			case TYPE_EXT: // to shut up the compiler
 				break;
 		}
 	}
@@ -220,9 +203,9 @@ bool mesh::load(const std::string& filename, short type)
 *	@return	true if the mesh could be stored, else false.
 */
 
-bool mesh::save(const std::string& filename, short type)
+bool mesh::save(const std::string& filename, file_type type)
 {
-	short result = STATUS_UNDEFINED;
+	status result = STATUS_UNDEFINED;
 
 	std::ofstream out;
 	if(filename.length() > 0)
@@ -278,6 +261,9 @@ bool mesh::save(const std::string& filename, short type)
 
 			case TYPE_OFF:
 				result = (save_off(output_stream) ? STATUS_OK : STATUS_ERROR);
+				break;
+
+			case TYPE_EXT: // to shut up the compiler
 				break;
 		}
 	}
@@ -1382,7 +1368,7 @@ void mesh::set_boundary_preservation(bool status)
 *			ignored.
 */
 
-void mesh::set_predefined_weights(short weights)
+void mesh::set_predefined_weights(algorithm_weights weights)
 {
 	if(	weights == W_DEFAULT		||
 		weights == W_CATMULL_CLARK	||
@@ -1491,7 +1477,7 @@ void mesh::print_progress(std::string message, size_t cur_pos, size_t max_pos)
 *				not specify otherwise).
 */
 
-void mesh::subdivide(	short algorithm,
+void mesh::subdivide(	subdivision_algorithm algorithm,
 			size_t steps)
 {
 	size_t num_vertices	= V.size();

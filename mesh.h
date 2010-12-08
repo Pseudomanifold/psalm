@@ -37,15 +37,52 @@ typedef std::map<size_t, std::vector<double> > weights_map;
 class mesh
 {
 	public:
+
+		// Enumerating the different file types that may occur
+		enum file_type
+		{
+			TYPE_PLY,
+			TYPE_OBJ,
+			TYPE_OFF,
+			TYPE_EXT
+		};
+
+		// Enumerating the different subdivision algorithms that may
+		// occur
+		enum subdivision_algorithm
+		{
+			ALG_CATMULL_CLARK,
+			ALG_DOO_SABIN,
+			ALG_LOOP,
+			ALG_LIEPA
+		};
+
+		// Enumerating different weight sets for subdivision algorithms
+		enum algorithm_weights
+		{
+			W_DEFAULT,
+			W_CATMULL_CLARK,
+			W_DOO_SABIN,
+			W_DEGENERATE
+		};
+
+		// Status flags for use in several routines
+		enum status
+		{
+			STATUS_OK,
+			STATUS_ERROR,
+			STATUS_UNDEFINED
+		};
+
 		mesh();
 		~mesh();
 
-		bool load(const std::string& filename, short type = TYPE_EXT);
-		bool save(const std::string& filename, short type = TYPE_EXT);
+		bool load(const std::string& filename, file_type type = TYPE_EXT);
+		bool save(const std::string& filename, file_type type = TYPE_EXT);
 
 		void prune(	const std::set<size_t>& remove_faces,
 				const std::set<size_t>& remove_vertices);
-		void subdivide(	short algorithm = mesh::ALG_CATMULL_CLARK,
+		void subdivide(	subdivision_algorithm algorithm = mesh::ALG_CATMULL_CLARK,
 				size_t steps = 1);
 		void destroy();
 		void replace_with(mesh& M);
@@ -58,24 +95,8 @@ class mesh
 		void set_statistics_output(bool status = true);
 		void set_boundary_preservation(bool status = true);
 
-		void set_predefined_weights(short weights);
+		void set_predefined_weights(algorithm_weights weights);
 		void set_custom_weights(const weights_map& custom_weights);
-
-		// Class-wide constants
-
-		static const short TYPE_PLY;		///< Constant for reading/writing PLY files
-		static const short TYPE_OBJ;		///< Constant for reading/writing OBJ files
-		static const short TYPE_OFF;		///< Constant for reading/writing OFF files
-		static const short TYPE_EXT;		///< Constant for reading/writing files by their extension
-
-		static const short ALG_CATMULL_CLARK;	///< Represents Catmull-Clark algorithm in subdivision method
-		static const short ALG_DOO_SABIN;	///< Represents Doo-Sabin algorithm in subdivision method
-		static const short ALG_LOOP;		///< Represents Loop algorithm in subdivision method
-
-		static const short W_DEFAULT;		///< Represents default weights for any subdivision scheme
-		static const short W_CATMULL_CLARK;	///< Represents Catmull-Clark weights for the DS scheme
-		static const short W_DOO_SABIN;		///< Represents Doo-Sabin weights for the DS scheme
-		static const short W_DEGENERATE;	///< Represents degenerate weights for the DS scheme
 
 	protected:
 
@@ -150,12 +171,6 @@ class mesh
 		bool save_obj(std::ostream& out);
 		bool save_off(std::ostream& out);
 		bool save_hole(std::ostream& out);
-
-		// Status variables and options
-
-		static const short STATUS_OK;		//< Status constant signalling an operation worked
-		static const short STATUS_ERROR;	//< Status constant signalling an operation failed
-		static const short STATUS_UNDEFINED;	//< Status constant signalling no operation took place
 
 		bool use_parametric_point_creation;	//< Flag signalling that points in subdivision schemes shall
 							//< be computed using the parametric variant. Normally, the
