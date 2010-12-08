@@ -94,17 +94,25 @@ void process_pline_file(std::string filename)
 		psalm::hole H;
 		H.initialize(vertices);
 		H.triangulate();
+		try
+		{
+			H.subdivide(psalm::mesh::ALG_LOOP);
 
-		// Construct filename
-		converter.str("");
-		converter.clear();
-		converter	<< filename << "_"
-				<< std::setw(4) << std::setfill('0')
-				<< curr_id << "_"
-				<< std::setw(4) << std::setfill('0')
-				<< counter << ".ply";
+			// Construct filename
+			converter.str("");
+			converter.clear();
+			converter	<< filename << "_"
+					<< std::setw(4) << std::setfill('0')
+					<< curr_id << "_"
+					<< std::setw(4) << std::setfill('0')
+					<< counter << ".hole";
 
-		H.save(converter.str());
+			H.save(converter.str());
+		}
+		catch(...)
+		{
+			std::cerr << "pline_fill: Unable to subdivide input data [" << curr_id << "," << counter << "]\n";
+		}
 
 		converter.clear();
 		line.clear();
