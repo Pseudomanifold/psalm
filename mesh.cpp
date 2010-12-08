@@ -1204,7 +1204,7 @@ void mesh::remove_edge(edge* e)
 *	new vertex.
 *
 *	@return If the ID is correct, a pointer to the corresponding vertex is
-*	returned. Else, a NULL pointer will be rereturned.
+*	returned. Else, a NULL pointer will be returned.
 */
 
 vertex* mesh::get_vertex(size_t id)
@@ -1216,11 +1216,14 @@ vertex* mesh::get_vertex(size_t id)
 }
 
 /*!
-*	Adds a vertex to the mesh. The vertex ID is assigned automatically.
+*	Adds a vertex to the mesh. If not specified by the user, the vertex ID
+*	is assigned automatically.
 *
-*	@param x x position of vertex
-*	@param y y position of vertex
-*	@param z z position of vertex
+*	@param x	x position of vertex
+*	@param y	y position of vertex
+*	@param z	z position of vertex
+*	@param id	Vertex ID (by default, this is set to the largest
+*			number fitting into a size_t and thus will be ignored)
 *
 *	@warning The vertices are not checked for duplicates because this
 *	function is assumed to be called from internal methods only.
@@ -1229,18 +1232,25 @@ vertex* mesh::get_vertex(size_t id)
 *	lifecycle of the mesh.
 */
 
-vertex* mesh::add_vertex(double x, double y, double z)
+vertex* mesh::add_vertex(double x, double y, double z, size_t id)
 {
-	vertex* v = new vertex(x,y,z, V.size());
-	V.push_back(v);
+	vertex* v;
+	if(id != std::numeric_limits<size_t>::max())
+		v = new vertex(x,y,z, id);
+	else
+		v = new vertex(x,y,z, V.size()+id_offset);
 
+	V.push_back(v);
 	return(v);
 }
 
 /*!
-*	Adds a vertex to the mesh. The vertex ID is assigned automatically.
+*	Adds a vertex to the mesh. If not specified by the user, the vertex ID
+*	is assigned automatically.
 *
-*	@param pos Position of the new vertex
+*	@param pos	Position of the new vertex
+*	@param id	Vertex ID (by default, this is set to the largest
+*			number fitting into a size_t and thus will be ignored)
 *
 *	@warning The vertices are not checked for duplicates because this
 *	function is assumed to be called from internal methods only.
@@ -1249,9 +1259,9 @@ vertex* mesh::add_vertex(double x, double y, double z)
 *	lifecycle of the mesh.
 */
 
-vertex* mesh::add_vertex(const v3ctor& pos)
+vertex* mesh::add_vertex(const v3ctor& pos, size_t id)
 {
-	return(add_vertex(pos[0], pos[1], pos[2]));
+	return(add_vertex(pos[0], pos[1], pos[2], id));
 }
 
 /*!

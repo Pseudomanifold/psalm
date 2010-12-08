@@ -12,6 +12,7 @@
 #include <utility>
 #include <set>
 #include <map>
+#include <limits>
 
 #include "vertex.h"
 #include "directed_edge.h"
@@ -102,8 +103,8 @@ class mesh
 
 		std::pair<size_t, size_t> calc_edge_id(const vertex* u, const vertex* v);
 
-		vertex* add_vertex(double x, double y, double z);
-		vertex* add_vertex(const v3ctor& pos);
+		vertex* add_vertex(double x, double y, double z, size_t id = std::numeric_limits<size_t>::max());
+		vertex* add_vertex(const v3ctor& pos, size_t id = std::numeric_limits<size_t>::max());
 
 		const vertex* find_remaining_vertex(const edge* e, const face* f);
 		std::pair<vertex*, vertex*> find_remaining_vertices(const vertex* v, const face* f);
