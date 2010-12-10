@@ -2691,22 +2691,26 @@ void mesh::subdivide_liepa()
 		}
 		while(relaxed_edge);
 
-		// Calculate new scaling attributes. TODO: This should become a
-		// function.
-		for(std::vector<vertex*>::iterator v_it = V.begin(); v_it < V.end(); v_it++)
-		{
-			vertex* v = *v_it;
-			size_t n = v->valency();
+		/*
+			XXX: This might lead to wrong results...
 
-			if(!v->is_on_boundary())
-				continue;
+			// Calculate new scaling attributes. TODO: This should become a
+			// function.
+			for(std::vector<vertex*>::iterator v_it = V.begin(); v_it < V.end(); v_it++)
+			{
+				vertex* v = *v_it;
+				size_t n = v->valency();
 
-			double attribute = 0.0;
-			for(size_t i = 0; i < n; i++)
-				attribute += v->get_edge(i)->calc_length()/static_cast<double>(n);
+				if(!v->is_on_boundary())
+					continue;
 
-			v->set_scale_attribute(attribute);
-		}
+				double attribute = 0.0;
+				for(size_t i = 0; i < n; i++)
+					attribute += v->get_edge(i)->calc_length()/static_cast<double>(n);
+
+				v->set_scale_attribute(attribute);
+			}
+		*/
 
 		if(!relaxed_edge)
 			continue;
@@ -2802,7 +2806,7 @@ bool mesh::relax_edge(edge* e)
 	// Check whether the edge that is going to be swapped already exists.
 	// In this case, the edge swap is also denied, as it would overwrite
 	// existing faces
-	if(E_M.find(calc_edge_id(v1, v2)) != E_M.end())
+	if(E_M.find(calc_edge_id(v1, v2)) != E_M.end()) // TODO: Optimize
 		return(false);
 
 	// Remove both of the old faces and the corresponding edge...
