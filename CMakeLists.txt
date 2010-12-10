@@ -24,8 +24,20 @@ SET(PLINE_FILL_SRC
 	directed_edge.cpp
 )
 
+SET(LIBPSALM_SRC
+	libpsalm.cpp
+	v3ctor.cpp
+	mesh.cpp
+	hole.cpp
+	face.cpp
+	edge.cpp
+	directed_edge.cpp
+)
+
 ADD_EXECUTABLE(psalm ${PSALM_SRC})
 ADD_EXECUTABLE(pline_fill ${PLINE_FILL_SRC})
+
+ADD_LIBRARY(libpsalm ${LIBPSALM_SRC})
 
 # Create subdivided test data using "meshlab"
 ADD_CUSTOM_TARGET(	test
