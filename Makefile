@@ -1,9 +1,10 @@
 CC          = g++
-CCFLAGS     = -g -Wall -c -pedantic
+CCFLAGS     = -g -Wall -c -pedantic -O11
 LIBS        = -L /usr/X11/lib -L /usr/local/lib
 INCLUDES    = -I /usr/local/include
 LDFLAGS     =
 MYOBJECTS   = psalm.o v3ctor.o mesh.o face.o vertex.o edge.o directed_edge.o
+LIBOBJECTS  = libpsalm.o v3ctor.o mesh.o face.o vertex.o edge.o directed_edge.o hole.o
 BIN         = psalm
 
 # Path to "meshlabserver" binary, which is used for creating test data.
@@ -14,6 +15,10 @@ $(BIN): $(MYOBJECTS) Makefile
 
 .cpp.o:
 	$(CC) $(INCLUDES) $(CCFLAGS) $<
+
+# Create libpsalm
+libpsalm: $(LIBOBJECTS) Makefile
+	ar rcs libpsalm.a $(LIBOBJECTS)
 
 clean:
 	rm -f *.o *.core *.html $(BIN)
