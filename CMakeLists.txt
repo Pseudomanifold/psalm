@@ -57,4 +57,3 @@ IF(VALGRIND)
 				${VALGRIND} --suppressions=psalm.supp --leak-check=full --show-reachable=yes --track-origins=yes ./psalm -n 2 Tetrahedron.ply
 				rm Tetrahedron_subdivided.ply)
 ENDIF(VALGRIND)
-
