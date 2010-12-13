@@ -1043,7 +1043,12 @@ face* mesh::add_face(std::vector<vertex*> vertices)
 
 			// In this case, we cannot proceed -- the mesh would become degenerate
 			else if(edge.e->get_g() != NULL)
+			{
+			#ifdef NO_EXCEPTIONS
+			#else
 				throw(std::runtime_error("mesh::add_face(): Attempted overwrite of the face references of an edge"));
+			#endif
+			}
 
 			u->add_face(f);
 		}
@@ -2800,7 +2805,12 @@ bool mesh::relax_edge(edge* e)
 	// If this occurs, the mesh has become degenerate and no edge swap may
 	// be performed.
 	if(v1 == v2)
+	{
+	#ifdef NO_EXCEPTIONS
+	#else
 		throw(std::runtime_error("mesh::relax_edge(): Mesh is degenerate -- cannot swap edge"));
+	#endif
+	}
 
 	if(!swap)
 		return(false);
