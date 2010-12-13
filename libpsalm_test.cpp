@@ -51,17 +51,18 @@ void process_pline_file(std::string filename)
 		//
 		//	Label ID | number of vertices | id1 x1 y1 z1 n1 n2 n3 id2 x2 y2 z2 ...
 
-		size_t label_no;
-		size_t num_vertices;
+		int label_no;
+		int num_vertices;
 
 		converter >> label_no >> num_vertices;
+		num_vertices--;	// ignore last point because it is a repetition
+				// of the first point
 
 		// Prepare storage for vertex IDs and vertex coordinates
-		long* vertex_IDs = new long[num_vertices-1];
-		double* coordinates = new double[3*(num_vertices-1)];
+		long* vertex_IDs = new long[num_vertices];
+		double* coordinates = new double[3*num_vertices];
 
-		for(size_t i = 0; i < num_vertices-1; i++)	// ignore last point because it is a repetition of
-								// the first point
+		for(int i = 0; i < num_vertices; i++)
 		{
 			converter	>> vertex_IDs[i]
 					>> coordinates[3*i]
