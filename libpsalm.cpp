@@ -37,6 +37,14 @@ bool fill_hole(	int num_vertices, long* vertex_IDs, double* coordinates,
 		int* num_new_vertices, double** new_coordinates, int* num_new_faces, long** new_vertex_IDs)
 {
 	bool result = true;
+	if(	num_vertices == 0		||
+		vertex_IDs == NULL		||
+		coordinates == NULL		||
+		num_new_vertices == NULL	||
+		new_coordinates == NULL		||
+		num_new_faces == NULL		||
+		new_vertex_IDs == NULL)
+		return(false);
 
 	// Create formatted input data for the hole
 
