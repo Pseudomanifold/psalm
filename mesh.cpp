@@ -2815,11 +2815,15 @@ bool mesh::relax_edge(edge* e)
 	if(!swap)
 		return(false);
 
+	/*
+		XXX: Leads to problems?
+
 	// Check whether the edge that is going to be swapped already exists.
 	// In this case, the edge swap is also denied, as it would overwrite
 	// existing faces
 	if(E_M.find(calc_edge_id(v1, v2)) != E_M.end()) // TODO: Optimize
 		return(false);
+	*/
 
 	// Remove both of the old faces and the corresponding edge...
 

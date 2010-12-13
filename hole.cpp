@@ -150,14 +150,15 @@ void hole::save_raw_data(int* num_new_vertices, double** new_coordinates, int* n
 			new_vertices.push_back(v);
 	}
 
+	*num_new_vertices = new_vertices.size();
 	*new_coordinates = new double[3*new_vertices.size()];
-	for(size_t position = 0; position < 3*new_vertices.size(); position++)
+	for(size_t position = 0; position < new_vertices.size(); position++)
 	{
 		const v3ctor& v = new_vertices[position]->get_position();
 
-		*new_coordinates[position*3]	= v[0];
-		*new_coordinates[position*3+1]	= v[1];
-		*new_coordinates[position*3+2]	= v[2];
+		(*new_coordinates)[position*3]		= v[0];
+		(*new_coordinates)[position*3+1]	= v[1];
+		(*new_coordinates)[position*3+2]	= v[2];
 	}
 
 	// Allocate storage for new faces and store them -- the IDs of their
@@ -179,7 +180,7 @@ void hole::save_raw_data(int* num_new_vertices, double** new_coordinates, int* n
 
 			// Store negative IDs for old vertices
 			if(v->is_on_boundary())
-				*vertex_IDs[3*face_index+i] = static_cast<long>(-1*v->get_id());
+				(*vertex_IDs)[3*face_index+i] = static_cast<long>(-1*v->get_id());
 			else
 			{
 				// Store zero-indexed IDs for new vertices. For
@@ -189,7 +190,7 @@ void hole::save_raw_data(int* num_new_vertices, double** new_coordinates, int* n
 				// range needs to be adjusted by subtracting
 				// num_boundary_vertices
 
-				*vertex_IDs[3*face_index+i] = static_cast<long>(v->get_id() - id_offset - num_boundary_vertices);
+				(*vertex_IDs)[3*face_index+i] = static_cast<long>(v->get_id() - id_offset - num_boundary_vertices);
 			}
 		}
 	}

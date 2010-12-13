@@ -1,7 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(psalm) 
 
-ADD_DEFINITIONS(-Wall -pedantic -g)
+ADD_DEFINITIONS(-Wall -pedantic -g -O11)
 
 SET(PSALM_SRC
 	psalm.cpp
@@ -25,19 +25,21 @@ SET(PLINE_FILL_SRC
 )
 
 SET(LIBPSALM_SRC
+	libpsalm_test.cpp
 	libpsalm.cpp
 	v3ctor.cpp
 	mesh.cpp
 	hole.cpp
 	face.cpp
 	edge.cpp
+	vertex.cpp
 	directed_edge.cpp
 )
 
 ADD_EXECUTABLE(psalm ${PSALM_SRC})
 ADD_EXECUTABLE(pline_fill ${PLINE_FILL_SRC})
+ADD_EXECUTABLE(libpsalm_test ${LIBPSALM_SRC})
 
-ADD_LIBRARY(libpsalm ${LIBPSALM_SRC})
 
 # Create subdivided test data using "meshlab"
 ADD_CUSTOM_TARGET(	test
