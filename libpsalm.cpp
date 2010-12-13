@@ -29,12 +29,14 @@
 *
 *	The nomenclature here might be confusing: new_vertex_IDs contains 3
 *	vertex IDs that describe a new face created by the algorithm.
+*
+*	@returns true if the hole could be filled, otherwise false
 */
 
-void fill_hole(	int num_vertices, long* vertex_IDs, double* coordinates,
+bool fill_hole(	int num_vertices, long* vertex_IDs, double* coordinates,
 		int* num_new_vertices, double** new_coordinates, int* num_new_faces, long** new_vertex_IDs)
 {
-	psalm::hole H;
+	bool result = true;
 
 	// Create formatted input data for the hole
 
@@ -46,5 +48,24 @@ void fill_hole(	int num_vertices, long* vertex_IDs, double* coordinates,
 		vertex_position[0] = coordinates[3*i];
 		vertex_position[1] = coordinates[3*i+1];
 		vertex_position[2] = coordinates[3*i+2];
+
+		vertices.push_back(std::make_pair(vertex_position, vertex_IDs[i]));
 	}
+
+	psalm::hole H;
+	H.initialize(vertices);
+	H.triangulate();
+	try
+	{
+		H.subdivide(psalm::mesh::ALG_LIEPA);
+		H.save_raw_data(num_new_vertices, new_coordinates, num_new_faces, new_vertex_IDs);
+	}
+
+	// TODO: This should be handled more gracefully
+	catch(...)
+	{
+		result = false;
+	}
+
+	return(result);
 }
