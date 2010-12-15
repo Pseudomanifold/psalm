@@ -292,6 +292,101 @@ void CatmullClark::create_edge_points(mesh& input_mesh, mesh& output_mesh)
 
 void CatmullClark::create_vertex_points_parametrically(mesh& input_mesh, mesh& output_mesh)
 {
+	for(size_t i = 0; i < input_mesh.num_vertices(); i++)
+	{
+		print_progress("Creating vertex points [parametrically]",
+				i,
+				input_mesh.num_vertices()-1);
+
+		vertex* v = input_mesh.get_vertex(i);
+
+		// Keep boundary vertices if the user chose this behaviour
+		if(preserve_boundaries && v->is_on_boundary())
+		{
+			v->vertex_point = output_mesh.add_vertex(v->get_position());
+			v->vertex_point->set_on_boundary();
+			continue;
+		}
+
+		// will be used later for determining the real weights; for the
+		// regular case, we will always use the standard weights
+		size_t n = v->valency();
+		if(n < 3)
+			continue; // ignore degenerate vertices
+
+		double gamma	= 0.0;
+		double beta	= 0.0;
+		double alpha	= 0.0;
+
+		if(n == 4 && use_bspline_weights)
+		{
+			gamma	= 1.0/16.0;
+			beta	= 3.0/8.0;
+			alpha	= 9.0/16.0;
+		}
+		else
+		{
+			std::pair<double, double> weights = weight_function(n);
+
+			gamma	= weights.second;
+			beta	= weights.first;
+			alpha	= 1.0-beta-gamma;
+		}
+
+		// sets of vertices with weights beta and gamma
+		std::set<const vertex*> vertices_beta;
+		std::set<const vertex*> vertices_gamma;
+
+		// All vertices that are connected via an edge with the current
+		// vertex will be assigned the weight beta.
+		for(size_t j = 0; j < n; j++)
+		{
+			edge* e = v->get_edge(j);
+			if(e->get_u()->get_id() != v->get_id())
+				vertices_beta.insert(e->get_u());
+			else
+				vertices_beta.insert(e->get_v());
+		}
+
+		// All remaining vertices of all adjacent faces to the current
+		// vertex will be assigned the weight gamma.
+		for(size_t j = 0; j < n; j++)
+		{
+			const face* f = v->get_face(j);
+			if(f == NULL)
+				continue;
+
+			for(size_t k = 0; k < f->num_vertices(); k++)
+			{
+				const vertex* f_v = f->get_vertex(k);
+
+				// Insert the vertex only if it is not already
+				// counted within in the "beta" set (and if it
+				// is not the current vertex)
+				if(f_v->get_id() != v->get_id() && vertices_beta.find(f_v) == vertices_beta.end())
+					vertices_gamma.insert(f_v);
+			}
+		}
+
+		// Apply weights; since this is O(n), the function checks
+		// whether the weights for beta and gamma are applicable at all
+
+		v3ctor vertex_point = v->get_position()*alpha;
+
+		if(beta != 0.0)
+		{
+			for(std::set<const vertex*>::iterator it = vertices_beta.begin(); it != vertices_beta.end(); it++)
+				vertex_point += (*it)->get_position()*beta/n;
+		}
+
+		if(gamma != 0.0)
+		{
+			for(std::set<const vertex*>::iterator it = vertices_gamma.begin(); it != vertices_gamma.end(); it++)
+				vertex_point += (*it)->get_position()*gamma/n;
+		}
+
+		v->vertex_point = output_mesh.add_vertex(vertex_point);
+	}
 }
 
 /*!
