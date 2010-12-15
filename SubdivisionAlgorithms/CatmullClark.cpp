@@ -304,6 +304,56 @@ void CatmullClark::create_vertex_points_parametrically(mesh& input_mesh, mesh& o
 
 void CatmullClark::create_vertex_points_geometrically(mesh& input_mesh, mesh& output_mesh)
 {
+	for(size_t i = 0; i < input_mesh.num_vertices(); i++)
+	{
+		print_progress("Creating vertex points [geometrically]",
+				i,
+				input_mesh.num_vertices()-1);
+
+		vertex* v = input_mesh.get_vertex(i);
+
+		// Keep boundary vertices if the user chose this behaviour
+		if(preserve_boundaries && v->is_on_boundary())
+		{
+			v->vertex_point = output_mesh.add_vertex(v->get_position());
+			v->vertex_point->set_on_boundary();
+			continue;
+		}
+
+		// This follows the original terminology as described by
+		// Catmull and Clark
+
+		v3ctor Q;
+		v3ctor R;
+		v3ctor S;
+
+		size_t n = v->valency();
+		if(n < 3)
+			continue; // ignore degenerate vertices
+
+		// Q is the average of the new face points of all faces
+		// adjacent to the old vertex point
+		for(size_t j = 0; j < v->num_adjacent_faces(); j++)
+			Q += v->get_face(j)->face_point->get_position();
+
+		Q /= v->num_adjacent_faces();
+
+		// R is the average of the midpoints of all old edges incident
+		// on the current vertex
+		for(size_t j = 0; j < n; j++)
+		{
+			const edge* e = v->get_edge(j);
+			R += (e->get_u()->get_position()+e->get_v()->get_position())*0.5;
+		}
+
+		R /= n;
+
+		// S is the current vertex
+		S = v->get_position();
+
+		v3ctor vertex_point = (Q+R*2+S*(n-3))/n;
+		v->vertex_point = output_mesh.add_vertex(vertex_point);
+	}
 }
 
 } // end of namespace "psalm"
