@@ -38,6 +38,7 @@ void process_pline_file(std::string filename)
 	std::string line;
 	std::stringstream converter;
 
+	size_t num_closed_holes = 0;
 	while(std::getline(in, line))
 	{
 		// Ignore lines containing a "#"
@@ -80,8 +81,11 @@ void process_pline_file(std::string filename)
 		int num_new_faces	= 0;
 		long* new_vertex_IDs	= NULL;
 
-		fill_hole(	num_vertices, vertex_IDs, coordinates,
-				&num_new_vertices, &new_coordinates, &num_new_faces, &new_vertex_IDs);
+		bool res = fill_hole(	num_vertices, vertex_IDs, coordinates,
+					&num_new_vertices, &new_coordinates, &num_new_faces, &new_vertex_IDs);
+
+		if(res)
+			num_closed_holes++;
 
 		delete[] vertex_IDs;
 		delete[] coordinates;
@@ -95,7 +99,8 @@ void process_pline_file(std::string filename)
 		std::cout << "." << std::flush;
 	}
 
-	std::cout << "done." << std::endl;
+	std::cout	<< std::endl
+			<< "Closed " << num_closed_holes << " holes." << std::endl;
 }
 
 int main(int argc, char* argv[])
