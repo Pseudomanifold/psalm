@@ -98,6 +98,24 @@ class mesh
 		void set_predefined_weights(algorithm_weights weights);
 		void set_custom_weights(const weights_map& custom_weights);
 
+		// Functions for modifiying the topology of the mesh
+
+		vertex* add_vertex(double x, double y, double z, size_t id = std::numeric_limits<size_t>::max());
+		vertex* add_vertex(const v3ctor& pos, size_t id = std::numeric_limits<size_t>::max());
+
+		size_t num_vertices() const;
+		vertex* get_vertex(size_t i);
+
+		size_t num_edges() const;
+		edge* get_edge(size_t i);
+
+		face* add_face(std::vector<vertex*> vertices);
+		face* add_face(vertex* v1, vertex* v2, vertex* v3);
+		face* add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4);
+
+		size_t num_faces() const;
+		face* get_face(size_t i);
+
 	protected:
 
 		// Data variables
@@ -112,20 +130,12 @@ class mesh
 
 		// Functions
 
-		vertex* get_vertex(size_t id);
-
-		face* add_face(std::vector<vertex*> vertices);
-		face* add_face(vertex* v1, vertex* v2, vertex* v3);
-		face* add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4);
 		void remove_face(face* f);
 
 		directed_edge add_edge(const vertex* u, const vertex* v);
 		void remove_edge(edge* e);
 
 		std::pair<size_t, size_t> calc_edge_id(const vertex* u, const vertex* v);
-
-		vertex* add_vertex(double x, double y, double z, size_t id = std::numeric_limits<size_t>::max());
-		vertex* add_vertex(const v3ctor& pos, size_t id = std::numeric_limits<size_t>::max());
 
 		const vertex* find_remaining_vertex(const edge* e, const face* f);
 		std::pair<vertex*, vertex*> find_remaining_vertices(const vertex* v, const face* f);
@@ -202,6 +212,118 @@ class mesh
 
 		weights_map ds_custom_weights;		//< Stores custom weights for the DS scheme
 };
+
+/*!
+*	Adds a vertex to the mesh. If not specified by the user, the vertex ID
+*	is assigned automatically.
+*
+*	@param x	x position of vertex
+*	@param y	y position of vertex
+*	@param z	z position of vertex
+*	@param id	Vertex ID (by default, this is set to the largest
+*			number fitting into a size_t and thus will be ignored)
+*
+*	@warning The vertices are not checked for duplicates because this
+*	function is assumed to be called from internal methods only.
+*
+*	@return Pointer to new vertex. The pointer remains valid during the
+*	lifecycle of the mesh.
+*/
+
+inline vertex* mesh::add_vertex(double x, double y, double z, size_t id)
+{
+	vertex* v;
+	if(id != std::numeric_limits<size_t>::max())
+		v = new vertex(x,y,z, id);
+	else
+		v = new vertex(x,y,z, V.size()+id_offset);
+
+	V.push_back(v);
+	return(v);
+}
+
+/*!
+*	Adds a vertex to the mesh. If not specified by the user, the vertex ID
+*	is assigned automatically.
+*
+*	@param pos	Position of the new vertex
+*	@param id	Vertex ID (by default, this is set to the largest
+*			number fitting into a size_t and thus will be ignored)
+*
+*	@warning The vertices are not checked for duplicates because this
+*	function is assumed to be called from internal methods only.
+*
+*	@return Pointer to new vertex. The pointer remains valid during the
+*	lifecycle of the mesh.
+*/
+
+inline vertex* mesh::add_vertex(const v3ctor& pos, size_t id)
+{
+	return(add_vertex(pos[0], pos[1], pos[2], id));
+}
+
+/*!
+*	@return Number of vertices currently stored in the mesh.
+*/
+
+inline size_t mesh::num_vertices() const
+{
+	return(V.size());
+}
+
+/*!
+*	@param i Index of desired vertex
+*
+*	@return ith vertex of the mesh. Caller has to ensure that vertex index
+*	is correct.
+*/
+
+inline vertex* mesh::get_vertex(size_t i)
+{
+	return(V[i]);
+}
+
+/*!
+*	@return Number of edges currently stored in the mesh.
+*/
+
+inline size_t mesh::num_edges() const
+{
+	return(E.size());
+}
+
+/*!
+*	@param i Index of desired edge
+*
+*	@return ith edge in the mesh. Caller has to ensure that the edge index
+*	is valid.
+*/
+
+inline edge* mesh::get_edge(size_t i)
+{
+	return(E[i]);
+}
+
+/*!
+*	@return Number of faces currently stored in the mesh.
+*/
+
+inline size_t mesh::num_faces() const
+{
+	return(F.size());
+}
+
+/*!
+*	@param i Index of desired face
+*
+*	@return ith face in the mesh. Caller has to ensure that the face index
+*	is valid.
+*/
+
+inline face* mesh::get_face(size_t i)
+{
+	return(F[i]);
+}
 
 /*!
 *	Adds a triangular face to the mesh. This function allows the caller to
