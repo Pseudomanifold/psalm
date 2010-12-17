@@ -7,7 +7,7 @@
 #define __CATMULL_CLARK_H__
 
 #include <utility>
-#include "SubdivisionAlgorithm.h"
+#include "BsplineSubdivisionAlgorithm.h"
 
 namespace psalm
 {
@@ -17,7 +17,7 @@ namespace psalm
 *	@brief	Catmull-Clark subdivision algorithm
 */
 
-class CatmullClark : public SubdivisionAlgorithm
+class CatmullClark : public BsplineSubdivisionAlgorithm
 {
 	public:
 		bool apply_to(mesh& input_mesh);
@@ -39,9 +39,9 @@ class CatmullClark : public SubdivisionAlgorithm
 
 		std::pair<double, double> (*weight_function)(size_t);
 
-		std::pair<double, double> weights_catmull_clark(size_t n);
-		std::pair<double, double> weights_doo_sabin(size_t n);
-		std::pair<double, double> weights_degenerate(size_t n);
+		static std::pair<double, double> weights_catmull_clark(size_t n);
+		static std::pair<double, double> weights_doo_sabin(size_t n);
+		static std::pair<double, double> weights_degenerate(size_t n);
 
 		bool non_quadrangular_face;	///< Internal flag signalling that the mesh contains
 						///< non-quadrangular faces. In this case, new vertex
