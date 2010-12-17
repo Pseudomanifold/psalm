@@ -30,7 +30,7 @@ edge::edge()
 *	@param v Pointer to end vertex
 */
 
-edge::edge(const vertex* u, const vertex* v)
+edge::edge(vertex* u, vertex* v)
 {
 	set(u,v);
 }
@@ -42,7 +42,7 @@ edge::edge(const vertex* u, const vertex* v)
 *	@param v Pointer to end vertex
 */
 
-void edge::set(const vertex* u, const vertex* v)
+void edge::set(vertex* u, vertex* v)
 {
 	if(u == v)
 		u = v = NULL;
@@ -58,6 +58,15 @@ void edge::set(const vertex* u, const vertex* v)
 *	@return Pointer to start vertex
 */
 
+vertex* edge::get_u()
+{
+	return(const_cast<vertex*>(static_cast<const edge*>(this)->get_u()));
+}
+
+/*!
+*	@return Const pointer to start vertex
+*/
+
 const vertex* edge::get_u() const
 {
 	return(u);
@@ -69,13 +78,22 @@ const vertex* edge::get_u() const
 *	@param Pointer to new start vertex
 */
 
-void edge::set_u(const vertex* u)
+void edge::set_u(vertex* u)
 {
 	this->u = u;
 }
 
 /*!
 *	@return Pointer to end vertex
+*/
+
+vertex* edge::get_v()
+{
+	return(const_cast<vertex*>(static_cast<const edge*>(this)->get_v()));
+}
+
+/*!
+*	@return Const pointer to end vertex
 */
 
 const vertex* edge::get_v() const
@@ -89,7 +107,7 @@ const vertex* edge::get_v() const
 *	@param Pointer to new end vertex
 */
 
-void edge::set_v(const vertex* v)
+void edge::set_v(vertex* v)
 {
 	this->v = v;
 }
@@ -141,7 +159,7 @@ void edge::set_g(face* g)
 
 face* edge::get_f()
 {
-	return(f);
+	return(const_cast<face*>(static_cast<const edge*>(this)->get_f()));
 }
 
 /*!
@@ -159,7 +177,7 @@ const face* edge::get_f() const
 
 face* edge::get_g()
 {
-	return(g);
+	return(const_cast<face*>(static_cast<const edge*>(this)->get_g()));
 }
 
 /*!

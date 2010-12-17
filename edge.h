@@ -21,15 +21,17 @@ class edge
 {
 	public:
 		edge();
-		edge(const vertex* u, const vertex* v);
+		edge(vertex* u, vertex* v);
 
-		void set(const vertex* u, const vertex* v);
+		void set(vertex* u, vertex* v);
 
-		const vertex* get_u() const;
-		const vertex* get_v() const;
+		vertex*		get_u();
+		const vertex*	get_u() const;
+		vertex*		get_v();
+		const vertex*	get_v() const;
 
-		void set_u(const vertex* u);
-		void set_v(const vertex* v);
+		void set_u(vertex* u);
+		void set_v(vertex* v);
 
 		void set_f(face* f);
 		void set_g(face* g);
@@ -56,8 +58,8 @@ class edge
 		double calc_length() const;
 
 	private:
-		const vertex* u;	///< Pointer to start vertex
-		const vertex* v;	///< Pointer to end vertex
+		vertex* u;		///< Pointer to start vertex
+		vertex* v;		///< Pointer to end vertex
 
 		face* f;		///< Pointer to first adjacent face
 		face* g;		///< Pointer to second adjacent face
