@@ -255,17 +255,9 @@ void CatmullClark::create_edge_points(mesh& input_mesh, mesh& output_mesh)
 			{
 				// Remove start and end vertex of edge; we will
 				// not be able to connect them correctly.
-				/*
 
-				TODO: This requires implementing new methods
-				for the mesh class
-
-				std::vector<vertex*>::iterator it;
-				if((it = find(V.begin(), V.end(), e->get_u())) != V.end())
-					V.erase(it);
-				if((it = find(V.begin(), V.end(), e->get_v())) != V.end())
-					V.erase(it);
-				*/
+				input_mesh.remove_vertex(e->get_u());
+				input_mesh.remove_vertex(e->get_v());
 			}
 		}
 
