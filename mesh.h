@@ -102,6 +102,7 @@ class mesh
 
 		vertex* add_vertex(double x, double y, double z, size_t id = std::numeric_limits<size_t>::max());
 		vertex* add_vertex(const v3ctor& pos, size_t id = std::numeric_limits<size_t>::max());
+		void remove_vertex(vertex* v);
 
 		size_t num_vertices() const;
 		vertex* get_vertex(size_t i);
@@ -132,7 +133,7 @@ class mesh
 
 		void remove_face(face* f);
 
-		directed_edge add_edge(const vertex* u, const vertex* v);
+		directed_edge add_edge(vertex* u, vertex* v);
 		void remove_edge(edge* e);
 
 		std::pair<size_t, size_t> calc_edge_id(const vertex* u, const vertex* v);
@@ -260,6 +261,20 @@ inline vertex* mesh::add_vertex(double x, double y, double z, size_t id)
 inline vertex* mesh::add_vertex(const v3ctor& pos, size_t id)
 {
 	return(add_vertex(pos[0], pos[1], pos[2], id));
+}
+
+/*!
+*	Removes a vertex from the list of vertices and frees allocated memory.
+*	This function invalidates the integrity of the list of edges, so it
+*	should _only_ be used if all edges have already been processed.
+*
+*	@param v Vertex to remove from the mesh
+*/
+
+inline void mesh::remove_vertex(vertex* v)
+{
+	std::remove(V.begin(), V.end(), v);
+	delete v;
 }
 
 /*!

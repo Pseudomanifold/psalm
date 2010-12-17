@@ -1142,7 +1142,7 @@ void mesh::remove_face(face* f)
 *	mesh checks whether the edge already exists.
 */
 
-directed_edge mesh::add_edge(const vertex* u, const vertex* v)
+directed_edge mesh::add_edge(vertex* u, vertex* v)
 {
 	directed_edge result;
 
