@@ -9,6 +9,35 @@ namespace psalm
 {
 
 /*!
+*	Sets default values for Liepa subdivision.
+*/
+
+Liepa::Liepa()
+{
+	alpha = 20.0;
+}
+
+/*!
+*	Sets current value of density parameter for the algorithm.
+*
+*	@param alpha New value for density parameter
+*/
+
+void Liepa::set_alpha(double alpha)
+{
+	this->alpha = alpha;
+}
+
+/*!
+*	@returns Current value of density parameter for the algorithm.
+*/
+
+double Liepa::get_alpha()
+{
+	return(alpha);
+}
+
+/*!
 *	Applies Liepa's subdivision scheme to the given mesh. The mesh will be
 *	irreversibly _changed_ by this function.
 *
