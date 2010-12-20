@@ -106,9 +106,6 @@ bool Liepa::apply_to(mesh& input_mesh)
 				centroid_scale_attribute += vertices[j]->get_scale_attribute()/3.0;
 			}
 
-			// TODO: Should be user-configurable
-			double alpha = 20;
-
 			size_t tests_failed = 0;
 			for(size_t j = 0; j < 3; j++)
 			{
