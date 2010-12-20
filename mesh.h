@@ -110,9 +110,12 @@ class mesh
 		size_t num_edges() const;
 		edge* get_edge(size_t i);
 
+		bool relax_edge(edge* e);
+
 		face* add_face(std::vector<vertex*> vertices);
 		face* add_face(vertex* v1, vertex* v2, vertex* v3);
 		face* add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4);
+		void remove_face(face* f);
 
 		size_t num_faces() const;
 		face* get_face(size_t i);
@@ -130,8 +133,6 @@ class mesh
 		size_t id_offset;
 
 		// Functions
-
-		void remove_face(face* f);
 
 		directed_edge add_edge(vertex* u, vertex* v);
 		void remove_edge(edge* e);
@@ -160,8 +161,6 @@ class mesh
 		void cc_create_points_p(mesh& M,
 					std::pair<double, double> (*weight_function)(size_t));
 
-
-		bool relax_edge(edge* e);
 
 		void mark_boundaries();
 
