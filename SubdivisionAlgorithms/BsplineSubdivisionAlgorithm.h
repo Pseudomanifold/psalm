@@ -24,6 +24,9 @@ class BsplineSubdivisionAlgorithm : public SubdivisionAlgorithm
 		void set_bspline_weights_usage(bool usage = true);
 		bool get_bspline_weights_usage();
 
+		void set_geometric_point_creation_flag(bool status = true);
+		bool get_geometric_point_creation_flag();
+
 	protected:
 
 		/*!
@@ -33,6 +36,15 @@ class BsplineSubdivisionAlgorithm : public SubdivisionAlgorithm
 		*/
 
 		bool use_bspline_weights;
+
+
+		/*!
+			Flag signalling that new face vertices are supposed to
+			be created geometrically instead of using parametrical
+			(i.e. weight-based) methods.
+		*/
+
+		bool use_geometric_point_creation;
 };
 
 } // end of namespace "psalm"
