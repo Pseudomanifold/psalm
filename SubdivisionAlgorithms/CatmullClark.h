@@ -20,7 +20,18 @@ namespace psalm
 class CatmullClark : public BsplineSubdivisionAlgorithm
 {
 	public:
+		CatmullClark();
+
 		bool apply_to(mesh& input_mesh);
+
+		enum weights
+		{
+			catmull_clark,
+			doo_sabin,
+			degenerate
+		};
+
+		bool set_weights(weights new_weights);
 
 	private:
 		void create_face_points(mesh& input_mesh, mesh& output_mesh);
