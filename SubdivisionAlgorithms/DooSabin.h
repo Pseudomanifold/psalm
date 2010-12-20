@@ -6,6 +6,7 @@
 #ifndef __DOO_SABIN_H__
 #define __DOO_SABIN_H__
 
+#include <cmath>
 #include <vector>
 #include <map>
 
@@ -32,6 +33,15 @@ class DooSabin : public BsplineSubdivisionAlgorithm
 		DooSabin();
 
 		bool apply_to(mesh& input_mesh);
+
+		enum weights
+		{
+			catmull_clark,
+			doo_sabin,
+			degenerate
+		};
+
+		bool set_weights(weights new_weights);
 
 	private:
 		void create_face_vertices_geometrically(mesh& input_mesh, mesh& output_mesh);
@@ -66,12 +76,67 @@ class DooSabin : public BsplineSubdivisionAlgorithm
 		*/
 
 		weights_map custom_weights;
-
-		bool use_geometric_point_creation;	///< Flag signalling that new face vertices are
-							///< supposed to be created geometrically instead
-							///< of using parametrical (i.e. weight-based)
-							///< methods
 };
+
+/*!
+*	Computes the weight factor for the ith vertex of a face with k
+*	vertices. The formula of Doo and Sabin is used.
+*
+*	@param i Index of vertex in face (0, 1, ..., k-1)
+*	@param k Number of vertices
+*
+*	@return Weight
+*/
+
+inline double DooSabin::weights_doo_sabin(size_t k, size_t i)
+{
+	if(i == 0)
+		return(0.25+5.0/(4.0*k));
+	else
+		return((3.0+2.0*cos(2*M_PI*i/k))/(4.0*k));
+}
+
+/*!
+*	Computes the weight factor for the ith vertex of a face with k
+*	vertices. The formula of Catmull and Clark is used.
+*
+*	@param i Index of vertex in face (0, 1, ..., k-1)
+*	@param k Number of vertices
+*
+*	@return Weight
+*/
+
+inline double DooSabin::weights_catmull_clark(size_t k, size_t i)
+{
+	if(i == 0)
+		return(0.5+1.0/(4.0*k));
+	else
+	{
+		if(i == 1 || i == (k-1))
+			return(0.125+1.0/(4.0*k));
+		else
+			return(1.0/(4.0*k));
+	}
+}
+
+/*!
+*	Computes the weight factor for the ith vertex of a face with k
+*	vertices. The weights have been selected in order to yield the
+*	most degenerate surfaces.
+*
+*	@param i Index of vertex in face (0, 1, ..., k-1)
+*	@param k Number of vertices
+*
+*	@return Weight
+*/
+
+inline double DooSabin::weights_degenerate(size_t k, size_t i)
+{
+	if(i == 0)
+		return(0.0);
+	else
+		return(1.0/static_cast<double>(k-1));
+}
 
 } // end of namespace "psalm"
 

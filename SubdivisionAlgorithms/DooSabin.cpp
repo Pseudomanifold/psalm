@@ -14,7 +14,38 @@ namespace psalm
 
 DooSabin::DooSabin()
 {
-	use_geometric_point_creation = true;
+	weight_function = weights_doo_sabin;
+}
+
+/*!
+*	Sets weights for the Doo-Sabin scheme.
+*
+*	@param	new_weights New weights for the Doo-Sabin scheme
+*	@return	true if the new weights could be set, else false
+*/
+
+bool DooSabin::set_weights(weights new_weights)
+{
+	switch(new_weights)
+	{
+		case catmull_clark:
+			weight_function = weights_catmull_clark;
+			break;
+
+		case doo_sabin:
+			weight_function = weights_doo_sabin;
+			break;
+
+		case degenerate:
+			weight_function = weights_degenerate;
+			break;
+
+		// weights not found
+		default:
+			return(false);
+	}
+
+	return(true);
 }
 
 /*!
