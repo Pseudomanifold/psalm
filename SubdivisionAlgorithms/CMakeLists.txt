@@ -1,9 +1,10 @@
 SET(	SUBDIVISION_ALGORITHMS_SRC
-	SubdivisionAlgorithm.cpp
-	Loop.cpp
-	DooSabin.cpp
-	CatmullClark.cpp
 	BsplineSubdivisionAlgorithm.cpp
+	SubdivisionAlgorithm.cpp
+	CatmullClark.cpp
+	DooSabin.cpp
+	Liepa.cpp
+	Loop.cpp
 )
 
 ADD_LIBRARY(SubdivisionAlgorithms SHARED ${SUBDIVISION_ALGORITHMS_SRC})
