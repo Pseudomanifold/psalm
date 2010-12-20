@@ -9,6 +9,46 @@ namespace psalm
 {
 
 /*!
+*	Sets default attributes for the Catmull-Clark algorithm.
+*/
+
+CatmullClark::CatmullClark()
+{
+	weight_function = weights_catmull_clark;
+}
+
+/*!
+*	Sets weights for the Catmull-Clark scheme.
+*
+*	@param	new_weights New weights for the Catmull-Clark scheme
+*	@return	true if the new weights could be set, else false
+*/
+
+bool CatmullClark::set_weights(weights new_weights)
+{
+	switch(new_weights)
+	{
+		case catmull_clark:
+			weight_function = weights_catmull_clark;
+			break;
+
+		case doo_sabin:
+			weight_function = weights_doo_sabin;
+			break;
+
+		case degenerate:
+			weight_function = weights_degenerate;
+			break;
+
+		// weights not found
+		default:
+			return(false);
+	}
+
+	return(true);
+}
+
+/*!
 *	Applies Catmull and Clark's subdivision algorithm to the given mesh.
 *	The mesh will be irreversibly _changed_ by this function.
 *
