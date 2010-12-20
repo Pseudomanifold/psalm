@@ -50,11 +50,24 @@ SET(SA_TEST_SRC
 	face.cpp
 )
 
+SET(DENSITY_TEST_SRC
+	density_test.cpp
+	mesh.cpp
+	v3ctor.cpp
+	vertex.cpp
+	edge.cpp
+	directed_edge.cpp
+	face.cpp
+	SubdivisionAlgorithms/Liepa.cpp
+	SubdivisionAlgorithms/SubdivisionAlgorithm.cpp
+)
+
 ADD_SUBDIRECTORY(SubdivisionAlgorithms)
 
 ADD_EXECUTABLE(psalm ${PSALM_SRC})
 ADD_EXECUTABLE(pline_fill ${PLINE_FILL_SRC})
 ADD_EXECUTABLE(sa_test ${SA_TEST_SRC})
+ADD_EXECUTABLE(density_test ${DENSITY_TEST_SRC})
 
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR} SubdivisionAlgorithms)
 TARGET_LINK_LIBRARIES(sa_test SubdivisionAlgorithms)
