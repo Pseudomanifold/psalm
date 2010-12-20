@@ -2637,7 +2637,7 @@ void mesh::subdivide_liepa()
 			}
 
 			// TODO: Should be user-configurable
-			double alpha = 20;
+			double alpha = sqrt(2);
 
 			size_t tests_failed = 0;
 			for(size_t j = 0; j < 3; j++)
