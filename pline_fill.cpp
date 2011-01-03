@@ -96,7 +96,7 @@ void process_pline_file(std::string filename)
 		H.triangulate();
 		try
 		{
-			H.subdivide(psalm::mesh::ALG_LOOP);
+			H.subdivide(psalm::mesh::ALG_LIEPA);
 
 			// Construct filename
 			converter.str("");

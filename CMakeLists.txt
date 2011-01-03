@@ -1,7 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(psalm) 
 
-ADD_DEFINITIONS(-Wall -pedantic -g)
+ADD_DEFINITIONS(-Wall -pedantic -g -O11)
 
 SET(PSALM_SRC
 	psalm.cpp
@@ -55,6 +55,20 @@ ADD_EXECUTABLE(density_test ${DENSITY_TEST_SRC})
 
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR} SubdivisionAlgorithms)
 TARGET_LINK_LIBRARIES(sa_test SubdivisionAlgorithms)
+
+SET(LIBPSALM_SRC
+	libpsalm_test.cpp
+	libpsalm.cpp
+	v3ctor.cpp
+	mesh.cpp
+	hole.cpp
+	face.cpp
+	edge.cpp
+	vertex.cpp
+	directed_edge.cpp
+)
+
+ADD_EXECUTABLE(libpsalm_test ${LIBPSALM_SRC})
 
 # Create subdivided test data using "meshlab"
 ADD_CUSTOM_TARGET(	test

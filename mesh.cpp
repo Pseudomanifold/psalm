@@ -1043,7 +1043,12 @@ face* mesh::add_face(std::vector<vertex*> vertices)
 
 			// In this case, we cannot proceed -- the mesh would become degenerate
 			else if(edge.e->get_g() != NULL)
+			{
+			#ifdef NO_EXCEPTIONS
+			#else
 				throw(std::runtime_error("mesh::add_face(): Attempted overwrite of the face references of an edge"));
+			#endif
+			}
 
 			u->add_face(f);
 		}
@@ -2563,7 +2568,7 @@ void mesh::subdivide_liepa()
 			}
 
 			// TODO: Should be user-configurable
-			double alpha = 20;
+			double alpha = sqrt(2);
 
 			size_t tests_failed = 0;
 			for(size_t j = 0; j < 3; j++)
@@ -2731,16 +2736,25 @@ bool mesh::relax_edge(edge* e)
 	// If this occurs, the mesh has become degenerate and no edge swap may
 	// be performed.
 	if(v1 == v2)
+	{
+	#ifdef NO_EXCEPTIONS
+	#else
 		throw(std::runtime_error("mesh::relax_edge(): Mesh is degenerate -- cannot swap edge"));
+	#endif
+	}
 
 	if(!swap)
 		return(false);
+
+	/*
+		XXX: Leads to problems?
 
 	// Check whether the edge that is going to be swapped already exists.
 	// In this case, the edge swap is also denied, as it would overwrite
 	// existing faces
 	if(E_M.find(calc_edge_id(v1, v2)) != E_M.end()) // TODO: Optimize
 		return(false);
+	*/
 
 	// Remove both of the old faces and the corresponding edge...
 

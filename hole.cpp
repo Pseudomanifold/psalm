@@ -111,6 +111,93 @@ void hole::triangulate()
 }
 
 /*!
+*	Saves the current hole in a raw format, i.e. all coordinate and
+*	connectivity information is stored in arrays. The caller of this method
+*	is notified about the number of new vertices and new faces created by
+*	this method. New vertices are recognized by checking their boundary
+*	flags. All boundary vertices are old vertices and will _not_ be
+*	reported by this function.
+*
+*	This function has been implemented in class hole because we may assume
+*	that the triangulated hole consists of triangles only.
+*
+*	@param num_new_vertices	Number of new (i.e. non-boundary) vertices
+*	@param new_coordinates	Array of new coordinates
+*	@param num_faces	Number of faces in the mesh
+*	@param vertex_IDs	Face connectivity information -- a negative ID
+*				signifies an old vertex. This has to be taken
+*				into account by the caller.
+*/
+
+void hole::save_raw_data(int* num_new_vertices, double** new_coordinates, int* num_faces, long** vertex_IDs)
+{
+	size_t num_boundary_vertices = 0;		// count boundary vertices to obtain correct IDs
+	std::vector<const vertex*> new_vertices;	// stores new vertices
+
+	// Count new vertices and store them
+
+	for(std::vector<vertex*>::const_iterator v_it = V.begin(); v_it < V.end(); v_it++)
+	{
+		vertex* v = *v_it;
+
+		// Boundary vertex, hence an _old_ vertex, i.e. one that is
+		// already known by the caller
+		if(v->is_on_boundary())
+			num_boundary_vertices++;
+
+		// New vertex
+		else
+			new_vertices.push_back(v);
+	}
+
+	*num_new_vertices = new_vertices.size();
+	*new_coordinates = new double[3*new_vertices.size()];
+	for(size_t position = 0; position < new_vertices.size(); position++)
+	{
+		const v3ctor& v = new_vertices[position]->get_position();
+
+		(*new_coordinates)[position*3]		= v[0];
+		(*new_coordinates)[position*3+1]	= v[1];
+		(*new_coordinates)[position*3+2]	= v[2];
+	}
+
+	// Allocate storage for new faces and store them -- the IDs of their
+	// vertices need to be changed
+
+	*num_faces = F.size();
+	*vertex_IDs = new long[3*F.size()];
+	for(size_t face_index = 0; face_index < F.size(); face_index++)
+	{
+		face* f = F[face_index];
+
+		// Hole is assumed to consist of triangular faces only
+		if(f->num_vertices() != 3)
+			throw(std::runtime_error("hole::save_raw_data(): Unable to handle non-triangular faces"));
+
+		for(size_t i = 0; i < 3; i++)
+		{
+			vertex* v = f->get_vertex(i);
+
+			// Store negative IDs for old vertices
+			if(v->is_on_boundary())
+				(*vertex_IDs)[3*face_index+i] = static_cast<long>(-1*v->get_id());
+			else
+			{
+				// Store zero-indexed IDs for new vertices. For
+				// this purpose, the offset needs to be
+				// subtracted. This yields vertex IDs in the
+				// range of [num_boundary, ...]. Hence, the
+				// range needs to be adjusted by subtracting
+				// num_boundary_vertices
+
+				(*vertex_IDs)[3*face_index+i] = static_cast<long>(v->get_id() - id_offset - num_boundary_vertices);
+			}
+		}
+	}
+}
+
+
+/*!
 *	Using the array of indices that achieve the minimum of the
 *	minimum-weight triangulation, this function constructs the actual
 *	triangulation of the mesh.
