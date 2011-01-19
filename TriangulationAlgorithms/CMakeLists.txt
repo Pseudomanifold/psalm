@@ -1,0 +1,8 @@
+SET(	TRIANGULATION_ALGORITHMS_SRC
+	TriangulationAlgorithm.cpp
+	MinimumWeightTriangulation.cpp
+)
+
+ADD_LIBRARY(TriangulationAlgorithms SHARED ${TRIANGULATION_ALGORITHMS_SRC})
+
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR})

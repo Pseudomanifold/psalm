@@ -63,14 +63,15 @@ SET(DENSITY_TEST_SRC
 )
 
 ADD_SUBDIRECTORY(SubdivisionAlgorithms)
+ADD_SUBDIRECTORY(TriangulationAlgorithms)
 
 ADD_EXECUTABLE(psalm ${PSALM_SRC})
 ADD_EXECUTABLE(pline_fill ${PLINE_FILL_SRC})
 ADD_EXECUTABLE(sa_test ${SA_TEST_SRC})
 ADD_EXECUTABLE(density_test ${DENSITY_TEST_SRC})
 
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR} SubdivisionAlgorithms)
-TARGET_LINK_LIBRARIES(sa_test SubdivisionAlgorithms)
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR} SubdivisionAlgorithms TriangulationAlgorithms)
+TARGET_LINK_LIBRARIES(sa_test SubdivisionAlgorithms TriangulationAlgorithms)
 
 # Create subdivided test data using "meshlab"
 ADD_CUSTOM_TARGET(	test
