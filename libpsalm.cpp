@@ -9,6 +9,8 @@
 #include "libpsalm.h"
 #include "hole.h"
 
+#include "SubdivisionAlgorithms/Liepa.h"
+
 /*!
 *	Given a polygonal line described as a list of vertices, this function
 *	triangulates the hole and subdivides it. Afterwards, the new data is
@@ -77,3 +79,40 @@ bool fill_hole(	int num_vertices, long* vertex_IDs, double* coordinates,
 
 	return(result);
 }
+
+/*!
+*	Given a mesh input density and the desired density of the triangulated
+*	hole, calculates an estimate for the density parameter of Liepa's
+*	subdivision scheme.
+*
+*	@param input_density	Average density of the input data
+*	@param desired_density	Desired density of triangulated hole
+*
+*	@returns Estimated value for the alpha parameter of Liepa's subdivision
+*	scheme.
+*
+*	@warning The estimation is only useful for density values < 2000. A
+*	density much larger than this would require separate treatment.
+*/
+
+namespace libpsalm
+{
+
+double estimate_density(double input_density, double desired_density)
+{
+	// Fitted parameter values with asymptotic standard error of < 3%,
+	// which is sufficient for most mesh data.
+
+	double a0 =  6.08864e-07;
+	double a1 = -0.00167679;
+	double b0 = -1.61397e-06;
+	double b1 =  0.00500891;
+	double c0 =  1.77846;
+
+	double x = input_density; // abbreviations so that the function is written more easily
+	double y = desired_density;
+
+	return(a0*x*x+a1*x+b0*y*y+b1*y+c0);
+}
+
+} // end of namespace "libpsalm"
