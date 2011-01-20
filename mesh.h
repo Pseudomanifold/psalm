@@ -182,6 +182,9 @@ class mesh
 		bool save_off(std::ostream& out);
 		bool save_hole(std::ostream& out);
 
+		void load_raw_data(int num_vertices, long* vertex_IDs, double* coordinates);
+		void save_raw_data(int* num_new_vertices, double** new_coordinates, int* num_faces, long** vertex_IDs);
+
 		bool use_parametric_point_creation;	//< Flag signalling that points in subdivision schemes shall
 							//< be computed using the parametric variant. Normally, the
 							//< geometric variant is used.
