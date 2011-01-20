@@ -3087,4 +3087,121 @@ void mesh::mark_boundaries()
 	}
 }
 
+/*!
+*	Creates a mesh from raw input data. This means that all coordinates and
+*	vertex IDs are stored in arrays instead of files.
+*
+*	@param num_vertices	Number of vertices
+*	@param vertex_IDs	Array of vertex IDs
+*	@param coordinates	Array of vertex coordinates (coordinates for the
+*				i-th vertex are stored at 3*i, 3*i+1, 3*i+2)
+*/
+
+void mesh::load_raw_data(int num_vertices, long* vertex_IDs, double* coordinates)
+{
+	destroy();
+	long max_id = 0;
+	for(int i = 0; i < num_vertices; i++)
+	{
+		add_vertex(	coordinates[3*i],
+				coordinates[3*i+1],
+				coordinates[3*i+2],
+				vertex_IDs[i]);
+
+		if(vertex_IDs[i] > max_id)
+			max_id = vertex_IDs[i];
+	}
+
+	// The IDs of new vertices must be larger than the IDs of their
+	// predecessors. Otherwise, ID clashes will occur. The id_offset is
+	// used for every mesh::add_vertex() operation.
+	id_offset = static_cast<size_t>(max_id);
+}
+
+/*!
+*	Saves the current mesh in a raw format, i.e. all coordinate and
+*	connectivity information is stored in arrays. The caller of this method
+*	is notified about the number of new vertices and new faces created by
+*	this method. New vertices are recognized by checking their boundary
+*	flags. All boundary vertices are old vertices and will _not_ be
+*	reported by this function.
+*
+*	The function assumes that the mesh consists of triangular faces only
+*	and will only return triangles.
+*
+*	@param num_new_vertices	Number of new (i.e. non-boundary) vertices
+*	@param new_coordinates	Array of new coordinates
+*	@param num_faces	Number of faces in the mesh
+*	@param vertex_IDs	Face connectivity information -- a negative ID
+*				signifies an old vertex. This has to be taken
+*				into account by the caller.
+*/
+
+void mesh::save_raw_data(int* num_new_vertices, double** new_coordinates, int* num_faces, long** vertex_IDs)
+{
+	size_t num_boundary_vertices = 0;		// count boundary vertices to obtain correct IDs
+	std::vector<const vertex*> new_vertices;	// stores new vertices
+
+	// Count new vertices and store them
+
+	for(std::vector<vertex*>::const_iterator v_it = V.begin(); v_it < V.end(); v_it++)
+	{
+		vertex* v = *v_it;
+
+		// Boundary vertex, hence an _old_ vertex, i.e. one that is
+		// already known by the caller
+		if(v->is_on_boundary())
+			num_boundary_vertices++;
+
+		// New vertex
+		else
+			new_vertices.push_back(v);
+	}
+
+	*num_new_vertices = new_vertices.size();
+	*new_coordinates = new double[3*new_vertices.size()];
+	for(size_t position = 0; position < new_vertices.size(); position++)
+	{
+		const v3ctor& v = new_vertices[position]->get_position();
+
+		(*new_coordinates)[position*3]		= v[0];
+		(*new_coordinates)[position*3+1]	= v[1];
+		(*new_coordinates)[position*3+2]	= v[2];
+	}
+
+	// Allocate storage for new faces and store them -- the IDs of their
+	// vertices need to be changed
+
+	*num_faces = F.size();
+	*vertex_IDs = new long[3*F.size()];
+	for(size_t face_index = 0; face_index < F.size(); face_index++)
+	{
+		face* f = F[face_index];
+
+		// Hole is assumed to consist of triangular faces only
+		if(f->num_vertices() != 3)
+			throw(std::runtime_error("mesh::save_raw_data(): Unable to handle non-triangular faces"));
+
+		for(size_t i = 0; i < 3; i++)
+		{
+			vertex* v = f->get_vertex(i);
+
+			// Store negative IDs for old vertices
+			if(v->is_on_boundary())
+				(*vertex_IDs)[3*face_index+i] = static_cast<long>(-1*v->get_id());
+			else
+			{
+				// Store zero-indexed IDs for new vertices. For
+				// this purpose, the offset needs to be
+				// subtracted. This yields vertex IDs in the
+				// range of [num_boundary, ...]. Hence, the
+				// range needs to be adjusted by subtracting
+				// num_boundary_vertices
+
+				(*vertex_IDs)[3*face_index+i] = static_cast<long>(v->get_id() - id_offset - num_boundary_vertices);
+			}
+		}
+	}
+}
+
 } // end of namespace "psalm"
