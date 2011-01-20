@@ -19,6 +19,8 @@ namespace psalm
 class MinimumWeightTriangulation : public TriangulationAlgorithm
 {
 	public:
+		MinimumWeightTriangulation();
+
 		bool apply_to(mesh& input_mesh);
 
 	protected:

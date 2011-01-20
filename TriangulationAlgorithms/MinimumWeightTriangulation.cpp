@@ -9,6 +9,16 @@ namespace psalm
 {
 
 /*!
+*	Sets default attributes for the minimum-weight triangulation algorithm:
+*	The objective function is set to be a minimum-area function.
+*/
+
+MinimumWeightTriangulation::MinimumWeightTriangulation()
+{
+	objective_function = minimum_area;
+}
+
+/*!
 *	Applies triangulation algorithm to the input mesh. The function
 *	requires the input mesh to consist solely of unconnected points. If
 *	this is not the case, the function will abort.
