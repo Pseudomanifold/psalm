@@ -7,9 +7,10 @@
 #include <vector>
 
 #include "libpsalm.h"
-#include "hole.h"
+#include "mesh.h"
 
 #include "SubdivisionAlgorithms/Liepa.h"
+#include "TriangulationAlgorithms/MinimumWeightTriangulation.h"
 
 /*!
 *	Given a polygonal line described as a list of vertices, this function
@@ -62,15 +63,19 @@ bool fill_hole(	int num_vertices, long* vertex_IDs, double* coordinates,
 		vertices.push_back(std::make_pair(vertex_position, vertex_IDs[i]));
 	}
 
-	psalm::hole H;
-	H.initialize(vertices);
-	H.triangulate();
+	psalm::mesh M;
+
+	psalm::Liepa liepa_algorithm;
+	psalm::MinimumWeightTriangulation triangulation_algorithm;
+
+	M.load_raw_data(num_vertices, vertex_IDs, coordinates);
 	try
 	{
-		H.subdivide(psalm::mesh::ALG_LIEPA);
-		H.save_raw_data(num_new_vertices, new_coordinates, num_new_faces, new_vertex_IDs);
-	}
+		triangulation_algorithm.apply_to(M);
+		liepa_algorithm.apply_to(M);
 
+		M.save_raw_data(num_new_vertices, new_coordinates, num_new_faces, new_vertex_IDs);
+	}
 	// TODO: This should be handled more gracefully
 	catch(...)
 	{
