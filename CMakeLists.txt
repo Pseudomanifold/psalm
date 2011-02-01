@@ -1,6 +1,10 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(psalm) 
 
+# This is evil but currently necessary. Else, it would be impossible to build
+# libpsalm _and_ psalm from the same CMake file.
+CMAKE_POLICY(SET CMP0002 OLD)
+
 ADD_DEFINITIONS(-Wall -pedantic -g -O11)
 
 SET(PSALM_SRC
@@ -73,8 +77,13 @@ ADD_EXECUTABLE(density_test ${DENSITY_TEST_SRC})
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR} SubdivisionAlgorithms TriangulationAlgorithms)
 TARGET_LINK_LIBRARIES(sa_test SubdivisionAlgorithms TriangulationAlgorithms)
 
+# Build `libpsalm_test` and `libpsalm` _without_ relying on any libraries; this
+# makes inclusion of the library easier.
+
+FILE(GLOB LIBPSALM_SRC SubdivisionAlgorithms/*.cpp TriangulationAlgorithms/*.cpp)
+
 SET(LIBPSALM_SRC
-	libpsalm_test.cpp
+	${LIBPSALM_SRC}
 	libpsalm.cpp
 	v3ctor.cpp
 	mesh.cpp
@@ -85,8 +94,13 @@ SET(LIBPSALM_SRC
 	directed_edge.cpp
 )
 
+ADD_LIBRARY(psalm ${LIBPSALM_SRC})
+
+SET(LIBPSALM_SRC
+	${LIBPSALM_SRC}
+	libpsalm_test.cpp
+)
 ADD_EXECUTABLE(libpsalm_test ${LIBPSALM_SRC})
-TARGET_LINK_LIBRARIES(libpsalm_test SubdivisionAlgorithms TriangulationAlgorithms)
 
 # Create subdivided test data using "meshlab"
 ADD_CUSTOM_TARGET(	test
