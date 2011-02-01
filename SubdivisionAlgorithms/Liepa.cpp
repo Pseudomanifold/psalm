@@ -3,6 +3,7 @@
 *	@brief	Implementation of Liepa's subdivision scheme
 */
 
+#include <cmath>
 #include "Liepa.h"
 
 namespace psalm
