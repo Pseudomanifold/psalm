@@ -70,6 +70,7 @@ SET(LIBPSALM_SRC
 )
 
 ADD_EXECUTABLE(libpsalm_test ${LIBPSALM_SRC})
+TARGET_LINK_LIBRARIES(libpsalm_test SubdivisionAlgorithms TriangulationAlgorithms)
 
 # Create subdivided test data using "meshlab"
 ADD_CUSTOM_TARGET(	test
