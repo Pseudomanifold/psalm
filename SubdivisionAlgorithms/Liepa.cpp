@@ -14,7 +14,7 @@ namespace psalm
 
 Liepa::Liepa()
 {
-	alpha = 20.0;
+	alpha = sqrt(2);
 }
 
 /*!
