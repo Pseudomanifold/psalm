@@ -1370,67 +1370,6 @@ void mesh::prune(const std::set<size_t>& remove_faces, const std::set<size_t>& r
 }
 
 /*!
-*	Applies a subdivision algorithm to the current mesh.
-*
-*	@param algorithm	Defines which algorithm to use (Catmull-Clark
-*				if the user did not specify otherwise).
-*	@param steps		Number of subdivision steps (1 if the user did
-*				not specify otherwise).
-*/
-
-void mesh::subdivide(	subdivision_algorithm algorithm,
-			size_t steps)
-{
-	size_t num_vertices	= V.size();
-	size_t num_edges	= E.size();
-	size_t num_faces	= F.size();
-
-	// Choose algorithm (if this is _not_ done via pointers, the for-loop
-	// would have to be duplicated or the algorithm check would have to be
-	// made for each iteration.
-	void (mesh::*subdivision_algorithm)() = NULL;
-	switch(algorithm)
-	{
-		default:
-			break;
-	};
-
-	clock_t start	= clock();
-	size_t width	= static_cast<unsigned int>(log10(steps))*2;
-	for(size_t i = 0; i < steps; i++)
-	{
-		if(print_statistics)
-			std::cerr << "[" << std::setw(width) << i << "]\n";
-
-		(this->*subdivision_algorithm)();
-
-		if(print_statistics)
-			std::cerr << "\n";
-	}
-	clock_t end = clock();
-
-	if(print_statistics)
-	{
-		std::cerr	<< std::setfill('-') << std::setw(78) << "\n"
-				<< "PSALM STATISTICS\n"
-				<< std::setfill('-') << std::setw(80) << "\n\n\n"
-				<< "BEFORE:\n"
-				<< std::setfill(' ')
-				<< std::left
-				<< std::setw(30) << "\tNumber of vertices: " << num_vertices << "\n"
-				<< std::setw(30) << "\tNumber of edges: " << num_edges << "\n"
-				<< std::setw(30) << "\tNumber of faces: " << num_faces << "\n\n\n"
-				<< "AFTER:\n"
-				<< std::setw(30) << "\tNumber of vertices: " << V.size() << "\n"
-				<< std::setw(30) << "\tNumber of edges: " << E.size() << "\n"
-				<< std::setw(30) << "\tNumber of faces: " << F.size() << "\n\n\n"
-				<< "TOTAL CPU TIME: "
-				<< (static_cast<double>(end-start)/CLOCKS_PER_SEC)
-				<< "s\n\n";
-	}
-}
-
-/*!
 *	Relaxes an edge by performing the following test:
 *
 *		-	Only run if the edge is adjacent to two triangles

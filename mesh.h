@@ -85,8 +85,6 @@ class mesh
 
 		void prune(	const std::set<size_t>& remove_faces,
 				const std::set<size_t>& remove_vertices);
-		void subdivide(	subdivision_algorithm algorithm = mesh::ALG_CATMULL_CLARK,
-				size_t steps = 1);
 		void destroy();
 		void replace_with(mesh& M);
 
