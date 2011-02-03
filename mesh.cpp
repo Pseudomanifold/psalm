@@ -1042,10 +1042,8 @@ face* mesh::add_face(std::vector<vertex*> vertices)
 			// In this case, we cannot proceed -- the mesh would become degenerate
 			else if(edge.e->get_g() != NULL)
 			{
-			#ifdef NO_EXCEPTIONS
-			#else
-				throw(std::runtime_error("mesh::add_face(): Attempted overwrite of the face references of an edge"));
-			#endif
+				std::cerr << "psalm: Error: mesh::add_face(): Attempted overwrite of the face references of an edge\n";
+				return(NULL);
 			}
 
 			u->add_face(f);

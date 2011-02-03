@@ -139,10 +139,16 @@ bool Liepa::apply_to(mesh& input_mesh)
 				face* new_face2 = input_mesh.add_face(centroid_vertex, vertices[1], vertices[2]);
 				face* new_face3 = input_mesh.add_face(vertices[0], centroid_vertex, vertices[2]);
 
+				if(!new_face1 || !new_face2 || !new_face3)
+				{
+					std::cerr << "psalm: Error: Liepa::apply_to(): Unable to add new face\n";
+					return(false);
+				}
+
 				num_faces--;
 				i--;
 
-				// Relax edges afterward to maintain
+				// Relax edges afterwards to maintain
 				// Delaunay-like mesh
 
 				input_mesh.relax_edge(new_face1->get_edge(0).e);
