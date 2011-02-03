@@ -71,10 +71,23 @@ bool fill_hole(	int num_vertices, long* vertex_IDs, double* coordinates,
 	M.load_raw_data(num_vertices, vertex_IDs, coordinates);
 	try
 	{
-		triangulation_algorithm.apply_to(M);
-		liepa_algorithm.apply_to(M);
+		result = triangulation_algorithm.apply_to(M);
+		result = (result && liepa_algorithm.apply_to(M));
 
-		M.save_raw_data(num_new_vertices, new_coordinates, num_new_faces, new_vertex_IDs);
+		if(result)
+		{
+			M.save_raw_data(num_new_vertices,
+					new_coordinates,
+					num_new_faces,
+					new_vertex_IDs);
+		}
+
+		// signal an error for the calling function
+		else
+		{
+			*num_new_vertices	= 0;
+			*num_new_faces		= 0;
+		}
 	}
 	// TODO: This should be handled more gracefully
 	catch(...)
