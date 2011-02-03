@@ -12,11 +12,13 @@ namespace psalm
 {
 
 /*!
-*	Empty constructor
+*	Constructor for setting some default values
 */
 
 SubdivisionAlgorithm::SubdivisionAlgorithm()
 {
+	handle_creases		= false;
+	preserve_boundaries	= false;
 }
 
 /*!
@@ -25,6 +27,49 @@ SubdivisionAlgorithm::SubdivisionAlgorithm()
 
 SubdivisionAlgorithm::~SubdivisionAlgorithm()
 {
+}
+
+/*!
+*	Sets or unsets flag signalling the preservation of boundaries. The
+*	effects of this flag depend on the subdivision algorithm.
+*
+*	@param value New value for the flag
+*/
+
+void SubdivisionAlgorithm::set_boundary_preservation_flag(bool value)
+{
+	preserve_boundaries = value;
+}
+
+/*!
+*	@returns Current value of flag signalling the preservation of
+*	boundaries.
+*/
+
+bool SubdivisionAlgorithm::get_boundary_preservation_flag()
+{
+	return(preserve_boundaries);
+}
+
+/*!
+*	Sets current value of flag signalling crease handling. The effect of
+*	this flag depends on the subdivision algorithm.
+*
+*	@param value New value for flag
+*/
+
+void SubdivisionAlgorithm::set_crease_handling_flag(bool value)
+{
+	handle_creases = value;
+}
+
+/*!
+*	@returns Current value of flag signalling crease handling.
+*/
+
+bool SubdivisionAlgorithm::get_crease_handling_flag()
+{
+	return(handle_creases);
 }
 
 /*!
