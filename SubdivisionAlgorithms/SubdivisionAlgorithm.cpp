@@ -19,6 +19,7 @@ SubdivisionAlgorithm::SubdivisionAlgorithm()
 {
 	handle_creases		= false;
 	preserve_boundaries	= false;
+	print_statistics	= false;
 }
 
 /*!
@@ -97,35 +98,82 @@ bool SubdivisionAlgorithm::get_crease_handling_flag()
 }
 
 /*!
-*	Prints a progress bar to STDOUT.
+*	Sets flag signalling that statistics should be written to STDOUT.
 *
-*	@param	op	Operation the progress bar shall show; will be expanded by ": "
-*	@param	cur_pos	Current position of progress bar
-*	@param	max_pos	Maximum position of progress bar
+*	@param value New value for flag
 */
 
-void SubdivisionAlgorithm::print_progress(std::string message, size_t cur_pos, size_t max_pos)
+void SubdivisionAlgorithm::set_statistics_flag(bool value)
 {
-	size_t percentage = (cur_pos*100)/max_pos;
-	static size_t last;
+	print_statistics = value;
+}
 
-	if(percentage - last < 5 && cur_pos != max_pos)
-		return;
+/*!
+*	@returns Current value of flag signalling that statistics should be
+*	written to STDOUT.
+*/
 
-	std::cerr	<< "\r" << std::left << std::setw(50) << message << ": "
-			<< "[";
+bool SubdivisionAlgorithm::get_statistics_flag()
+{
+	return(print_statistics);
+}
 
+/*!
+*	Generic function for applying a subdivision algorithm a number of times
+*	to a certain mesh. The function is simply a wrapper for the virtual
+*	SubdivisionAlgorithm::apply_to() function, which is called #steps
+*	times. Statistics are generated if the flag for printing statistics is
+*	set.
+*
+*	@param	input_mesh	Mesh on which the algorithm is applied
+*	@param	steps		Number of steps
+*
+*	@return	true on success, else false
+*/
 
-	std::cerr	<< std::setw(10)
-			<< std::string( percentage/10, '#')
-			<< "]"
-			<< " "
-			<< std::setw(3) << percentage << "%" << std::right;
+bool SubdivisionAlgorithm::apply_to(mesh& input_mesh, size_t steps)
+{
+	size_t num_vertices	= input_mesh.num_vertices();
+	size_t num_edges	= input_mesh.num_edges();
+	size_t num_faces	= input_mesh.num_faces();
 
-	if(cur_pos == max_pos)
-		std::cerr << std::endl;
+	bool res = true;
 
-	last = percentage;
+	clock_t start	= clock();
+	size_t width	= static_cast<unsigned int>(log10(steps))*2;
+	for(size_t i = 0; i < steps; i++)
+	{
+		if(print_statistics)
+			std::cerr << "[" << std::setw(width) << i << "]\n";
+
+		res = (res && this->apply_to(input_mesh));
+
+		if(print_statistics)
+			std::cerr << "\n";
+	}
+	clock_t end = clock();
+
+	if(print_statistics)
+	{
+		std::cerr	<< std::setfill('-') << std::setw(78) << "\n"
+				<< "PSALM STATISTICS\n"
+				<< std::setfill('-') << std::setw(80) << "\n\n\n"
+				<< "BEFORE:\n"
+				<< std::setfill(' ')
+				<< std::left
+				<< std::setw(30) << "\tNumber of vertices: " << num_vertices << "\n"
+				<< std::setw(30) << "\tNumber of edges: " << num_edges << "\n"
+				<< std::setw(30) << "\tNumber of faces: " << num_faces << "\n\n\n"
+				<< "AFTER:\n"
+				<< std::setw(30) << "\tNumber of vertices: "	<< input_mesh.num_vertices()	<< "\n"
+				<< std::setw(30) << "\tNumber of edges: "	<< input_mesh.num_edges()	<< "\n"
+				<< std::setw(30) << "\tNumber of faces: "	<< input_mesh.num_faces()	<< "\n\n\n"
+				<< "TOTAL CPU TIME: "
+				<< (static_cast<double>(end-start)/CLOCKS_PER_SEC)
+				<< "s\n\n";
+	}
+
+	return(res);
 }
 
 } // end of namespace "psalm"
