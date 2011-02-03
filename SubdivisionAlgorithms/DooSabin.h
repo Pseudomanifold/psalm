@@ -35,6 +35,8 @@ class DooSabin : public BsplineSubdivisionAlgorithm
 		bool apply_to(mesh& input_mesh);
 		bool set_weights(weights new_weights);
 
+		void set_custom_weights(const weights_map& custom_weights);
+
 	private:
 		void create_face_vertices_geometrically(mesh& input_mesh, mesh& output_mesh);
 		void create_face_vertices_parametrically(mesh& input_mesh, mesh& output_mesh);
@@ -69,6 +71,19 @@ class DooSabin : public BsplineSubdivisionAlgorithm
 
 		weights_map custom_weights;
 };
+
+/*!
+*	Allows the user to set custom weights for the Doo-Sabin subdivision
+*	scheme.
+*
+*	@param custom_weights The new weights
+*/
+
+inline void DooSabin::set_custom_weights(const weights_map& custom_weights)
+{
+	this->custom_weights = custom_weights;
+}
+
 
 /*!
 *	Computes the weight factor for the ith vertex of a face with k
