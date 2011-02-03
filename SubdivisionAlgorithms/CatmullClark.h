@@ -23,14 +23,6 @@ class CatmullClark : public BsplineSubdivisionAlgorithm
 		CatmullClark();
 
 		bool apply_to(mesh& input_mesh);
-
-		enum weights
-		{
-			catmull_clark,
-			doo_sabin,
-			degenerate
-		};
-
 		bool set_weights(weights new_weights);
 
 	private:

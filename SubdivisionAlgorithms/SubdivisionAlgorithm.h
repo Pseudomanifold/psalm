@@ -29,6 +29,17 @@ class SubdivisionAlgorithm
 		bool apply_to(mesh& M, size_t steps);
 		virtual bool apply_to(mesh& M) = 0;
 
+		enum weights
+		{
+			catmull_clark,
+			doo_sabin,
+			degenerate
+		};
+
+		virtual bool set_weights(weights new_weights) = 0;
+
+		// Here be flags...
+
 		void set_crease_handling_flag(bool value = true);
 		bool get_crease_handling_flag();
 
@@ -44,9 +55,9 @@ class SubdivisionAlgorithm
 	protected:
 		void print_progress(std::string op, size_t cur_pos, size_t max_pos);
 
-		bool preserve_boundaries;
-		bool handle_creases;
-		bool print_statistics;
+		bool preserve_boundaries;	///< Flag signalling that boundaries of open meshes need to be preserved
+		bool handle_creases;		///< Flag signalling that creases should be handled instead of ignored
+		bool print_statistics;		///< Flag signalling that the algorithm should write its progress to STDERR
 
 		/*!
 			Flag signalling that new face vertices are supposed to
