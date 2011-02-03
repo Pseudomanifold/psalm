@@ -318,11 +318,14 @@ bool mesh::load_ply(std::istream& in)
 	size_t num_vertices	= 0;
 	size_t num_faces	= 0;
 
-	const short MODE_PARSE_HEADER			= 0;
-	const short MODE_PARSE_VERTEX_PROPERTIES	= 1;
-	const short MODE_PARSE_FACE_PROPERTIES		= 2;
+	enum modes
+	{
+		PARSE_HEADER,
+		PARSE_VERTEX_PROPERTIES,
+		PARSE_FACE_PROPERTIES
+	};
 
-	short mode = MODE_PARSE_HEADER;
+	modes mode = PARSE_HEADER;
 	while(!in.eof())
 	{
 		getline(in, data);
@@ -339,7 +342,7 @@ bool mesh::load_ply(std::istream& in)
 
 		switch(mode)
 		{
-			case MODE_PARSE_VERTEX_PROPERTIES:
+			case PARSE_VERTEX_PROPERTIES:
 
 				if(data.find("property") != std::string::npos)
 				{
@@ -353,7 +356,7 @@ bool mesh::load_ply(std::istream& in)
 				}
 				else if(data.find("element face") != std::string::npos)
 				{
-					mode = MODE_PARSE_FACE_PROPERTIES;
+					mode = PARSE_FACE_PROPERTIES;
 
 					std::string dummy; // not necessary, but more readable
 					std::istringstream converter(data);
@@ -367,7 +370,7 @@ bool mesh::load_ply(std::istream& in)
 						return(false);
 					}
 
-					mode = MODE_PARSE_FACE_PROPERTIES;
+					mode = PARSE_FACE_PROPERTIES;
 				}
 				else
 				{
@@ -377,7 +380,7 @@ bool mesh::load_ply(std::istream& in)
 
 				break;
 
-			case MODE_PARSE_FACE_PROPERTIES:
+			case PARSE_FACE_PROPERTIES:
 
 				if(data.find("property list") == std::string::npos)
 				{
@@ -389,11 +392,11 @@ bool mesh::load_ply(std::istream& in)
 				break;
 
 			// Expect "element vertex" line
-			case MODE_PARSE_HEADER:
+			case PARSE_HEADER:
 
 				if(data.find("element vertex") != std::string::npos)
 				{
-					mode = MODE_PARSE_VERTEX_PROPERTIES;
+					mode = PARSE_VERTEX_PROPERTIES;
 
 					std::string dummy; // not necessary, but more readable
 					std::istringstream converter(data);
@@ -408,7 +411,7 @@ bool mesh::load_ply(std::istream& in)
 						return(false);
 					}
 
-					mode = MODE_PARSE_VERTEX_PROPERTIES;
+					mode = PARSE_VERTEX_PROPERTIES;
 				}
 				else
 				{
