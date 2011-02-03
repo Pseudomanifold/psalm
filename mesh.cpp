@@ -1361,10 +1361,8 @@ bool mesh::relax_edge(edge* e)
 	// be performed.
 	if(v1 == v2)
 	{
-	#ifdef NO_EXCEPTIONS
-	#else
-		throw(std::runtime_error("mesh::relax_edge(): Mesh is degenerate -- cannot swap edge"));
-	#endif
+		std::cerr << "psalm: Error: mesh::relax_edge(): Mesh is degenerate -- cannot swap edge\n";
+		return(false);
 	}
 
 	if(!swap)
