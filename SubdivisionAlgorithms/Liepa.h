@@ -23,6 +23,16 @@ class Liepa : public SubdivisionAlgorithm
 
 		bool apply_to(mesh& input_mesh);
 
+		/*!
+		* This subdivision algorithm does not use any weights, hence
+		* the function is only a stub.
+		*/
+
+		bool set_weights(weights new_weights)
+		{
+			return(true);
+		};
+
 		void set_alpha(double alpha);
 		double get_alpha();
 
