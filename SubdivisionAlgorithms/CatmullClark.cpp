@@ -296,7 +296,7 @@ void CatmullClark::create_edge_points(mesh& input_mesh, mesh& output_mesh)
 				// Remove start and end vertex of edge; we will
 				// not be able to connect them correctly.
 
-				input_mesh.remove_vertex(e->get_u());
+				input_mesh.remove_vertex(e->get_u()); // FIXME: This leads to problems later on...
 				input_mesh.remove_vertex(e->get_v());
 			}
 		}
