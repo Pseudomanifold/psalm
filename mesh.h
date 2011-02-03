@@ -88,17 +88,6 @@ class mesh
 		void destroy();
 		void replace_with(mesh& M);
 
-		// Setters for instance options
-
-		void set_crease_handling(bool status= true);
-		void set_parametric_point_creation(bool status = true);
-		void set_bspline_weights_usage(bool status = true);
-		void set_statistics_output(bool status = true);
-		void set_boundary_preservation(bool status = true);
-
-		void set_predefined_weights(algorithm_weights weights);
-		void set_custom_weights(const weights_map& custom_weights);
-
 		// Functions for modifiying the topology of the mesh
 
 		vertex* add_vertex(double x, double y, double z, size_t id = std::numeric_limits<size_t>::max());
