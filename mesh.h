@@ -149,8 +149,6 @@ class mesh
 		std::vector<const vertex*> sort_vertices(face* f, const vertex* v);
 		std::vector<face*> sort_faces(vertex* v);
 
-		void print_progress(std::string op, size_t cur_pos, size_t max_pos);
-
 		void mark_boundaries();
 
 		bool load_ply(std::istream& in);
