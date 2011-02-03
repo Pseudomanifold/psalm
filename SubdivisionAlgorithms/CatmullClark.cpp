@@ -63,10 +63,10 @@ bool CatmullClark::apply_to(mesh& input_mesh)
 	create_face_points(input_mesh, output_mesh);
 	create_edge_points(input_mesh, output_mesh);
 
-	if(non_quadrangular_face)
-		create_vertex_points_parametrically(input_mesh, output_mesh);
-	else
+	if(non_quadrangular_face || use_geometric_point_creation)
 		create_vertex_points_geometrically(input_mesh, output_mesh);
+	else
+		create_vertex_points_parametrically(input_mesh, output_mesh);
 
 	/*
 		Create new topology of the mesh by connecting
