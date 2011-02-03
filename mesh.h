@@ -126,8 +126,6 @@ class mesh
 		std::pair<vertex*, vertex*> find_remaining_vertices(const vertex* v, const face* f);
 		vertex* find_face_vertex(face* f, const vertex* v);
 
-		std::vector<const vertex*> sort_vertices(face* f, const vertex* v);
-
 		void mark_boundaries();
 
 		bool load_ply(std::istream& in);
