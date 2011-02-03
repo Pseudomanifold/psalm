@@ -1461,67 +1461,6 @@ std::pair<vertex*, vertex*> mesh::find_remaining_vertices(const vertex* v, const
 }
 
 /*!
-*	Given an edge and a triangular face (where the edge is supposed to be
-*	part of the face), return the remaining vertex of the face. This
-*	function is used for Loop subdivision.
-*
-*	@param e Edge
-*	@param f Face that is adjacent to the edge. The face is supposed to
-*	have only 3 vertices.
-*
-*	@return Pointer to the remaining vertex of the face or NULL if the
-*	vertex could not be found.
-*/
-
-const vertex* mesh::find_remaining_vertex(const edge* e, const face* f)
-{
-	const vertex* result = NULL;
-	if(f == NULL || e == NULL)
-		return(result);
-
-	for(size_t i = 0; i < f->num_vertices(); i++)
-	{
-		// The IDs of the start and end vertices of the edge
-		// differ from the ID of the remaining edge.
-		if(	f->get_vertex(i)->get_id() != e->get_u()->get_id() &&
-			f->get_vertex(i)->get_id() != e->get_v()->get_id())
-		{
-			result = f->get_vertex(i);
-			break;
-		}
-	}
-
-	return(result);
-}
-
-/*!
-*	Given a vertex and a face (of which the vertex is assumed to be a
-*	part), find the corresponding face vertex and return a pointer to it.
-*
-*	@param f Face
-*	@param v Vertex, which is assumed to be a part of the face.
-*
-*	@return Pointer to the face vertex that corresponds to vertex v in the
-*	face.
-*/
-
-vertex* mesh::find_face_vertex(face* f, const vertex* v)
-{
-	if(f == NULL || v == NULL)
-		return(NULL);
-
-	for(size_t i = 0; i < f->num_vertices(); i++)
-	{
-		// NOTE: Speed could be increased by using lookup tables that
-		// map the "old" id to the "new id"
-		if(f->get_vertex(i)->get_id() == v->get_id())
-			return(f->get_face_vertex(i));
-	}
-
-	return(NULL);
-}
-
-/*!
 *	Marks all boundary vertices and edges in the mesh.
 */
 

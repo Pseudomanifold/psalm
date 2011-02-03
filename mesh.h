@@ -121,10 +121,7 @@ class mesh
 		void remove_edge(edge* e);
 
 		std::pair<size_t, size_t> calc_edge_id(const vertex* u, const vertex* v);
-
-		const vertex* find_remaining_vertex(const edge* e, const face* f);
 		std::pair<vertex*, vertex*> find_remaining_vertices(const vertex* v, const face* f);
-		vertex* find_face_vertex(face* f, const vertex* v);
 
 		void mark_boundaries();
 
