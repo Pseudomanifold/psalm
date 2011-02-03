@@ -152,19 +152,9 @@ class mesh
 		void print_progress(std::string op, size_t cur_pos, size_t max_pos);
 
 		void subdivide_loop();
-		void subdivide_catmull_clark();
 		void subdivide_liepa();
 
-		void cc_create_points_g(mesh& M);
-		void cc_create_points_p(mesh& M,
-					std::pair<double, double> (*weight_function)(size_t));
-
-
 		void mark_boundaries();
-
-		static std::pair<double, double> cc_weights_cc(size_t n);
-		static std::pair<double, double> cc_weights_ds(size_t n);
-		static std::pair<double, double> cc_weights_degenerate(size_t n);
 
 		bool load_ply(std::istream& in);
 		bool load_obj(std::istream& in);
