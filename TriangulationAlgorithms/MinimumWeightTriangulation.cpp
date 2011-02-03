@@ -36,6 +36,8 @@ bool MinimumWeightTriangulation::apply_to(mesh& input_mesh)
 		return(false);
 
 	size_t n = input_mesh.num_vertices();
+	if(n < 3)
+		return(false);
 
 	indices = new size_t*[n];		// store minimum indices (private member)
 	double** weights = new double*[n];	// store weights of triangulation (only required locally)
