@@ -111,6 +111,32 @@ void hole::triangulate()
 }
 
 /*!
+*	Creates the current hole from raw data, i.e. all coordinates and IDs
+*	are stored in arrays.
+*/
+
+void hole::load_raw_data(int num_vertices, long* vertex_IDs, double* coordinates)
+{
+	destroy();
+	long max_id = 0;
+	for(int i = 0; i < num_vertices; i++)
+	{
+		add_vertex(	coordinates[3*i],
+				coordinates[3*i+1],
+				coordinates[3*i+2],
+				vertex_IDs[i]);
+
+		if(vertex_IDs[i] > max_id)
+			max_id = vertex_IDs[i];
+	}
+
+	// The IDs of new vertices must be larger than the IDs of their
+	// predecessors. Otherwise, ID clashes will occur. The id_offset is
+	// used for every mesh::add_vertex() operation.
+	id_offset = static_cast<size_t>(max_id);
+}
+
+/*!
 *	Saves the current hole in a raw format, i.e. all coordinate and
 *	connectivity information is stored in arrays. The caller of this method
 *	is notified about the number of new vertices and new faces created by
