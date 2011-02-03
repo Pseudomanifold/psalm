@@ -151,8 +151,6 @@ class mesh
 
 		void print_progress(std::string op, size_t cur_pos, size_t max_pos);
 
-		void subdivide_liepa();
-
 		void mark_boundaries();
 
 		bool load_ply(std::istream& in);
