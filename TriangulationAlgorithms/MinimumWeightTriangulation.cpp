@@ -97,6 +97,15 @@ bool MinimumWeightTriangulation::apply_to(mesh& input_mesh)
 	delete[] weights;
 	delete[] indices;
 
+	/*
+		Mark _all_ vertices as boundary vertices. Upon subdivision, the
+		boundary vertices will not be changed and we need to identify
+		them when storing the subdivided mesh.
+	*/
+
+	for(size_t i = 0; i < input_mesh.num_vertices(); i++)
+		input_mesh.get_vertex(i)->set_on_boundary();
+
 	return(result);
 }
 
