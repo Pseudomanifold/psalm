@@ -40,26 +40,11 @@ class mesh
 			TYPE_EXT
 		};
 
-		// Enumerating the different subdivision algorithms that may
-		// occur
-		enum subdivision_algorithm
-		{
-			ALG_CATMULL_CLARK,
-			ALG_DOO_SABIN,
-			ALG_LOOP,
-			ALG_LIEPA
-		};
-
-		// Enumerating different weight sets for subdivision algorithms
-		enum algorithm_weights
-		{
-			W_DEFAULT,
-			W_CATMULL_CLARK,
-			W_DOO_SABIN,
-			W_DEGENERATE
-		};
-
-		// Status flags for use in several routines
+		// Status flags for mesh::load() and mesh::save(). By using a
+		// three-valued status the function is able to check whether
+		// all other means of loading and saving have failed. If this
+		// is the case, a fallback to loading/saving .PLY files may be
+		// performed.
 		enum status
 		{
 			STATUS_OK,
@@ -81,7 +66,7 @@ class mesh
 		void destroy();
 		void replace_with(mesh& M);
 
-		// Functions for modifiying the topology of the mesh
+		// Functions for modifying the topology of the mesh
 
 		vertex* add_vertex(double x, double y, double z, size_t id = std::numeric_limits<size_t>::max());
 		vertex* add_vertex(const v3ctor& pos, size_t id = std::numeric_limits<size_t>::max());
@@ -115,7 +100,7 @@ class mesh
 
 		size_t id_offset;
 
-		// Functions
+		// Internal functions
 
 		directed_edge add_edge(vertex* u, vertex* v);
 		void remove_edge(edge* e);
