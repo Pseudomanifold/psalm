@@ -33,24 +33,4 @@ bool BsplineSubdivisionAlgorithm::get_bspline_weights_usage()
 	return(use_bspline_weights);
 }
 
-/*!
-*	Sets or unsets flag signalling geometric point creation.
-*
-*	@param status New value for flag
-*/
-
-void BsplineSubdivisionAlgorithm::set_geometric_point_creation_flag(bool status)
-{
-	use_geometric_point_creation = status;
-}
-
-/*!
-*	@returns Current value of flag signalling geometric point creation.
-*/
-
-bool BsplineSubdivisionAlgorithm::get_geometric_point_creation_flag()
-{
-	return(use_geometric_point_creation);
-}
-
 } // end of namespace "psalm"
