@@ -50,6 +50,12 @@ SET(DENSITY_TEST_SRC
 	SubdivisionAlgorithms/SubdivisionAlgorithm.cpp
 )
 
+# Include boost::program_options into psalm
+
+FIND_PACKAGE(Boost 1.42 COMPONENTS program_options)
+LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
+INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
+
 ADD_SUBDIRECTORY(SubdivisionAlgorithms)
 ADD_SUBDIRECTORY(TriangulationAlgorithms)
 
@@ -60,6 +66,7 @@ ADD_EXECUTABLE(density_test ${DENSITY_TEST_SRC})
 
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR} SubdivisionAlgorithms TriangulationAlgorithms)
 TARGET_LINK_LIBRARIES(sa_test SubdivisionAlgorithms TriangulationAlgorithms)
+TARGET_LINK_LIBRARIES(psalm SubdivisionAlgorithms ${Boost_LIBRARIES})
 
 # Build `libpsalm_test` and `libpsalm` _without_ relying on any libraries; this
 # makes inclusion of the library easier.
