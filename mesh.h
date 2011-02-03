@@ -23,13 +23,6 @@ namespace psalm
 {
 
 /*!
-*	Typedef for describing a map that contains the weights for an k-sided
-*	face.
-*/
-
-typedef std::map<size_t, std::vector<double> > weights_map;
-
-/*!
 *	@class mesh
 *	@brief Represents a mesh
 */
@@ -147,36 +140,6 @@ class mesh
 		bool save_obj(std::ostream& out);
 		bool save_off(std::ostream& out);
 		bool save_hole(std::ostream& out);
-
-		bool use_parametric_point_creation;	//< Flag signalling that points in subdivision schemes shall
-							//< be computed using the parametric variant. Normally, the
-							//< geometric variant is used.
-
-		bool print_statistics;			//< Flag signalling that statistics shall be printed to
-							//< STDERR--STDOUT cannot be used because the user may
-							//< specify it as an input or output "file".
-
-		bool handle_creases;			//< Flag signalling
-							//< that creases or border edges are handled. The handling depends
-							//< on the algorithm. The CC scheme, for example, will
-							//< compute the midpoint of the crease edges in order to
-							//< obtain a new edge point.
-
-		bool preserve_boundaries;		//< Flag signalling
-							//< that border vertices are preserved. This means that subdivision
-							//< will _preserve_ the original vertices and only create
-							//< points in the middle of a boundary edge.
-
-		bool use_bspline_weights;		//< Flag signalling
-							//< that the B-spline weights are supposed to be use whenever an
-							//< algorithm encounters a regular situation (i.e. 4-sided polygon
-							//< for Doo-Sabin, vertex with valency 4 for Catmull-Clark). Only
-							//< relevant for parametric point creation.
-
-		short weights;				//< Predefined weight set for the current algorithm; implies
-							//< that points are created parametrically
-
-		weights_map ds_custom_weights;		//< Stores custom weights for the DS scheme
 };
 
 /*!
