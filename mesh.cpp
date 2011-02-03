@@ -29,17 +29,7 @@ namespace psalm
 
 mesh::mesh()
 {
-	weights = W_DEFAULT;
-
-	print_statistics		= false;
-
-	use_parametric_point_creation	= false;
-	use_bspline_weights		= false;
-
-	handle_creases			= false;
-	preserve_boundaries		= false;
-
-	id_offset			= 0;
+	id_offset = 0;
 }
 
 /*!
@@ -473,10 +463,15 @@ bool mesh::load_ply(std::istream& in)
 		cur_line++;
 	}
 
+	/*
+	   FIXME
+
 	// Mark boundary vertices if the user has chosen to preserve them.
 	// Else, we do not need the additional information.
 	if(preserve_boundaries)
 		mark_boundaries();
+
+	*/
 
 	return(true);
 }
