@@ -30,6 +30,30 @@ SubdivisionAlgorithm::~SubdivisionAlgorithm()
 }
 
 /*!
+*	Sets or unsets flag signalling geometric point creation. The effect of
+*	this flag depends on the subdivision algorithm. Some algorithms are
+*	implemented without distinguishing between geometric and parametric
+*	point creation. In these cases, for example, the flag will not have any
+*	effect.
+*
+*	@param value New value for flag
+*/
+
+void SubdivisionAlgorithm::set_geometric_point_creation_flag(bool value)
+{
+	use_geometric_point_creation = value;
+}
+
+/*!
+*	@returns Current value of flag signalling geometric point creation.
+*/
+
+bool SubdivisionAlgorithm::get_geometric_point_creation_flag()
+{
+	return(use_geometric_point_creation);
+}
+
+/*!
 *	Sets or unsets flag signalling the preservation of boundaries. The
 *	effects of this flag depend on the subdivision algorithm.
 *
