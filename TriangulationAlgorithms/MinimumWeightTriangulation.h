@@ -6,10 +6,21 @@
 #ifndef __MINIMUM_WEIGHT_TRIANGULATION_H__
 #define __MINIMUM_WEIGHT_TRIANGULATION_H__
 
+#include <cmath>
+
+#include <boost/tuple/tuple.hpp>
+#include <boost/tuple/tuple_comparison.hpp>
+
 #include "TriangulationAlgorithm.h"
 
 namespace psalm
 {
+
+/*!
+*	Typedef for the standard tuple used below.
+*/
+
+typedef boost::tuple<double, double> ktuple;
 
 /*!
 *	@class MinimumWeightTriangulation
@@ -30,10 +41,11 @@ class MinimumWeightTriangulation : public TriangulationAlgorithm
 
 		bool construct_triangulation(mesh& input_mesh, size_t i, size_t k);
 
-		double (*objective_function)(const vertex* v1, const vertex* v2, const vertex* v3);
+		ktuple (*objective_function)(const vertex* v1, const vertex* v2, const vertex* v3);
 
-		static double minimum_area(const vertex* v1, const vertex* v2, const vertex* v3);
-		static double minimum_area_and_angle(const vertex* v1, const vertex* v2, const vertex* v3);
+		static ktuple minimum_area(const vertex* v1, const vertex* v2, const vertex* v3);
+		static ktuple minimum_area_and_angle(const vertex* v1, const vertex* v2, const vertex* v3);
+		static ktuple minimum_area_and_normal_angle(const vertex* v1, const vertex* v2, const vertex* v3);
 };
 
 /*!
@@ -44,14 +56,15 @@ class MinimumWeightTriangulation : public TriangulationAlgorithm
 *	@param v2	2nd vertex of triangle
 *	@param v3	3rd vertex of triangle
 *
-*	@returns	Area of triangle[v1, v2, v3]
+*	@returns	Area of triangle[v1, v2, v3]. Second component of the
+*			tuple is set to 0.0.
 */
 
-inline double MinimumWeightTriangulation::minimum_area(const vertex* v1, const vertex* v2, const vertex* v3)
+inline ktuple MinimumWeightTriangulation::minimum_area(const vertex* v1, const vertex* v2, const vertex* v3)
 {
 	if(v1 == NULL || v2 == NULL || v3 == NULL)
-		return(std::numeric_limits<double>::max());	// ensure that invalid data does not
-								// appear in the weighted triangulation
+		return(boost::tuple<double,double>(std::numeric_limits<double>::max(), 0.0));	// ensure that invalid data does not
+												// appear in the weighted triangulation
 
 	const v3ctor& A = v1->get_position();
 	const v3ctor& B = v2->get_position();
@@ -79,7 +92,7 @@ inline double MinimumWeightTriangulation::minimum_area(const vertex* v1, const v
 
 	*/
 
-	return(area);
+	return(boost::tuple<double, double>(area, 0.0));
 }
 
 /*!
@@ -92,14 +105,15 @@ inline double MinimumWeightTriangulation::minimum_area(const vertex* v1, const v
 *	@param v3	3rd vertex of triangle
 *
 *	@returns	Area of triangle[v1, v2, v3] weighted with a penalty
-*			for skinny triangles.
+*			for skinny triangles. Second component of the tuple is
+*			set to 0.0.
 */
 
-inline double MinimumWeightTriangulation::minimum_area_and_angle(const vertex* v1, const vertex* v2, const vertex* v3)
+inline ktuple MinimumWeightTriangulation::minimum_area_and_angle(const vertex* v1, const vertex* v2, const vertex* v3)
 {
 	if(v1 == NULL || v2 == NULL || v3 == NULL)
-		return(std::numeric_limits<double>::max());	// ensure that invalid data does not
-								// appear in the weighted triangulation
+		return(boost::tuple<double,double>(std::numeric_limits<double>::max(), 0.0));	// ensure that invalid data does not
+												// appear in the weighted triangulation
 
 	const v3ctor& A = v1->get_position();
 	const v3ctor& B = v2->get_position();
@@ -127,8 +141,48 @@ inline double MinimumWeightTriangulation::minimum_area_and_angle(const vertex* v
 
 	*/
 
-	return(area);
+	return(boost::tuple<double, double>(area, 0.0));
 }
+
+/*!
+*	Objective function for the minimum-weight triangulation. Calculates the
+*	area of the triangle and the maximum angle between the normal of the
+*	triangle and the normals of its vertices.
+*
+*	@param v1	1st vertex of triangle
+*	@param v2	2nd vertex of triangle
+*	@param v3	3rd vertex of triangle
+*
+*	@returns	Area of triangle[v1, v2, v3]. Second component of the
+*			tuple is the maximum angle between the triangle normal
+*			and the normals of its vertices.
+*/
+
+inline ktuple MinimumWeightTriangulation::minimum_area_and_normal_angle(const vertex* v1, const vertex* v2, const vertex* v3)
+{
+	if(v1 == NULL || v2 == NULL || v3 == NULL)
+		return(boost::tuple<double,double>(	std::numeric_limits<double>::max(),
+							std::numeric_limits<double>::max()));	// ensure that invalid data does not
+												// appear in the weighted triangulation
+	// Calculate normal of current triangle and angles with the normals of
+	// the vertices of the triangle
+
+	const v3ctor& A = v1->get_position();
+	const v3ctor& B = v2->get_position();
+	const v3ctor& C = v3->get_position();
+
+	v3ctor normal = ((B-A)|(C-A)).normalize();
+
+
+	// "Average" angle -- this is the best we can do here
+	double angle	= 0.33*(acos(normal*v1->get_normal().normalize())+
+				acos(normal*v2->get_normal().normalize())+
+				acos(normal*v3->get_normal().normalize()));
+	double area	= minimum_area(v1, v2, v3).get<0>();
+
+	return(boost::tuple<double, double>(area, angle));
+}
+
 } // end of namespace "psalm"
 
 #endif
