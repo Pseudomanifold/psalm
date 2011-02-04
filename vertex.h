@@ -33,7 +33,9 @@ class vertex
 		void set(double x, double y, double z, size_t id);
 		void set(double x, double y, double z, double nx, double ny, double nz, size_t id);
 		void set_position(const v3ctor& v);
+
 		const v3ctor& get_position() const;
+		const v3ctor& get_normal() const;
 
 		/*!
 		*	@brief Pointer to vertex point.
@@ -102,6 +104,15 @@ inline void vertex::set_position(const v3ctor& p)
 inline const v3ctor& vertex::get_position() const
 {
 	return(p);
+}
+
+/*!
+*	@return Const reference to vertex normal.
+*/
+
+inline const v3ctor& vertex::get_normal() const
+{
+	return(n);
 }
 
 /*!
