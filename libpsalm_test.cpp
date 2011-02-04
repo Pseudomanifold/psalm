@@ -13,16 +13,18 @@
 #include <string>
 
 #include "libpsalm.h"
-#include "hole.h"
 
 /*!
 *	Processes the given .pline file by reading it and converting it to a
 *	format suitable for libpsalm.
 *
-*	@param filename File to process
+*	@param filename		File to process
+*	@param ignore_IDs	If this flag is set, the original vertex IDs
+*				will be ignored. This allows the filled hole to
+*				be treated as a normal mesh.
 */
 
-void process_pline_file(std::string filename)
+void process_pline_file(std::string filename, bool ignore_IDs = false)
 {
 	std::ifstream in(filename.c_str());
 	if(!in.good())
@@ -70,7 +72,10 @@ void process_pline_file(std::string filename)
 					>> coordinates[3*i+1]
 					>> coordinates[3*i+2];
 
-			// XXX: Ignore normals
+			if(ignore_IDs)
+				vertex_IDs[i] = i; // sequentially numbered IDs
+
+			// Ignore normals for now...
 			double dummy;
 			converter >> dummy >> dummy >> dummy;
 		}
