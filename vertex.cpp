@@ -32,7 +32,12 @@ vertex::vertex()
 
 vertex::vertex(double x, double y, double z, size_t id)
 {
-	set(x,y,z,id);
+	set(x, y, z, 0.0, 0.0, 0.0, id);
+}
+
+vertex::vertex(double x, double y, double z, double nx, double ny, double nz, size_t id)
+{
+	set(x, y, z, nx, ny, nz, id);
 }
 
 /*!
@@ -46,9 +51,23 @@ vertex::vertex(double x, double y, double z, size_t id)
 
 void vertex::set(double x, double y, double z, size_t id)
 {
+	set(	x,
+		y,
+		z,
+		0.0, // default normal vector
+		0.0,
+		0.0,
+		id);
+}
+
+void vertex::set(double x, double y, double z, double nx, double ny, double nz, size_t id)
+{
 	this->p[0]	= x;
 	this->p[1]	= y;
 	this->p[2]	= z;
+	this->n[0]	= nx;
+	this->n[1]	= ny;
+	this->n[2]	= nz;
 	this->id	= id;
 
 	// Needs to be initialized, otherwise it cannot be determined whether a

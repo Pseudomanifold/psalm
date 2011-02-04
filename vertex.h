@@ -28,8 +28,10 @@ class vertex
 	public:
 		vertex();
 		vertex(double x, double y, double z, size_t id);
+		vertex(double x, double y, double z, double nx, double ny, double nz, size_t id);
 
 		void set(double x, double y, double z, size_t id);
+		void set(double x, double y, double z, double nx, double ny, double nz, size_t id);
 		void set_position(const v3ctor& v);
 		const v3ctor& get_position() const;
 
@@ -70,8 +72,10 @@ class vertex
 		std::vector<edge*> E;
 		std::vector<const face*> F;
 
-		v3ctor p;
-		size_t id;
+		v3ctor p;		///< Position
+		v3ctor n;		///< Normal vector (need not be set)
+
+		size_t id;		///< ID (used by the mesh to distinguish between certain types of vertices)
 		bool boundary;		///< Flag signalling that the vertex is a boundary vertex
 
 		double scale_attribute;	///< Scale attribute for Liepa's refinement scheme
