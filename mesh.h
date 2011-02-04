@@ -69,6 +69,7 @@ class mesh
 		// Functions for modifying the topology of the mesh
 
 		vertex* add_vertex(double x, double y, double z, size_t id = std::numeric_limits<size_t>::max());
+		vertex* add_vertex(double x, double y, double z, double nx, double ny, double nz, size_t id = std::numeric_limits<size_t>::max());
 		vertex* add_vertex(const v3ctor& pos, size_t id = std::numeric_limits<size_t>::max());
 		void remove_vertex(vertex* v);
 
@@ -140,11 +141,42 @@ class mesh
 
 inline vertex* mesh::add_vertex(double x, double y, double z, size_t id)
 {
+	return(add_vertex(	x,
+				y,
+				z,
+				0.0, // default normal vector
+				0.0,
+				0.0,
+				id));
+}
+
+/*!
+*	Adds a vertex to the mesh. If not specified by the user, the vertex ID
+*	is assigned automatically.
+*
+*	@param x	x position of vertex
+*	@param y	y position of vertex
+*	@param z	z position of vertex
+*	@param nx	x position of normal vector
+*	@param ny	y position of normal vector
+*	@param nz	z position of normal vector
+*	@param id	Vertex ID (by default, this is set to the largest
+*			number fitting into a size_t and thus will be ignored)
+*
+*	@warning The vertices are not checked for duplicates because this
+*	function is assumed to be called from internal methods only.
+*
+*	@return Pointer to new vertex. The pointer remains valid during the
+*	lifecycle of the mesh.
+*/
+
+inline vertex* mesh::add_vertex(double x, double y, double z, double nx, double ny, double nz, size_t id)
+{
 	vertex* v;
 	if(id != std::numeric_limits<size_t>::max())
-		v = new vertex(x,y,z, id);
+		v = new vertex(x,y,z, nx, ny, nz, id);
 	else
-		v = new vertex(x,y,z, V.size()+id_offset);
+		v = new vertex(x,y,z, nx, ny, nz, V.size()+id_offset);
 
 	V.push_back(v);
 	return(v);
