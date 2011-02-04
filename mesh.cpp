@@ -1487,23 +1487,43 @@ void mesh::mark_boundaries()
 
 /*!
 *	Creates a mesh from raw input data. This means that all coordinates and
-*	vertex IDs are stored in arrays instead of files.
+*	vertex IDs are stored in arrays instead of files. If one of the
+*	pointers is NULL, the function will not change anything. Otherwise, the
+*	current mesh will be _destroyed_.
 *
 *	@param num_vertices	Number of vertices
 *	@param vertex_IDs	Array of vertex IDs
 *	@param coordinates	Array of vertex coordinates (coordinates for the
 *				i-th vertex are stored at 3*i, 3*i+1, 3*i+2)
+*	@param normals		Array of normal coordinates (stored just like
+*				the `coordinates` array)
 */
 
-void mesh::load_raw_data(int num_vertices, long* vertex_IDs, double* coordinates)
+void mesh::load_raw_data(int num_vertices, long* vertex_IDs, double* coordinates, double* normals)
 {
+	if(!coordinates || !vertex_IDs)
+		return;
+
 	destroy();
 	long max_id = 0;
 	for(int i = 0; i < num_vertices; i++)
 	{
+		double nx, ny, nz;
+		if(normals)
+		{
+			nx = normals[3*i];
+			ny = normals[3*i+1];
+			nz = normals[3*i+2];
+		}
+		else
+			nx = ny = nz = 0.0; // set default values if no normals are available
+
 		add_vertex(	coordinates[3*i],
 				coordinates[3*i+1],
 				coordinates[3*i+2],
+				nx,
+				ny,
+				nz,
 				vertex_IDs[i]);
 
 		if(vertex_IDs[i] > max_id)
