@@ -4,7 +4,13 @@
 *	@author	Bastian Rieck <bastian.rieck@iwr.uni-heidelberg.de>
 */
 
+#include <sstream>
+#include <string>
 #include <vector>
+
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 
 #include "libpsalm.h"
 #include "mesh.h"
@@ -13,14 +19,33 @@
 #include "TriangulationAlgorithms/MinimumWeightTriangulation.h"
 
 /*!
+*	Generates a filename by creating a UUID and attaching the extension
+*	onto it. This function is used for debugging purposes in order to save
+*	auxiliary results of the triangulation.
+*
+*	@param	extension File extension
+*	@return UUID.extension as a filename
+*/
+
+std::string generate_filename(std::string extension = "ply")
+{
+	boost::uuids::uuid uuid = boost::uuids::random_generator()();
+
+	std::stringstream converter;
+	converter << uuid << "." << extension;
+
+	return(converter.str());
+}
+
+/*!
 *	Given a polygonal line described as a list of vertices, this function
 *	triangulates the hole and subdivides it. Afterwards, the new data is
 *	stored in some arrays given as parameters of the caller.
 *
 *	@param num_vertices	Number of vertices in polygonal line
 *	@param vertex_IDs	List of vertex IDs, used to identify them
-*	@param coordinates	Array of vertex coordinates (size:
-*				3*num_vertices)
+*	@param coordinates	Array of vertex coordinates (size: 3*num_vertices)
+*	@param normals		Array of vertex normals (size: 3*num_vertices)
 *
 *	@param num_new_vertices	Number of new vertices created by the algorithm
 *	@param new_coordinates	Array of vertex coordinates created by the
@@ -36,7 +61,7 @@
 *	@returns true if the hole could be filled, otherwise false
 */
 
-bool fill_hole(	int num_vertices, long* vertex_IDs, double* coordinates,
+bool fill_hole(	int num_vertices, long* vertex_IDs, double* coordinates, double* normals,
 		int* num_new_vertices, double** new_coordinates, int* num_new_faces, long** new_vertex_IDs)
 {
 	bool result = true;
@@ -49,30 +74,17 @@ bool fill_hole(	int num_vertices, long* vertex_IDs, double* coordinates,
 		new_vertex_IDs == NULL)
 		return(false);
 
-	// Create formatted input data for the hole
-
-	std::vector< std::pair<v3ctor, size_t> > vertices;
-	for(int i = 0; i < num_vertices; i++)
-	{
-		v3ctor vertex_position;
-
-		vertex_position[0] = coordinates[3*i];
-		vertex_position[1] = coordinates[3*i+1];
-		vertex_position[2] = coordinates[3*i+2];
-
-		vertices.push_back(std::make_pair(vertex_position, vertex_IDs[i]));
-	}
-
 	psalm::mesh M;
 
 	psalm::Liepa liepa_algorithm;
 	psalm::MinimumWeightTriangulation triangulation_algorithm;
 
-	M.load_raw_data(num_vertices, vertex_IDs, coordinates);
+	M.load_raw_data(num_vertices, vertex_IDs, coordinates, normals);
 	try
 	{
+		// DEBUG
 		result = triangulation_algorithm.apply_to(M);
-		result = (result && liepa_algorithm.apply_to(M));
+		//result = (result && liepa_algorithm.apply_to(M));
 
 		if(result)
 		{
@@ -80,6 +92,13 @@ bool fill_hole(	int num_vertices, long* vertex_IDs, double* coordinates,
 					new_coordinates,
 					num_new_faces,
 					new_vertex_IDs);
+
+			// DEBUG
+			system("touch cat.ply");
+			M.save("test.ply");
+			M.save(generate_filename());
+			system("../catply.pl test.ply cat.ply > cat_.ply");
+			system("mv cat_.ply cat.ply");
 		}
 
 		// signal an error for the calling function
