@@ -42,7 +42,7 @@ bool MinimumWeightTriangulation::apply_to(mesh& input_mesh)
 	indices = new size_t*[n];		// store minimum indices (private member)
 	double** weights = new double*[n];	// store weights of triangulation (only required locally)
 
-	for(size_t i = 0; i < n; i++)
+	for(size_t i = 0; i < n-1; i++)
 	{
 		indices[i] = new size_t[n];
 		weights[i] = new double[n];
@@ -90,7 +90,7 @@ bool MinimumWeightTriangulation::apply_to(mesh& input_mesh)
 	// triangulation. Construct triangulation using the stored indices.
 	bool result = construct_triangulation(input_mesh, 0, n-1);
 
-	for(size_t i = 0; i < n; i++)
+	for(size_t i = 0; i < n-1; i++)
 	{
 		delete[] weights[i];
 		delete[] indices[i];
@@ -129,9 +129,15 @@ bool MinimumWeightTriangulation::construct_triangulation(mesh& input_mesh, size_
 {
 	// abort
 	if(i+2 == k)
-		input_mesh.add_face(	input_mesh.get_vertex(i),	// TODO: Check errors for mesh::add_face()
+	{
+		if(input_mesh.add_face(	input_mesh.get_vertex(i),
 					input_mesh.get_vertex(i+1),
-					input_mesh.get_vertex(k));
+					input_mesh.get_vertex(k)) == NULL)
+		{
+			std::cerr << "psalm: Error: MinimumWeightTriangulation: Unable to construct triangulation\n";
+			return(false);
+		}
+	}
 
 	// use minimum index to branch off
 	else
@@ -143,9 +149,13 @@ bool MinimumWeightTriangulation::construct_triangulation(mesh& input_mesh, size_
 				return(false);
 		}
 
-		input_mesh.add_face(	input_mesh.get_vertex(i),	// TODO: Check errors for mesh::add_face()
+		if(input_mesh.add_face(	input_mesh.get_vertex(i),
 					input_mesh.get_vertex(j),
-					input_mesh.get_vertex(k));
+					input_mesh.get_vertex(k)) == NULL)
+		{
+			std::cerr << "psalm: Error: MinimumWeightTriangulation: Unable to construct triangulation\n";
+			return(false);
+		}
 
 		if(j != k-1)
 		{
