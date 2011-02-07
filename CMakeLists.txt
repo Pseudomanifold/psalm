@@ -95,7 +95,9 @@ SET(LIBPSALM_SRC
 	vertex.cpp
 	directed_edge.cpp
 	SubdivisionAlgorithms/Liepa.cpp
+	SubdivisionAlgorithms/SubdivisionAlgorithm.cpp
 	TriangulationAlgorithms/MinimumWeightTriangulation.cpp
+	TriangulationAlgorithms/TriangulationAlgorithm.cpp
 )
 
 ADD_LIBRARY(psalm ${LIBPSALM_SRC})

@@ -18,7 +18,7 @@ $(BIN): $(MYOBJECTS) Makefile
 
 # Create libpsalm
 libpsalm:
-	@mkdir build; cd build; cmake ../.; make psalm; ln -s libpsalm.a ../.
+	@mkdir build; cd build; cmake ../.; make psalm; cp libpsalm.a ../
 
 
 # Test for libpsalm
