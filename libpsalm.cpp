@@ -43,7 +43,9 @@ std::string generate_filename(std::string extension = "ply")
 *	stored in some arrays given as parameters of the caller.
 *
 *	@param num_vertices	Number of vertices in polygonal line
-*	@param vertex_IDs	List of vertex IDs, used to identify them
+*	@param vertex_IDs	List of vertex IDs, used to identify them. If
+*				this parameter is NULL, the mesh class will
+*				assign sequential vertex IDs, starting with 0.
 *	@param coordinates	Array of vertex coordinates (size: 3*num_vertices)
 *	@param normals		Array of vertex normals (size: 3*num_vertices)
 *
@@ -66,7 +68,6 @@ bool fill_hole(	int num_vertices, long* vertex_IDs, double* coordinates, double*
 {
 	bool result = true;
 	if(	num_vertices == 0		||
-		vertex_IDs == NULL		||
 		coordinates == NULL		||
 		num_new_vertices == NULL	||
 		new_coordinates == NULL		||
@@ -80,38 +81,45 @@ bool fill_hole(	int num_vertices, long* vertex_IDs, double* coordinates, double*
 	psalm::MinimumWeightTriangulation triangulation_algorithm;
 
 	M.load_raw_data(num_vertices, vertex_IDs, coordinates, normals);
-	try
+
+	result = triangulation_algorithm.apply_to(M);						// step 1: triangulate the hole
+
+	double density		= M.get_density();
+	double desired_density	= 600.0; // FIXME: Should be configurable.
+
+	if(density <= desired_density)
+		liepa_algorithm.set_alpha(libpsalm::estimate_density(	density,		// step 2: estimate density based on input parameters
+												// and the triangulation from step 1
+									desired_density));
+	else
+		liepa_algorithm.set_alpha(1.0);
+
+	result = (result && liepa_algorithm.apply_to(M));					// step 3: apply Liepa's subdivision scheme; density
+												// parameter has been set in step 2
+
+	if(result)
 	{
-		// DEBUG
-		result = triangulation_algorithm.apply_to(M);
-		//result = (result && liepa_algorithm.apply_to(M));
+		M.save_raw_data(num_new_vertices,
+				new_coordinates,
+				num_new_faces,
+				new_vertex_IDs);
 
-		if(result)
-		{
-			M.save_raw_data(num_new_vertices,
-					new_coordinates,
-					num_new_faces,
-					new_vertex_IDs);
+		/*
+		   XXX
 
-			// DEBUG
-			system("touch cat.ply");
-			M.save("test.ply");
-			M.save(generate_filename());
-			system("../catply.pl test.ply cat.ply > cat_.ply");
-			system("mv cat_.ply cat.ply");
-		}
-
-		// signal an error for the calling function
-		else
-		{
-			*num_new_vertices	= 0;
-			*num_new_faces		= 0;
-		}
+		   system("touch cat.ply");
+		   M.save("test.ply");
+		   M.save(generate_filename());
+		   system("../catply.pl test.ply cat.ply > cat_.ply");
+		   system("mv cat_.ply cat.ply");
+		*/
 	}
-	// TODO: This should be handled more gracefully
-	catch(...)
+
+	// signal an error for the calling function
+	else
 	{
-		result = false;
+		*num_new_vertices	= 0;
+		*num_new_faces		= 0;
 	}
 
 	return(result);
