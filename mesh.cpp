@@ -1359,9 +1359,15 @@ bool mesh::relax_edge(edge* e)
 		double theta = acos(a.normalize()*b.normalize());	// interior angle between a and b
 		double r = (A-B).length()/(2*sin(theta));		// circumradius
 
+		v3ctor d = (a|b);	// vector perpendicular to a and b; used in
+					// the formula below
+		double d_len = d.length();
+		if(d_len == 0.0)
+			return(false);
+
 		// Compute circumcenter
-		v3ctor c = (b*a.length()*a.length() - a*b.length()*b.length()) | (a | b);
-		c /= 2*(a|b).length()*(a|b).length();
+		v3ctor c = (b*a.length()*a.length() - a*b.length()*b.length()) | d;
+		c /= 2*d_len*d_len;
 		c += C;
 
 		// Find remaining vertex...
