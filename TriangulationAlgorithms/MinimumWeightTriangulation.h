@@ -180,7 +180,7 @@ inline ktuple MinimumWeightTriangulation::minimum_area_and_normal_angle(const ve
 				acos(normal*v3->get_normal().normalize()));
 	double area	= minimum_area(v1, v2, v3).get<0>();
 
-	return(boost::tuple<double, double>(area, angle));
+	return(boost::tuple<double, double>(angle, area));
 }
 
 } // end of namespace "psalm"

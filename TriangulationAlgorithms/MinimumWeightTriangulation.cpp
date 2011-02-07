@@ -81,12 +81,12 @@ bool MinimumWeightTriangulation::apply_to(mesh& input_mesh)
 				// added; for the second component, only the
 				// maximum of _all_ tuples is used
 
-				double area	= weights[i][m].get<0>()+weights[m][k].get<0>()+cur_weight.get<0>();
-				double angle	= std::max(	cur_weight.get<1>(),
-								std::max(	weights[i][m].get<1>(),
-										weights[m][k].get<1>()));
+				double area	= weights[i][m].get<1>()+weights[m][k].get<1>()+cur_weight.get<1>();
+				double angle	= std::max(	cur_weight.get<0>(),
+								std::max(	weights[i][m].get<0>(),
+										weights[m][k].get<0>()));
 
-				ktuple res = boost::tuple<double, double>(area, angle);
+				ktuple res = boost::tuple<double, double>(angle, area);
 				if(res < min_weight)
 				{
 					min_weight = res;
