@@ -17,8 +17,9 @@ $(BIN): $(MYOBJECTS) Makefile
 	$(CC) $(INCLUDES) $(CCFLAGS) $<
 
 # Create libpsalm
-libpsalm: $(LIBOBJECTS) Makefile
-	ar rcs libpsalm.a $(LIBOBJECTS)
+libpsalm:
+	@mkdir build; cd build; cmake ../.; make psalm; ln -s libpsalm.a ../.
+
 
 # Test for libpsalm
 libpsalm_test: libpsalm_test.o Makefile
