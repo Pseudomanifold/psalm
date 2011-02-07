@@ -178,9 +178,9 @@ bool Liepa::apply_to(mesh& input_mesh)
 
 			// Calculate new scaling attributes. TODO: This should become a
 			// function.
-			for(std::vector<vertex*>::iterator v_it = V.begin(); v_it < V.end(); v_it++)
+			for(size_t i = 0; i < input_mesh.num_vertices(); i++)
 			{
-				vertex* v = *v_it;
+				vertex* v = input_mesh.get_vertex(i);
 				size_t n = v->valency();
 
 				if(!v->is_on_boundary())
