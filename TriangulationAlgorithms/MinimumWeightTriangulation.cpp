@@ -37,7 +37,11 @@ bool MinimumWeightTriangulation::apply_to(mesh& input_mesh)
 
 	size_t n = input_mesh.num_vertices();
 	if(n < 3)
+	{
+		std::cerr	<< "psalm: MinimumWeightTriangulation::apply_to(): Not enough vertices to perform triangulation"
+				<< std::endl;
 		return(false);
+	}
 
 	indices = new size_t*[n];		// store minimum indices (private member)
 	ktuple** weights = new ktuple*[n];	// store weights of triangulation (only required locally)
