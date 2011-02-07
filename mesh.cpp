@@ -970,6 +970,33 @@ void mesh::replace_with(mesh& M)
 }
 
 /*!
+*	Calculates the density of a triangular mesh by dividing the number of
+*	vertices by the area of the mesh.
+*
+*	@return	density = num_vertices / area or 0.0 if the area of the mesh is
+*		zero
+*/
+
+double mesh::get_density() // XXX: Should be a `const` function
+{
+	double area = 0.0;
+	for(size_t i = 0; i < num_faces(); i++)
+	{
+		const face* f = get_face(i);
+
+		v3ctor a = f->get_vertex(1)->get_position() - f->get_vertex(0)->get_position();
+		v3ctor b = f->get_vertex(2)->get_position() - f->get_vertex(0)->get_position();
+
+		area += 0.5*(a|b).length();
+	}
+
+	if(area != 0.0)
+		return(num_vertices()/area);
+	else
+		return(0.0);
+}
+
+/*!
 *	Given a vector of pointers to vertices, where the vertices are assumed
 *	to be in counterclockwise order, construct a face and add it to the
 *	mesh.

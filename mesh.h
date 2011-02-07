@@ -66,6 +66,8 @@ class mesh
 		void destroy();
 		void replace_with(mesh& M);
 
+		double get_density();
+
 		// Functions for modifying the topology of the mesh
 
 		vertex* add_vertex(double x, double y, double z, size_t id = std::numeric_limits<size_t>::max());
