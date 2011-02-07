@@ -85,8 +85,6 @@ SET_TARGET_PROPERTIES(psalm_cli PROPERTIES OUTPUT_NAME psalm)
 # Build `libpsalm_test` and `libpsalm` _without_ relying on any libraries; this
 # makes inclusion of the library easier.
 
-FILE(GLOB LIBPSALM_SRC SubdivisionAlgorithms/*.cpp TriangulationAlgorithms/*.cpp)
-
 SET(LIBPSALM_SRC
 	${LIBPSALM_SRC}
 	libpsalm.cpp
@@ -96,6 +94,8 @@ SET(LIBPSALM_SRC
 	edge.cpp
 	vertex.cpp
 	directed_edge.cpp
+	SubdivisionAlgorithms/Liepa.cpp
+	TriangulationAlgorithms/MinimumWeightTriangulation.cpp
 )
 
 ADD_LIBRARY(psalm ${LIBPSALM_SRC})
