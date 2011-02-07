@@ -1520,12 +1520,20 @@ void mesh::mark_boundaries()
 
 /*!
 *	Creates a mesh from raw input data. This means that all coordinates and
-*	vertex IDs are stored in arrays instead of files. If one of the
-*	pointers is NULL, the function will not change anything. Otherwise, the
+*	vertex IDs are stored in arrays instead of files. If the `coordinates`
+*	pointer is NULL, the function will not change anything. Otherwise, the
 *	current mesh will be _destroyed_.
 *
 *	@param num_vertices	Number of vertices
-*	@param vertex_IDs	Array of vertex IDs
+*
+*	@param vertex_IDs	Array of vertex IDs. If the pointer is NULL,
+*				the mesh will assign IDs automatically,
+*				starting with 0. In this case, the ID offset is
+*				_not_ calculating. This behaviour is ideal for
+*				processing files: Since vertices are numbered
+*				sequentially, the mesh can be written to a file
+*				again.
+*
 *	@param coordinates	Array of vertex coordinates (coordinates for the
 *				i-th vertex are stored at 3*i, 3*i+1, 3*i+2)
 *	@param normals		Array of normal coordinates (stored just like
@@ -1534,7 +1542,7 @@ void mesh::mark_boundaries()
 
 void mesh::load_raw_data(int num_vertices, long* vertex_IDs, double* coordinates, double* normals)
 {
-	if(!coordinates || !vertex_IDs)
+	if(!coordinates)
 		return;
 
 	destroy();
@@ -1551,22 +1559,34 @@ void mesh::load_raw_data(int num_vertices, long* vertex_IDs, double* coordinates
 		else
 			nx = ny = nz = 0.0; // set default values if no normals are available
 
+		long id;
+		if(vertex_IDs)
+			id = vertex_IDs[i];
+		else
+			id = i;
+
 		add_vertex(	coordinates[3*i],
 				coordinates[3*i+1],
 				coordinates[3*i+2],
 				nx,
 				ny,
 				nz,
-				vertex_IDs[i]);
+				id);
 
-		if(vertex_IDs[i] > max_id)
+		if(vertex_IDs && vertex_IDs[i] > max_id)
 			max_id = vertex_IDs[i];
 	}
 
-	// The IDs of new vertices must be larger than the IDs of their
-	// predecessors. Otherwise, ID clashes will occur. The id_offset is
-	// used for every mesh::add_vertex() operation.
-	id_offset = static_cast<size_t>(max_id);
+	// Offset is only set if vertex IDs are present
+	if(vertex_IDs)
+	{
+		// The IDs of new vertices must be larger than the IDs of their
+		// predecessors. Otherwise, ID clashes will occur. The id_offset is
+		// used for every mesh::add_vertex() operation.
+		id_offset = static_cast<size_t>(max_id);
+	}
+	else
+		id_offset = 0; // forces vertices to be numbered sequentially
 }
 
 /*!
