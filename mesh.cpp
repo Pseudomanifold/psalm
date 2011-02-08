@@ -1548,13 +1548,18 @@ void mesh::mark_boundaries()
 *
 *	@param coordinates	Array of vertex coordinates (coordinates for the
 *				i-th vertex are stored at 3*i, 3*i+1, 3*i+2)
+*
+*	@param scale_attributes	Array of scale attributes for each vertex, i.e.
+*				the average length of edges incident on the
+*				vertex.
+*
 *	@param normals		Array of normal coordinates (stored just like
 *				the `coordinates` array)
 *
 *	@returns true if data could be loaded, else false.
 */
 
-bool mesh::load_raw_data(int num_vertices, long* vertex_IDs, double* coordinates, double* normals)
+bool mesh::load_raw_data(int num_vertices, long* vertex_IDs, double* coordinates, double* scale_attributes, double* normals)
 {
 	if(!coordinates)
 		return(false);
@@ -1588,14 +1593,21 @@ bool mesh::load_raw_data(int num_vertices, long* vertex_IDs, double* coordinates
 		else
 			id = i;
 
-		add_vertex(	coordinates[3*i],
-				coordinates[3*i+1],
-				coordinates[3*i+2],
-				nx,
-				ny,
-				nz,
-				id);
+		vertex * v = add_vertex(	coordinates[3*i],
+						coordinates[3*i+1],
+						coordinates[3*i+2],
+						nx,
+						ny,
+						nz,
+						id);
 
+		// Set scale attributes if present. Otherwise, the scale
+		// attributes will be calculated by the subdivision algorithm.
+		if(scale_attributes)
+			v->set_scale_attribute(scale_attributes[i]);
+
+		// Only update vertex IDs if the user explicitly specified an
+		// array. Otherwise, IDs will be assigned sequentially.
 		if(vertex_IDs && vertex_IDs[i] > max_id)
 			max_id = vertex_IDs[i];
 	}
