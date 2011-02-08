@@ -3,42 +3,6 @@ PROJECT(psalm)
 
 ADD_DEFINITIONS(-Wall -pedantic -g -O11)
 
-SET(PLINE_FILL_SRC
-	pline_fill.cpp
-	v3ctor.cpp
-	mesh.cpp
-	face.cpp
-	vertex.cpp
-	edge.cpp
-	directed_edge.cpp
-)
-
-SET(LIBPSALM_SRC
-	libpsalm_test.cpp
-	libpsalm.cpp
-	v3ctor.cpp
-	mesh.cpp
-	hole.cpp
-	face.cpp
-	edge.cpp
-	vertex.cpp
-	directed_edge.cpp
-)
-
-ADD_EXECUTABLE(psalm ${PSALM_SRC})
-ADD_EXECUTABLE(pline_fill ${PLINE_FILL_SRC})
-ADD_EXECUTABLE(libpsalm_test ${LIBPSALM_SRC})
-
-SET(SA_TEST_SRC
-	sa_test.cpp
-	mesh.cpp
-	v3ctor.cpp
-	vertex.cpp
-	edge.cpp
-	directed_edge.cpp
-	face.cpp
-)
-
 SET(DENSITY_TEST_SRC
 	density_test.cpp
 	mesh.cpp
