@@ -155,14 +155,6 @@ double estimate_density(double input_density, double desired_density)
 	double b1 =  0.00573126 ;
 	double c0 =  2.29083;
 
-	/*
-	double a0 =  6.08864e-07;
-	double a1 = -0.00167679;
-	double b0 = -1.61397e-06;
-	double b1 =  0.00500891;
-	double c0 =  1.77846;
-	*/
-
 	double x = input_density; // abbreviations so that the function is written more easily
 	double y = desired_density;
 
