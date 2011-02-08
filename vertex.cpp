@@ -11,7 +11,7 @@ namespace psalm
 {
 
 /*!
-*	Default constructor for vertex.
+*	Sets default values for a vertex.
 */
 
 vertex::vertex()
@@ -19,6 +19,7 @@ vertex::vertex()
 	boundary	= false;
 	vertex_point	= NULL;
 	id		= std::numeric_limits<size_t>::max();
+	scale_attribute	= 0.0;
 }
 
 /*!
@@ -77,6 +78,10 @@ void vertex::set(double x, double y, double z, double nx, double ny, double nz, 
 	// By default, no vertex is a boundary vertex. This attribute only
 	// becomes relevant if boundary vertices are to be preserved.
 	boundary = false;
+
+	// Sensible default for any vertex. Negative values make no sense, as
+	// the scale attribute is composed of edge lengths.
+	scale_attribute = 0.0;
 }
 
 /*!
