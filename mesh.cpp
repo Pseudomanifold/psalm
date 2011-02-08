@@ -1158,6 +1158,10 @@ void mesh::remove_face(face* f)
 		else
 			throw(std::runtime_error("mesh::remove_face(): Unable to find reference to face in edge vector"));
 	}
+
+	// Remove references to face from vertices
+	for(size_t i = 0; i < f->num_vertices(); i++)
+		f->get_vertex(i)->remove_face(f);
 }
 
 /*!
