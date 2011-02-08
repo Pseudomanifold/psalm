@@ -21,7 +21,6 @@ SET(PLINE_FILL_SRC
 	pline_fill.cpp
 	v3ctor.cpp
 	mesh.cpp
-	hole.cpp
 	face.cpp
 	vertex.cpp
 	edge.cpp
@@ -77,11 +76,9 @@ ADD_SUBDIRECTORY(TriangulationAlgorithms)
 
 ADD_EXECUTABLE(psalm ${PSALM_SRC})
 ADD_EXECUTABLE(pline_fill ${PLINE_FILL_SRC})
-ADD_EXECUTABLE(sa_test ${SA_TEST_SRC})
 ADD_EXECUTABLE(density_test ${DENSITY_TEST_SRC})
 
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR} SubdivisionAlgorithms TriangulationAlgorithms)
-TARGET_LINK_LIBRARIES(sa_test SubdivisionAlgorithms TriangulationAlgorithms)
 TARGET_LINK_LIBRARIES(psalm SubdivisionAlgorithms ${Boost_LIBRARIES})
 
 # Build `libpsalm_test` and `libpsalm` _without_ relying on any libraries; this
@@ -94,14 +91,13 @@ SET(LIBPSALM_SRC
 	libpsalm.cpp
 	v3ctor.cpp
 	mesh.cpp
-	hole.cpp
 	face.cpp
 	edge.cpp
 	vertex.cpp
 	directed_edge.cpp
 )
 
-ADD_LIBRARY(psalm ${LIBPSALM_SRC})
+ADD_LIBRARY(lpsalm ${LIBPSALM_SRC})
 
 SET(LIBPSALM_SRC
 	${LIBPSALM_SRC}
