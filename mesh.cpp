@@ -1005,15 +1005,25 @@ double mesh::get_density() // XXX: Should be a `const` function
 *	in the order they appear in the vector. A last edge from the last
 *	vertex to the first vertex is added.
 *
+*	@param ignore_orientation_warning Instructs the function to ignore any
+*	warnings that _may_ indicate the wrong orientation. The reason for this
+*	switch is that an algorithm might _remove_ existing faces. If new faces
+*	(using a subset of the edges of the removed face) are added, the
+*	function will complain because this would seem like _changing_ the
+*	existing orientation. If the flag is set to true, this warning will not
+*	appear.
+*
 *	@warning The orientation of the vertices around the face is _not_
 *	checked, but left as a task for the calling function.
 *
 *	@returns Pointer to new face
 */
 
-face* mesh::add_face(std::vector<vertex*> vertices)
+face* mesh::add_face(std::vector<vertex*> vertices, bool ignore_orientiation_warning)
 {
 	static bool warning_shown = false;
+	if(ignore_orientiation_warning)
+		warning_shown = true;
 
 	vertex* u = NULL;
 	vertex* v = NULL;
@@ -1424,8 +1434,8 @@ bool mesh::relax_edge(edge* e)
 	std::pair<vertex*, vertex*> vertices_1st_face = find_remaining_vertices(e->get_v(), old_face_1);
 	std::pair<vertex*, vertex*> vertices_2nd_face = find_remaining_vertices(e->get_u(), old_face_2);
 
-	add_face(vertices_1st_face.first, vertices_1st_face.second, v1);
-	add_face(vertices_2nd_face.first, vertices_2nd_face.second, v2);
+	add_face(vertices_1st_face.first, vertices_1st_face.second, v1, true);
+	add_face(vertices_2nd_face.first, vertices_2nd_face.second, v2, true);
 
 	// ...and free some memory.
 

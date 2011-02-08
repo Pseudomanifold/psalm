@@ -83,9 +83,9 @@ class mesh
 
 		bool relax_edge(edge* e);
 
-		face* add_face(std::vector<vertex*> vertices);
-		face* add_face(vertex* v1, vertex* v2, vertex* v3);
-		face* add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4);
+		face* add_face(std::vector<vertex*> vertices, bool ignore_orientation_warning = false);
+		face* add_face(vertex* v1, vertex* v2, vertex* v3, bool ignore_orientation_warning = false);
+		face* add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4, bool ignore_orientation_warning = false);
 		void remove_face(face* f);
 
 		size_t num_faces() const;
@@ -290,12 +290,15 @@ inline face* mesh::get_face(size_t i)
 *	@param v2 Pointer to 2nd vertex of new face
 *	@param v3 Pointer to 3rd vertex of new face
 *
+*	@param ignore_orientiation_warning Instructs function to ignore
+*	warnings pertaining to a wrong orientation.
+*
 *	@warning The vertex pointers are not checked for consistency.
 *
 *	@returns Pointer to new face
 */
 
-inline face* mesh::add_face(vertex* v1, vertex* v2, vertex* v3)
+inline face* mesh::add_face(vertex* v1, vertex* v2, vertex* v3, bool ignore_orientiation_warning)
 {
 	std::vector<vertex*> vertices;
 
@@ -303,7 +306,7 @@ inline face* mesh::add_face(vertex* v1, vertex* v2, vertex* v3)
 	vertices.push_back(v2);
 	vertices.push_back(v3);
 
-	return(add_face(vertices));
+	return(add_face(vertices, ignore_orientiation_warning));
 }
 
 /*!
@@ -316,13 +319,16 @@ inline face* mesh::add_face(vertex* v1, vertex* v2, vertex* v3)
 *	@param v3 Pointer to 3rd vertex of new face
 *	@param v4 Pointer to 4th vertex of new face
 *
+*	@param ignore_orientiation_warning Instructs function to ignore
+*	warnings pertaining to a wrong orientation.
+*
 *	@warning The vertex pointers are not checked for consistency and
 *	planarity.
 *
 *	@returns Pointer to new face
 */
 
-inline face* mesh::add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4)
+inline face* mesh::add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4, bool ignore_orientiation_warning)
 {
 	std::vector<vertex*> vertices;
 
@@ -331,7 +337,7 @@ inline face* mesh::add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4)
 	vertices.push_back(v3);
 	vertices.push_back(v4);
 
-	return(add_face(vertices));
+	return(add_face(vertices, ignore_orientiation_warning));
 }
 
 /*!
