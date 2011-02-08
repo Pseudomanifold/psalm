@@ -147,6 +147,25 @@ void vertex::add_face(const face* f)
 }
 
 /*!
+*	Removes an adjacent face from the list of adjacent faces of the
+*	vertex.
+*
+*	@param f Pointer to adjacent face
+*
+*	@warning This function does _not_ free any memory used by the face.
+*	Only its reference in the list of adjacent faces is removed.
+*/
+
+void vertex::remove_face(const face* f)
+{
+	std::vector<const face*>::iterator face_pos = std::find(F.begin(), F.end(), f);
+	if(face_pos == F.end())
+		throw(std::runtime_error("vertex::remove_face(): Unable to find face in face vector"));
+	else
+		F.erase(face_pos);
+}
+
+/*!
 *	@param	i Index of adjacent face
 *	@return Pointer to an adjacent face of the vertex
 *	@throws	std::out_of_range if the index is out of bounds

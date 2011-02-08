@@ -55,6 +55,7 @@ class vertex
 		const edge* get_edge(size_t i) const;
 
 		void add_face(const face* f);
+		void remove_face(const face* f);
 		const face* get_face(size_t i) const;
 
 		size_t get_id() const;
