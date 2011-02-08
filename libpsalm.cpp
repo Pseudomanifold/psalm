@@ -96,9 +96,19 @@ bool fill_hole(	int num_vertices, long* vertex_IDs, double* coordinates, double*
 	psalm::Liepa liepa_algorithm;
 	psalm::MinimumWeightTriangulation triangulation_algorithm;
 
-	M.load_raw_data(num_vertices, vertex_IDs, coordinates, scale_attributes, normals);
+	result = M.load_raw_data(	num_vertices,
+					vertex_IDs,
+					coordinates,
+					scale_attributes,
+					normals);
 
-	result = triangulation_algorithm.apply_to(M);						// step 1: triangulate the hole
+	if(!result)
+	{
+		std::cerr << "libpsalm: Data processing failed for fill_hole() failed" << std::endl;
+		return(false);
+	}
+
+	result = (result && triangulation_algorithm.apply_to(M));				// step 1: triangulate the hole
 
 	double density = M.get_density();
 	if(density <= desired_density)
