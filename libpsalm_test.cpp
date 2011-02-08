@@ -13,16 +13,18 @@
 #include <string>
 
 #include "libpsalm.h"
-#include "hole.h"
 
 /*!
 *	Processes the given .pline file by reading it and converting it to a
 *	format suitable for libpsalm.
 *
-*	@param filename File to process
+*	@param filename		File to process
+*	@param ignore_IDs	If this flag is set, the original vertex IDs
+*				will be ignored. This allows the filled hole to
+*				be treated as a normal mesh.
 */
 
-void process_pline_file(std::string filename)
+void process_pline_file(std::string filename, bool ignore_IDs = false)
 {
 	std::ifstream in(filename.c_str());
 	if(!in.good())
@@ -62,17 +64,20 @@ void process_pline_file(std::string filename)
 		// Prepare storage for vertex IDs and vertex coordinates
 		long* vertex_IDs = new long[num_vertices];
 		double* coordinates = new double[3*num_vertices];
+		double* normals = new double[3*num_vertices];
 
 		for(int i = 0; i < num_vertices; i++)
 		{
 			converter	>> vertex_IDs[i]
 					>> coordinates[3*i]
 					>> coordinates[3*i+1]
-					>> coordinates[3*i+2];
+					>> coordinates[3*i+2]
+					>> normals[3*i]
+					>> normals[3*i+1]
+					>> normals[3*i+2];
 
-			// XXX: Ignore normals
-			double dummy;
-			converter >> dummy >> dummy >> dummy;
+			if(ignore_IDs)
+				vertex_IDs[i] = i; // sequentially numbered IDs
 		}
 
 		// Storage for data returned by the algorithm
@@ -81,7 +86,7 @@ void process_pline_file(std::string filename)
 		int num_new_faces	= 0;
 		long* new_vertex_IDs	= NULL;
 
-		bool res = fill_hole(	num_vertices, vertex_IDs, coordinates,
+		bool res = fill_hole(	num_vertices, vertex_IDs, coordinates, normals,
 					&num_new_vertices, &new_coordinates, &num_new_faces, &new_vertex_IDs);
 
 		if(res)
@@ -89,6 +94,7 @@ void process_pline_file(std::string filename)
 
 		delete[] vertex_IDs;
 		delete[] coordinates;
+		delete[] normals;
 
 		delete[] new_coordinates;
 		delete[] new_vertex_IDs;
@@ -105,6 +111,7 @@ void process_pline_file(std::string filename)
 
 int main(int argc, char* argv[])
 {
-	process_pline_file("../Holes/Salmanassar3_Holes_w_Normals_HR_CLEAN_with_Indices.pline");
+	process_pline_file("../Holes/Salmanassar3_Holes_w_Normals_HR_CLEAN_with_Indices.pline", true);
+	//process_pline_file("../Holes/0976.pline", true);
 	return(0);
 }

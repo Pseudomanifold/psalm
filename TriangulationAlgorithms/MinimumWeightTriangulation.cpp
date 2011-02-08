@@ -15,7 +15,7 @@ namespace psalm
 
 MinimumWeightTriangulation::MinimumWeightTriangulation()
 {
-	objective_function = minimum_area;
+	objective_function = minimum_area_and_normal_angle;
 }
 
 /*!
@@ -36,14 +36,20 @@ bool MinimumWeightTriangulation::apply_to(mesh& input_mesh)
 		return(false);
 
 	size_t n = input_mesh.num_vertices();
+	if(n < 3)
+	{
+		std::cerr	<< "psalm: MinimumWeightTriangulation::apply_to(): Not enough vertices to perform triangulation"
+				<< std::endl;
+		return(false);
+	}
 
 	indices = new size_t*[n];		// store minimum indices (private member)
-	double** weights = new double*[n];	// store weights of triangulation (only required locally)
+	ktuple** weights = new ktuple*[n];	// store weights of triangulation (only required locally)
 
-	for(size_t i = 0; i < n; i++)
+	for(size_t i = 0; i < n-1; i++)
 	{
 		indices[i] = new size_t[n];
-		weights[i] = new double[n];
+		weights[i] = new ktuple[n];
 
 		// Initialize weights array correctly
 		if(i < n-1)
@@ -63,15 +69,24 @@ bool MinimumWeightTriangulation::apply_to(mesh& input_mesh)
 			size_t k = i+j;
 
 			// Find minimum
-			double min_weight = std::numeric_limits<double>::max();
+			ktuple min_weight = boost::tuple<double, double>(std::numeric_limits<double>::max(), std::numeric_limits<double>::max());
 			size_t min_index = std::numeric_limits<size_t>::max();
 			for(size_t m = i+1; m < k; m++)
 			{
-				double res =	weights[i][m]+
-						weights[m][k]+objective_function(	input_mesh.get_vertex(i),
-											input_mesh.get_vertex(m),
-											input_mesh.get_vertex(k));
+				ktuple cur_weight = objective_function(	input_mesh.get_vertex(i),
+									input_mesh.get_vertex(m),
+									input_mesh.get_vertex(k));
 
+				// The first component of the tuples can be
+				// added; for the second component, only the
+				// maximum of _all_ tuples is used
+
+				double area	= weights[i][m].get<1>()+weights[m][k].get<1>()+cur_weight.get<1>();
+				double angle	= std::max(	cur_weight.get<0>(),
+								std::max(	weights[i][m].get<0>(),
+										weights[m][k].get<0>()));
+
+				ktuple res = boost::tuple<double, double>(angle, area);
 				if(res < min_weight)
 				{
 					min_weight = res;
@@ -88,7 +103,7 @@ bool MinimumWeightTriangulation::apply_to(mesh& input_mesh)
 	// triangulation. Construct triangulation using the stored indices.
 	bool result = construct_triangulation(input_mesh, 0, n-1);
 
-	for(size_t i = 0; i < n; i++)
+	for(size_t i = 0; i < n-1; i++)
 	{
 		delete[] weights[i];
 		delete[] indices[i];
@@ -127,9 +142,15 @@ bool MinimumWeightTriangulation::construct_triangulation(mesh& input_mesh, size_
 {
 	// abort
 	if(i+2 == k)
-		input_mesh.add_face(	input_mesh.get_vertex(i),	// TODO: Check errors for mesh::add_face()
+	{
+		if(input_mesh.add_face(	input_mesh.get_vertex(i),
 					input_mesh.get_vertex(i+1),
-					input_mesh.get_vertex(k));
+					input_mesh.get_vertex(k)) == NULL)
+		{
+			std::cerr << "psalm: Error: MinimumWeightTriangulation: Unable to construct triangulation\n";
+			return(false);
+		}
+	}
 
 	// use minimum index to branch off
 	else
@@ -141,9 +162,13 @@ bool MinimumWeightTriangulation::construct_triangulation(mesh& input_mesh, size_
 				return(false);
 		}
 
-		input_mesh.add_face(	input_mesh.get_vertex(i),	// TODO: Check errors for mesh::add_face()
+		if(input_mesh.add_face(	input_mesh.get_vertex(i),
 					input_mesh.get_vertex(j),
-					input_mesh.get_vertex(k));
+					input_mesh.get_vertex(k)) == NULL)
+		{
+			std::cerr << "psalm: Error: MinimumWeightTriangulation: Unable to construct triangulation\n";
+			return(false);
+		}
 
 		if(j != k-1)
 		{

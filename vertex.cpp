@@ -11,7 +11,7 @@ namespace psalm
 {
 
 /*!
-*	Default constructor for vertex.
+*	Sets default values for a vertex.
 */
 
 vertex::vertex()
@@ -19,6 +19,7 @@ vertex::vertex()
 	boundary	= false;
 	vertex_point	= NULL;
 	id		= std::numeric_limits<size_t>::max();
+	scale_attribute	= 0.0;
 }
 
 /*!
@@ -32,7 +33,12 @@ vertex::vertex()
 
 vertex::vertex(double x, double y, double z, size_t id)
 {
-	set(x,y,z,id);
+	set(x, y, z, 0.0, 0.0, 0.0, id);
+}
+
+vertex::vertex(double x, double y, double z, double nx, double ny, double nz, size_t id)
+{
+	set(x, y, z, nx, ny, nz, id);
 }
 
 /*!
@@ -46,9 +52,23 @@ vertex::vertex(double x, double y, double z, size_t id)
 
 void vertex::set(double x, double y, double z, size_t id)
 {
+	set(	x,
+		y,
+		z,
+		0.0, // default normal vector
+		0.0,
+		0.0,
+		id);
+}
+
+void vertex::set(double x, double y, double z, double nx, double ny, double nz, size_t id)
+{
 	this->p[0]	= x;
 	this->p[1]	= y;
 	this->p[2]	= z;
+	this->n[0]	= nx;
+	this->n[1]	= ny;
+	this->n[2]	= nz;
 	this->id	= id;
 
 	// Needs to be initialized, otherwise it cannot be determined whether a
@@ -58,6 +78,10 @@ void vertex::set(double x, double y, double z, size_t id)
 	// By default, no vertex is a boundary vertex. This attribute only
 	// becomes relevant if boundary vertices are to be preserved.
 	boundary = false;
+
+	// Sensible default for any vertex. Negative values make no sense, as
+	// the scale attribute is composed of edge lengths.
+	scale_attribute = 0.0;
 }
 
 /*!
@@ -125,6 +149,25 @@ size_t vertex::valency() const
 void vertex::add_face(const face* f)
 {
 	F.push_back(f);
+}
+
+/*!
+*	Removes an adjacent face from the list of adjacent faces of the
+*	vertex.
+*
+*	@param f Pointer to adjacent face
+*
+*	@warning This function does _not_ free any memory used by the face.
+*	Only its reference in the list of adjacent faces is removed.
+*/
+
+void vertex::remove_face(const face* f)
+{
+	std::vector<const face*>::iterator face_pos = std::find(F.begin(), F.end(), f);
+	if(face_pos == F.end())
+		throw(std::runtime_error("vertex::remove_face(): Unable to find face in face vector"));
+	else
+		F.erase(face_pos);
 }
 
 /*!

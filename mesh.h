@@ -58,17 +58,20 @@ class mesh
 		bool load(const std::string& filename, file_type type = TYPE_EXT);
 		bool save(const std::string& filename, file_type type = TYPE_EXT);
 
-		void load_raw_data(int num_vertices, long* vertex_IDs, double* coordinates);
-		void save_raw_data(int* num_new_vertices, double** new_coordinates, int* num_faces, long** vertex_IDs);
+		bool load_raw_data(int num_vertices, long* vertex_IDs, double* coordinates, double* scale_attributes = NULL, double* normals = NULL);
+		bool save_raw_data(int* num_new_vertices, double** new_coordinates, int* num_faces, long** vertex_IDs);
 
 		void prune(	const std::set<size_t>& remove_faces,
 				const std::set<size_t>& remove_vertices);
 		void destroy();
 		void replace_with(mesh& M);
 
+		double get_density();
+
 		// Functions for modifying the topology of the mesh
 
 		vertex* add_vertex(double x, double y, double z, size_t id = std::numeric_limits<size_t>::max());
+		vertex* add_vertex(double x, double y, double z, double nx, double ny, double nz, size_t id = std::numeric_limits<size_t>::max());
 		vertex* add_vertex(const v3ctor& pos, size_t id = std::numeric_limits<size_t>::max());
 		void remove_vertex(vertex* v);
 
@@ -80,9 +83,9 @@ class mesh
 
 		bool relax_edge(edge* e);
 
-		face* add_face(std::vector<vertex*> vertices);
-		face* add_face(vertex* v1, vertex* v2, vertex* v3);
-		face* add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4);
+		face* add_face(std::vector<vertex*> vertices, bool ignore_orientation_warning = false);
+		face* add_face(vertex* v1, vertex* v2, vertex* v3, bool ignore_orientation_warning = false);
+		face* add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4, bool ignore_orientation_warning = false);
 		void remove_face(face* f);
 
 		size_t num_faces() const;
@@ -140,11 +143,42 @@ class mesh
 
 inline vertex* mesh::add_vertex(double x, double y, double z, size_t id)
 {
+	return(add_vertex(	x,
+				y,
+				z,
+				0.0, // default normal vector
+				0.0,
+				0.0,
+				id));
+}
+
+/*!
+*	Adds a vertex to the mesh. If not specified by the user, the vertex ID
+*	is assigned automatically.
+*
+*	@param x	x position of vertex
+*	@param y	y position of vertex
+*	@param z	z position of vertex
+*	@param nx	x position of normal vector
+*	@param ny	y position of normal vector
+*	@param nz	z position of normal vector
+*	@param id	Vertex ID (by default, this is set to the largest
+*			number fitting into a size_t and thus will be ignored)
+*
+*	@warning The vertices are not checked for duplicates because this
+*	function is assumed to be called from internal methods only.
+*
+*	@return Pointer to new vertex. The pointer remains valid during the
+*	lifecycle of the mesh.
+*/
+
+inline vertex* mesh::add_vertex(double x, double y, double z, double nx, double ny, double nz, size_t id)
+{
 	vertex* v;
 	if(id != std::numeric_limits<size_t>::max())
-		v = new vertex(x,y,z, id);
+		v = new vertex(x,y,z, nx, ny, nz, id);
 	else
-		v = new vertex(x,y,z, V.size()+id_offset);
+		v = new vertex(x,y,z, nx, ny, nz, V.size()+id_offset);
 
 	V.push_back(v);
 	return(v);
@@ -256,12 +290,15 @@ inline face* mesh::get_face(size_t i)
 *	@param v2 Pointer to 2nd vertex of new face
 *	@param v3 Pointer to 3rd vertex of new face
 *
+*	@param ignore_orientiation_warning Instructs function to ignore
+*	warnings pertaining to a wrong orientation.
+*
 *	@warning The vertex pointers are not checked for consistency.
 *
 *	@returns Pointer to new face
 */
 
-inline face* mesh::add_face(vertex* v1, vertex* v2, vertex* v3)
+inline face* mesh::add_face(vertex* v1, vertex* v2, vertex* v3, bool ignore_orientiation_warning)
 {
 	std::vector<vertex*> vertices;
 
@@ -269,7 +306,7 @@ inline face* mesh::add_face(vertex* v1, vertex* v2, vertex* v3)
 	vertices.push_back(v2);
 	vertices.push_back(v3);
 
-	return(add_face(vertices));
+	return(add_face(vertices, ignore_orientiation_warning));
 }
 
 /*!
@@ -282,13 +319,16 @@ inline face* mesh::add_face(vertex* v1, vertex* v2, vertex* v3)
 *	@param v3 Pointer to 3rd vertex of new face
 *	@param v4 Pointer to 4th vertex of new face
 *
+*	@param ignore_orientiation_warning Instructs function to ignore
+*	warnings pertaining to a wrong orientation.
+*
 *	@warning The vertex pointers are not checked for consistency and
 *	planarity.
 *
 *	@returns Pointer to new face
 */
 
-inline face* mesh::add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4)
+inline face* mesh::add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4, bool ignore_orientiation_warning)
 {
 	std::vector<vertex*> vertices;
 
@@ -297,7 +337,7 @@ inline face* mesh::add_face(vertex* v1, vertex* v2, vertex* v3, vertex* v4)
 	vertices.push_back(v3);
 	vertices.push_back(v4);
 
-	return(add_face(vertices));
+	return(add_face(vertices, ignore_orientiation_warning));
 }
 
 /*!

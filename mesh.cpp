@@ -318,11 +318,14 @@ bool mesh::load_ply(std::istream& in)
 	size_t num_vertices	= 0;
 	size_t num_faces	= 0;
 
-	const short MODE_PARSE_HEADER			= 0;
-	const short MODE_PARSE_VERTEX_PROPERTIES	= 1;
-	const short MODE_PARSE_FACE_PROPERTIES		= 2;
+	enum modes
+	{
+		PARSE_HEADER,
+		PARSE_VERTEX_PROPERTIES,
+		PARSE_FACE_PROPERTIES
+	};
 
-	short mode = MODE_PARSE_HEADER;
+	modes mode = PARSE_HEADER;
 	while(!in.eof())
 	{
 		getline(in, data);
@@ -339,7 +342,7 @@ bool mesh::load_ply(std::istream& in)
 
 		switch(mode)
 		{
-			case MODE_PARSE_VERTEX_PROPERTIES:
+			case PARSE_VERTEX_PROPERTIES:
 
 				if(data.find("property") != std::string::npos)
 				{
@@ -353,7 +356,7 @@ bool mesh::load_ply(std::istream& in)
 				}
 				else if(data.find("element face") != std::string::npos)
 				{
-					mode = MODE_PARSE_FACE_PROPERTIES;
+					mode = PARSE_FACE_PROPERTIES;
 
 					std::string dummy; // not necessary, but more readable
 					std::istringstream converter(data);
@@ -367,7 +370,7 @@ bool mesh::load_ply(std::istream& in)
 						return(false);
 					}
 
-					mode = MODE_PARSE_FACE_PROPERTIES;
+					mode = PARSE_FACE_PROPERTIES;
 				}
 				else
 				{
@@ -377,7 +380,7 @@ bool mesh::load_ply(std::istream& in)
 
 				break;
 
-			case MODE_PARSE_FACE_PROPERTIES:
+			case PARSE_FACE_PROPERTIES:
 
 				if(data.find("property list") == std::string::npos)
 				{
@@ -389,11 +392,11 @@ bool mesh::load_ply(std::istream& in)
 				break;
 
 			// Expect "element vertex" line
-			case MODE_PARSE_HEADER:
+			case PARSE_HEADER:
 
 				if(data.find("element vertex") != std::string::npos)
 				{
-					mode = MODE_PARSE_VERTEX_PROPERTIES;
+					mode = PARSE_VERTEX_PROPERTIES;
 
 					std::string dummy; // not necessary, but more readable
 					std::istringstream converter(data);
@@ -408,7 +411,7 @@ bool mesh::load_ply(std::istream& in)
 						return(false);
 					}
 
-					mode = MODE_PARSE_VERTEX_PROPERTIES;
+					mode = PARSE_VERTEX_PROPERTIES;
 				}
 				else
 				{
@@ -967,6 +970,33 @@ void mesh::replace_with(mesh& M)
 }
 
 /*!
+*	Calculates the density of a triangular mesh by dividing the number of
+*	vertices by the area of the mesh.
+*
+*	@return	density = num_vertices / area or 0.0 if the area of the mesh is
+*		zero
+*/
+
+double mesh::get_density() // XXX: Should be a `const` function
+{
+	double area = 0.0;
+	for(size_t i = 0; i < num_faces(); i++)
+	{
+		const face* f = get_face(i);
+
+		v3ctor a = f->get_vertex(1)->get_position() - f->get_vertex(0)->get_position();
+		v3ctor b = f->get_vertex(2)->get_position() - f->get_vertex(0)->get_position();
+
+		area += 0.5*(a|b).length();
+	}
+
+	if(area != 0.0)
+		return(num_vertices()/area);
+	else
+		return(0.0);
+}
+
+/*!
 *	Given a vector of pointers to vertices, where the vertices are assumed
 *	to be in counterclockwise order, construct a face and add it to the
 *	mesh.
@@ -975,15 +1005,25 @@ void mesh::replace_with(mesh& M)
 *	in the order they appear in the vector. A last edge from the last
 *	vertex to the first vertex is added.
 *
+*	@param ignore_orientation_warning Instructs the function to ignore any
+*	warnings that _may_ indicate the wrong orientation. The reason for this
+*	switch is that an algorithm might _remove_ existing faces. If new faces
+*	(using a subset of the edges of the removed face) are added, the
+*	function will complain because this would seem like _changing_ the
+*	existing orientation. If the flag is set to true, this warning will not
+*	appear.
+*
 *	@warning The orientation of the vertices around the face is _not_
 *	checked, but left as a task for the calling function.
 *
 *	@returns Pointer to new face
 */
 
-face* mesh::add_face(std::vector<vertex*> vertices)
+face* mesh::add_face(std::vector<vertex*> vertices, bool ignore_orientiation_warning)
 {
 	static bool warning_shown = false;
+	if(ignore_orientiation_warning)
+		warning_shown = true;
 
 	vertex* u = NULL;
 	vertex* v = NULL;
@@ -1039,10 +1079,8 @@ face* mesh::add_face(std::vector<vertex*> vertices)
 			// In this case, we cannot proceed -- the mesh would become degenerate
 			else if(edge.e->get_g() != NULL)
 			{
-			#ifdef NO_EXCEPTIONS
-			#else
-				throw(std::runtime_error("mesh::add_face(): Attempted overwrite of the face references of an edge"));
-			#endif
+				std::cerr << "psalm: Error: mesh::add_face(): Attempted overwrite of the face references of an edge\n";
+				return(NULL);
 			}
 
 			u->add_face(f);
@@ -1120,6 +1158,10 @@ void mesh::remove_face(face* f)
 		else
 			throw(std::runtime_error("mesh::remove_face(): Unable to find reference to face in edge vector"));
 	}
+
+	// Remove references to face from vertices
+	for(size_t i = 0; i < f->num_vertices(); i++)
+		f->get_vertex(i)->remove_face(f);
 }
 
 /*!
@@ -1331,9 +1373,15 @@ bool mesh::relax_edge(edge* e)
 		double theta = acos(a.normalize()*b.normalize());	// interior angle between a and b
 		double r = (A-B).length()/(2*sin(theta));		// circumradius
 
+		v3ctor d = (a|b);	// vector perpendicular to a and b; used in
+					// the formula below
+		double d_len = d.length();
+		if(d_len == 0.0)
+			return(false);
+
 		// Compute circumcenter
-		v3ctor c = (b*a.length()*a.length() - a*b.length()*b.length()) | (a | b);
-		c /= 2*(a|b).length()*(a|b).length();
+		v3ctor c = (b*a.length()*a.length() - a*b.length()*b.length()) | d;
+		c /= 2*d_len*d_len;
 		c += C;
 
 		// Find remaining vertex...
@@ -1360,24 +1408,20 @@ bool mesh::relax_edge(edge* e)
 	// be performed.
 	if(v1 == v2)
 	{
-	#ifdef NO_EXCEPTIONS
-	#else
-		throw(std::runtime_error("mesh::relax_edge(): Mesh is degenerate -- cannot swap edge"));
-	#endif
+		std::cerr << "psalm: Error: mesh::relax_edge(): Mesh is degenerate -- cannot swap edge\n";
+		return(false);
 	}
 
 	if(!swap)
 		return(false);
 
-	/*
-		XXX: Leads to problems?
+	// XXX: Check if this might lead to problems
 
 	// Check whether the edge that is going to be swapped already exists.
 	// In this case, the edge swap is also denied, as it would overwrite
 	// existing faces
 	if(E_M.find(calc_edge_id(v1, v2)) != E_M.end()) // TODO: Optimize
 		return(false);
-	*/
 
 	// Remove both of the old faces and the corresponding edge...
 
@@ -1394,8 +1438,8 @@ bool mesh::relax_edge(edge* e)
 	std::pair<vertex*, vertex*> vertices_1st_face = find_remaining_vertices(e->get_v(), old_face_1);
 	std::pair<vertex*, vertex*> vertices_2nd_face = find_remaining_vertices(e->get_u(), old_face_2);
 
-	add_face(vertices_1st_face.first, vertices_1st_face.second, v1);
-	add_face(vertices_2nd_face.first, vertices_2nd_face.second, v2);
+	add_face(vertices_1st_face.first, vertices_1st_face.second, v1, true);
+	add_face(vertices_2nd_face.first, vertices_2nd_face.second, v2, true);
 
 	// ...and free some memory.
 
@@ -1488,33 +1532,98 @@ void mesh::mark_boundaries()
 
 /*!
 *	Creates a mesh from raw input data. This means that all coordinates and
-*	vertex IDs are stored in arrays instead of files.
+*	vertex IDs are stored in arrays instead of files. If the `coordinates`
+*	pointer is NULL, the function will not change anything. Otherwise, the
+*	current mesh will be _destroyed_.
 *
 *	@param num_vertices	Number of vertices
-*	@param vertex_IDs	Array of vertex IDs
+*
+*	@param vertex_IDs	Array of vertex IDs. If the pointer is NULL,
+*				the mesh will assign IDs automatically,
+*				starting with 0. In this case, the ID offset is
+*				_not_ calculating. This behaviour is ideal for
+*				processing files: Since vertices are numbered
+*				sequentially, the mesh can be written to a file
+*				again.
+*
 *	@param coordinates	Array of vertex coordinates (coordinates for the
 *				i-th vertex are stored at 3*i, 3*i+1, 3*i+2)
+*
+*	@param scale_attributes	Array of scale attributes for each vertex, i.e.
+*				the average length of edges incident on the
+*				vertex.
+*
+*	@param normals		Array of normal coordinates (stored just like
+*				the `coordinates` array)
+*
+*	@returns true if data could be loaded, else false.
 */
 
-void mesh::load_raw_data(int num_vertices, long* vertex_IDs, double* coordinates)
+bool mesh::load_raw_data(int num_vertices, long* vertex_IDs, double* coordinates, double* scale_attributes, double* normals)
 {
+	if(!coordinates)
+		return(false);
+
 	destroy();
 	long max_id = 0;
 	for(int i = 0; i < num_vertices; i++)
 	{
-		add_vertex(	coordinates[3*i],
-				coordinates[3*i+1],
-				coordinates[3*i+2],
-				vertex_IDs[i]);
+		double nx, ny, nz;
+		if(normals)
+		{
+			nx = normals[3*i];
+			ny = normals[3*i+1];
+			nz = normals[3*i+2];
+		}
+		else
+			nx = ny = nz = 0.0; // set default values if no normals are available
 
-		if(vertex_IDs[i] > max_id)
+		long id;
+		if(vertex_IDs)
+		{
+			id = vertex_IDs[i];
+			if(id == 0)
+			{
+				std::cerr	<< "psalm: mesh::load_raw_data(): Vertex ID is 0 -- this will lead to problems. Aborting..."
+						<< std::endl;
+
+				return(false);
+			}
+		}
+		else
+			id = i;
+
+		vertex * v = add_vertex(	coordinates[3*i],
+						coordinates[3*i+1],
+						coordinates[3*i+2],
+						nx,
+						ny,
+						nz,
+						id);
+
+		// Set scale attributes if present. Otherwise, the scale
+		// attributes will be calculated by the subdivision algorithm.
+		if(scale_attributes)
+			v->set_scale_attribute(scale_attributes[i]);
+
+		// Only update vertex IDs if the user explicitly specified an
+		// array. Otherwise, IDs will be assigned sequentially.
+		if(vertex_IDs && vertex_IDs[i] > max_id)
 			max_id = vertex_IDs[i];
 	}
 
-	// The IDs of new vertices must be larger than the IDs of their
-	// predecessors. Otherwise, ID clashes will occur. The id_offset is
-	// used for every mesh::add_vertex() operation.
-	id_offset = static_cast<size_t>(max_id);
+	// Offset is only set if vertex IDs are present
+	if(vertex_IDs)
+	{
+		// The IDs of new vertices must be larger than the IDs of their
+		// predecessors. Otherwise, ID clashes will occur. The id_offset is
+		// used for every mesh::add_vertex() operation.
+		id_offset = static_cast<size_t>(max_id);
+	}
+	else
+		id_offset = 0; // forces vertices to be numbered sequentially
+
+	return(true);
 }
 
 /*!
@@ -1534,9 +1643,11 @@ void mesh::load_raw_data(int num_vertices, long* vertex_IDs, double* coordinates
 *	@param vertex_IDs	Face connectivity information -- a negative ID
 *				signifies an old vertex. This has to be taken
 *				into account by the caller.
+*
+*	@returns true if data could be saved, else false.
 */
 
-void mesh::save_raw_data(int* num_new_vertices, double** new_coordinates, int* num_faces, long** vertex_IDs)
+bool mesh::save_raw_data(int* num_new_vertices, double** new_coordinates, int* num_faces, long** vertex_IDs)
 {
 	size_t num_boundary_vertices = 0;		// count boundary vertices to obtain correct IDs
 	std::vector<const vertex*> new_vertices;	// stores new vertices
@@ -1579,7 +1690,11 @@ void mesh::save_raw_data(int* num_new_vertices, double** new_coordinates, int* n
 
 		// Hole is assumed to consist of triangular faces only
 		if(f->num_vertices() != 3)
-			throw(std::runtime_error("mesh::save_raw_data(): Unable to handle non-triangular faces"));
+		{
+			std::cerr	<< "psalm: mesh::save_raw_data(): Unable to handle non-triangular faces"
+					<< std::endl;
+			return(false);
+		}
 
 		for(size_t i = 0; i < 3; i++)
 		{
@@ -1601,6 +1716,8 @@ void mesh::save_raw_data(int* num_new_vertices, double** new_coordinates, int* n
 			}
 		}
 	}
+
+	return(true);
 }
 
 } // end of namespace "psalm"

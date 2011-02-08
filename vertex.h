@@ -28,10 +28,14 @@ class vertex
 	public:
 		vertex();
 		vertex(double x, double y, double z, size_t id);
+		vertex(double x, double y, double z, double nx, double ny, double nz, size_t id);
 
 		void set(double x, double y, double z, size_t id);
+		void set(double x, double y, double z, double nx, double ny, double nz, size_t id);
 		void set_position(const v3ctor& v);
+
 		const v3ctor& get_position() const;
+		const v3ctor& get_normal() const;
 
 		/*!
 		*	@brief Pointer to vertex point.
@@ -51,6 +55,7 @@ class vertex
 		const edge* get_edge(size_t i) const;
 
 		void add_face(const face* f);
+		void remove_face(const face* f);
 		const face* get_face(size_t i) const;
 
 		size_t get_id() const;
@@ -70,8 +75,10 @@ class vertex
 		std::vector<edge*> E;
 		std::vector<const face*> F;
 
-		v3ctor p;
-		size_t id;
+		v3ctor p;		///< Position
+		v3ctor n;		///< Normal vector (need not be set)
+
+		size_t id;		///< ID (used by the mesh to distinguish between certain types of vertices)
 		bool boundary;		///< Flag signalling that the vertex is a boundary vertex
 
 		double scale_attribute;	///< Scale attribute for Liepa's refinement scheme
@@ -98,6 +105,15 @@ inline void vertex::set_position(const v3ctor& p)
 inline const v3ctor& vertex::get_position() const
 {
 	return(p);
+}
+
+/*!
+*	@return Const reference to vertex normal.
+*/
+
+inline const v3ctor& vertex::get_normal() const
+{
+	return(n);
 }
 
 /*!

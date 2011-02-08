@@ -65,7 +65,13 @@ bool Liepa::apply_to(mesh& input_mesh)
 		for(size_t i = 0; i < n; i++)
 			attribute += v->get_edge(i)->calc_length()/static_cast<double>(n);
 
-		v->set_scale_attribute(attribute);
+		// If the scale attributes have already been seeded, their
+		// average is taken to be the new scale attribute...
+		double old_attribute = v->get_scale_attribute();
+		if(old_attribute != 0.0)
+			v->set_scale_attribute(0.5*(old_attribute + attribute));
+		else
+			v->set_scale_attribute(attribute);
 	}
 
 	bool created_new_triangle;
@@ -135,14 +141,20 @@ bool Liepa::apply_to(mesh& input_mesh)
 				input_mesh.remove_face(f);
 				delete f;
 
-				face* new_face1 = input_mesh.add_face(vertices[0], vertices[1], centroid_vertex);
-				face* new_face2 = input_mesh.add_face(centroid_vertex, vertices[1], vertices[2]);
-				face* new_face3 = input_mesh.add_face(vertices[0], centroid_vertex, vertices[2]);
+				face* new_face1 = input_mesh.add_face(vertices[0], vertices[1], centroid_vertex, true);
+				face* new_face2 = input_mesh.add_face(centroid_vertex, vertices[1], vertices[2], true);
+				face* new_face3 = input_mesh.add_face(vertices[0], centroid_vertex, vertices[2], true);
+
+				if(!new_face1 || !new_face2 || !new_face3)
+				{
+					std::cerr << "psalm: Error: Liepa::apply_to(): Unable to add new face\n";
+					return(false);
+				}
 
 				num_faces--;
 				i--;
 
-				// Relax edges afterward to maintain
+				// Relax edges afterwards to maintain
 				// Delaunay-like mesh
 
 				input_mesh.relax_edge(new_face1->get_edge(0).e);
@@ -172,9 +184,9 @@ bool Liepa::apply_to(mesh& input_mesh)
 
 			// Calculate new scaling attributes. TODO: This should become a
 			// function.
-			for(std::vector<vertex*>::iterator v_it = V.begin(); v_it < V.end(); v_it++)
+			for(size_t i = 0; i < input_mesh.num_vertices(); i++)
 			{
-				vertex* v = *v_it;
+				vertex* v = input_mesh.get_vertex(i);
 				size_t n = v->valency();
 
 				if(!v->is_on_boundary())
