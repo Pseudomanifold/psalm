@@ -73,6 +73,21 @@ ADD_EXECUTABLE(density_test ${DENSITY_TEST_SRC})
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR} SubdivisionAlgorithms TriangulationAlgorithms)
 TARGET_LINK_LIBRARIES(sa_test SubdivisionAlgorithms TriangulationAlgorithms)
 
+SET(LIBPSALM_SRC
+	libpsalm_test.cpp
+	libpsalm.cpp
+	v3ctor.cpp
+	mesh.cpp
+	hole.cpp
+	face.cpp
+	edge.cpp
+	vertex.cpp
+	directed_edge.cpp
+)
+
+ADD_EXECUTABLE(libpsalm_test ${LIBPSALM_SRC})
+TARGET_LINK_LIBRARIES(libpsalm_test SubdivisionAlgorithms TriangulationAlgorithms)
+
 # Create subdivided test data using "meshlab"
 ADD_CUSTOM_TARGET(	test
 			echo "Catmull-Clark subdivision"
