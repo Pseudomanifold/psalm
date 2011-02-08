@@ -1546,12 +1546,14 @@ void mesh::mark_boundaries()
 *				i-th vertex are stored at 3*i, 3*i+1, 3*i+2)
 *	@param normals		Array of normal coordinates (stored just like
 *				the `coordinates` array)
+*
+*	@returns true if data could be loaded, else false.
 */
 
-void mesh::load_raw_data(int num_vertices, long* vertex_IDs, double* coordinates, double* normals)
+bool mesh::load_raw_data(int num_vertices, long* vertex_IDs, double* coordinates, double* normals)
 {
 	if(!coordinates)
-		return;
+		return(false);
 
 	destroy();
 	long max_id = 0;
@@ -1569,7 +1571,16 @@ void mesh::load_raw_data(int num_vertices, long* vertex_IDs, double* coordinates
 
 		long id;
 		if(vertex_IDs)
+		{
 			id = vertex_IDs[i];
+			if(id == 0)
+			{
+				std::cerr	<< "psalm: mesh::load_raw_data(): Vertex ID is 0 -- this will lead to problems. Aborting..."
+						<< std::endl;
+
+				return(false);
+			}
+		}
 		else
 			id = i;
 
@@ -1595,6 +1606,8 @@ void mesh::load_raw_data(int num_vertices, long* vertex_IDs, double* coordinates
 	}
 	else
 		id_offset = 0; // forces vertices to be numbered sequentially
+
+	return(true);
 }
 
 /*!
@@ -1614,9 +1627,11 @@ void mesh::load_raw_data(int num_vertices, long* vertex_IDs, double* coordinates
 *	@param vertex_IDs	Face connectivity information -- a negative ID
 *				signifies an old vertex. This has to be taken
 *				into account by the caller.
+*
+*	@returns true if data could be saved, else false.
 */
 
-void mesh::save_raw_data(int* num_new_vertices, double** new_coordinates, int* num_faces, long** vertex_IDs)
+bool mesh::save_raw_data(int* num_new_vertices, double** new_coordinates, int* num_faces, long** vertex_IDs)
 {
 	size_t num_boundary_vertices = 0;		// count boundary vertices to obtain correct IDs
 	std::vector<const vertex*> new_vertices;	// stores new vertices
@@ -1659,7 +1674,11 @@ void mesh::save_raw_data(int* num_new_vertices, double** new_coordinates, int* n
 
 		// Hole is assumed to consist of triangular faces only
 		if(f->num_vertices() != 3)
-			throw(std::runtime_error("mesh::save_raw_data(): Unable to handle non-triangular faces"));
+		{
+			std::cerr	<< "psalm: mesh::save_raw_data(): Unable to handle non-triangular faces"
+					<< std::endl;
+			return(false);
+		}
 
 		for(size_t i = 0; i < 3; i++)
 		{
@@ -1681,6 +1700,8 @@ void mesh::save_raw_data(int* num_new_vertices, double** new_coordinates, int* n
 			}
 		}
 	}
+
+	return(true);
 }
 
 } // end of namespace "psalm"
