@@ -43,18 +43,32 @@ std::string generate_filename(std::string extension = "ply")
 *	stored in some arrays given as parameters of the caller.
 *
 *	@param num_vertices	Number of vertices in polygonal line
+*
 *	@param vertex_IDs	List of vertex IDs, used to identify them. If
 *				this parameter is NULL, the mesh class will
 *				assign sequential vertex IDs, starting with 0.
+*
 *	@param coordinates	Array of vertex coordinates (size: 3*num_vertices)
+*
+*	@param scale_attributes	Array of scale attributes (size: num_vertices).
+*				The scale attribute is the average length of all
+*				edges incident on the vertex. This parameter is
+*				used for the subdivision algorithm. If the pointer
+*				is NULL, the scale attributes will not be initialized
+*				but the algorithm will still work.
+*
 *	@param normals		Array of vertex normals (size: 3*num_vertices)
+*
 *	@param desired_density	Desired density value (approximate) for the
 *				filled hole
 *
 *	@param num_new_vertices	Number of new vertices created by the algorithm
+*
 *	@param new_coordinates	Array of vertex coordinates created by the
 *				algorithm (size: 3*num_new_vertices)
+*
 *	@param num_new_faces	Number of new faces created by the algorithm
+*
 *	@param new_vertex_IDs	List of vertex IDs for the new faces (size:
 *				3*num_new_faces). Negative IDs signify that the
 *				vertex is _not_ new.
@@ -65,7 +79,7 @@ std::string generate_filename(std::string extension = "ply")
 *	@returns true if the hole could be filled, otherwise false
 */
 
-bool fill_hole(	int num_vertices, long* vertex_IDs, double* coordinates, double* normals, double desired_density,
+bool fill_hole(	int num_vertices, long* vertex_IDs, double* coordinates, double* scale_attributes, double* normals, double desired_density,
 		int* num_new_vertices, double** new_coordinates, int* num_new_faces, long** new_vertex_IDs)
 {
 	bool result = true;
@@ -82,7 +96,7 @@ bool fill_hole(	int num_vertices, long* vertex_IDs, double* coordinates, double*
 	psalm::Liepa liepa_algorithm;
 	psalm::MinimumWeightTriangulation triangulation_algorithm;
 
-	M.load_raw_data(num_vertices, vertex_IDs, coordinates, normals);
+	M.load_raw_data(num_vertices, vertex_IDs, coordinates, scale_attributes, normals);
 
 	result = triangulation_algorithm.apply_to(M);						// step 1: triangulate the hole
 
