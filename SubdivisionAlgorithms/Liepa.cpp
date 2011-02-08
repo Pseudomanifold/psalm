@@ -135,9 +135,9 @@ bool Liepa::apply_to(mesh& input_mesh)
 				input_mesh.remove_face(f);
 				delete f;
 
-				face* new_face1 = input_mesh.add_face(vertices[0], vertices[1], centroid_vertex);
-				face* new_face2 = input_mesh.add_face(centroid_vertex, vertices[1], vertices[2]);
-				face* new_face3 = input_mesh.add_face(vertices[0], centroid_vertex, vertices[2]);
+				face* new_face1 = input_mesh.add_face(vertices[0], vertices[1], centroid_vertex, true);
+				face* new_face2 = input_mesh.add_face(centroid_vertex, vertices[1], vertices[2], true);
+				face* new_face3 = input_mesh.add_face(vertices[0], centroid_vertex, vertices[2], true);
 
 				if(!new_face1 || !new_face2 || !new_face3)
 				{
