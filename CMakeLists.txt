@@ -24,7 +24,6 @@ INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 ADD_SUBDIRECTORY(SubdivisionAlgorithms)
 ADD_SUBDIRECTORY(TriangulationAlgorithms)
 
-#ADD_EXECUTABLE(pline_fill ${PLINE_FILL_SRC})
 #ADD_EXECUTABLE(density_test ${DENSITY_TEST_SRC})
 
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR} SubdivisionAlgorithms TriangulationAlgorithms)
