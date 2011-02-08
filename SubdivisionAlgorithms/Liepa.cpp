@@ -65,7 +65,13 @@ bool Liepa::apply_to(mesh& input_mesh)
 		for(size_t i = 0; i < n; i++)
 			attribute += v->get_edge(i)->calc_length()/static_cast<double>(n);
 
-		v->set_scale_attribute(attribute);
+		// If the scale attributes have already been seeded, their
+		// average is taken to be the new scale attribute...
+		double old_attribute = v->get_scale_attribute();
+		if(old_attribute != 0.0)
+			v->set_scale_attribute(0.5*(old_attribute + attribute));
+		else
+			v->set_scale_attribute(attribute);
 	}
 
 	bool created_new_triangle;
