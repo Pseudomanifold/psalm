@@ -76,8 +76,7 @@ void process_pline_file(std::string filename, bool ignore_IDs = false)
 					>> normals[3*i+1]
 					>> normals[3*i+2];
 
-			if(ignore_IDs)
-				vertex_IDs[i] = i; // sequentially numbered IDs
+			vertex_IDs[i]++; // ID == 0 would cause problems
 		}
 
 		// Storage for data returned by the algorithm
