@@ -128,15 +128,9 @@ bool fill_hole(	int num_vertices, long* vertex_IDs, double* coordinates, double*
 				num_new_faces,
 				new_vertex_IDs);
 
-		/*
-		   XXX
-
-		   system("touch cat.ply");
-		   M.save("test.ply");
-		   M.save(generate_filename());
-		   system("../catply.pl test.ply cat.ply > cat_.ply");
-		   system("mv cat_.ply cat.ply");
-		*/
+		#ifdef DEBUG
+			M.save(generate_filename());
+		#endif
 	}
 
 	// signal an error for the calling function
