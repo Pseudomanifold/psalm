@@ -35,7 +35,7 @@ void process_pline_file(std::string filename, bool ignore_IDs = false)
 		return;
 	}
 	else
-		std::cout << "pline_fill: Processing file \"" << filename << "\" " << std::flush;
+		std::cerr << "pline_fill: Processing file \"" << filename << "\" " << std::flush;
 
 	std::string line;
 	std::stringstream converter;
@@ -102,10 +102,10 @@ void process_pline_file(std::string filename, bool ignore_IDs = false)
 		converter.clear();
 		line.clear();
 
-		std::cout << "." << std::flush;
+		std::cerr << "." << std::flush;
 	}
 
-	std::cout	<< std::endl
+	std::cerr	<< std::endl
 			<< "Closed " << num_closed_holes << " holes." << std::endl;
 }
 
