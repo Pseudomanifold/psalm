@@ -1,10 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(psalm) 
 
-# This is evil but currently necessary. Else, it would be impossible to build
-# libpsalm _and_ psalm from the same CMake file.
-CMAKE_POLICY(SET CMP0002 OLD)
-
 ADD_DEFINITIONS(-Wall -pedantic -g -O11)
 
 # Include boost::program_options into psalm
