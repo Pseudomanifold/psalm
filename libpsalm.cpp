@@ -59,9 +59,6 @@ std::string generate_filename(std::string extension = "ply")
 *
 *	@param normals		Array of vertex normals (size: 3*num_vertices)
 *
-*	@param desired_density	Desired density value (approximate) for the
-*				filled hole
-*
 *	@param num_new_vertices	Number of new vertices created by the algorithm
 *
 *	@param new_coordinates	Array of vertex coordinates created by the
@@ -79,7 +76,7 @@ std::string generate_filename(std::string extension = "ply")
 *	@returns true if the hole could be filled, otherwise false
 */
 
-bool fill_hole(	int num_vertices, long* vertex_IDs, double* coordinates, double* scale_attributes, double* normals, double desired_density,
+bool fill_hole(	int num_vertices, long* vertex_IDs, double* coordinates, double* scale_attributes, double* normals,
 		int* num_new_vertices, double** new_coordinates, int* num_new_faces, long** new_vertex_IDs)
 {
 	bool result = true;
@@ -109,17 +106,8 @@ bool fill_hole(	int num_vertices, long* vertex_IDs, double* coordinates, double*
 	}
 
 	result = (result && triangulation_algorithm.apply_to(M));				// step 1: triangulate the hole
-
-	double density = M.get_density();
-	if(density <= desired_density)
-		liepa_algorithm.set_alpha(libpsalm::estimate_density(	density,		// step 2: estimate density based on input parameters
-												// and the triangulation from step 1
-									desired_density));
-	else
-		liepa_algorithm.set_alpha(1.0);
-
-	result = (result && liepa_algorithm.apply_to(M));					// step 3: apply Liepa's subdivision scheme; density
-												// parameter has been set in step 2
+	result = (result && liepa_algorithm.apply_to(M));					// step 2: apply Liepa's subdivision scheme with
+												// default parameters
 
 	if(result)
 	{
