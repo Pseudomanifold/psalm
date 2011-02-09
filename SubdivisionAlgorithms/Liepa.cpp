@@ -78,7 +78,7 @@ bool Liepa::apply_to(mesh& input_mesh)
 				if(found_first_boundary_edge)
 					break;
 				else
-					found_first_boundary = true;
+					found_first_boundary_edge = true;
 			}
 		}
 
