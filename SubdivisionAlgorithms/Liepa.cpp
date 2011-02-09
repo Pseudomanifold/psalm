@@ -61,9 +61,26 @@ bool Liepa::apply_to(mesh& input_mesh)
 		vertex* v = input_mesh.get_vertex(i);
 		size_t n = v->valency();
 
-		double attribute = 0.0;
+		double attribute		= 0.0;
+		bool found_first_boundary_edge	= false;	// in the triangulated mesh, there are
+								// only two boundary edges per vertex;
+								// if we have found those two, the search
+								// may be stopped.
 		for(size_t i = 0; i < n; i++)
-			attribute += v->get_edge(i)->calc_length()/static_cast<double>(n);
+		{
+			edge* e = v->get_edge(i);
+			if(e->is_on_boundary())
+			{
+				attribute += 0.5*e->calc_length();
+
+				// break if we have already seen a boundary
+				// edge -- see discussion above
+				if(found_first_boundary_edge)
+					break;
+				else
+					found_first_boundary = true;
+			}
+		}
 
 		// If the scale attributes have already been seeded, their
 		// average is taken to be the new scale attribute...
