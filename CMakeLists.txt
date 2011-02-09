@@ -7,18 +7,6 @@ CMAKE_POLICY(SET CMP0002 OLD)
 
 ADD_DEFINITIONS(-Wall -pedantic -g -O11)
 
-SET(DENSITY_TEST_SRC
-	density_test.cpp
-	mesh.cpp
-	v3ctor.cpp
-	vertex.cpp
-	edge.cpp
-	directed_edge.cpp
-	face.cpp
-	SubdivisionAlgorithms/Liepa.cpp
-	SubdivisionAlgorithms/SubdivisionAlgorithm.cpp
-)
-
 # Include boost::program_options into psalm
 
 FIND_PACKAGE(Boost 1.42 COMPONENTS program_options)
@@ -28,7 +16,7 @@ INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 ADD_SUBDIRECTORY(SubdivisionAlgorithms)
 ADD_SUBDIRECTORY(TriangulationAlgorithms)
 
-#ADD_EXECUTABLE(density_test ${DENSITY_TEST_SRC})
+ADD_SUBDIRECTORY(Tests)
 
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR} SubdivisionAlgorithms TriangulationAlgorithms)
 
@@ -49,11 +37,10 @@ ADD_EXECUTABLE(psalm_cli ${PSALM_SRC})
 TARGET_LINK_LIBRARIES(psalm_cli SubdivisionAlgorithms ${Boost_LIBRARIES})
 SET_TARGET_PROPERTIES(psalm_cli PROPERTIES OUTPUT_NAME psalm)
 
-# Build `libpsalm_test` and `libpsalm` _without_ relying on any libraries; this
-# makes inclusion of the library easier.
+# Build `libpsalm` _without_ relying on any libraries; this makes inclusion of
+# the library easier.
 
 SET(LIBPSALM_SRC
-	${LIBPSALM_SRC}
 	libpsalm.cpp
 	v3ctor.cpp
 	mesh.cpp
@@ -68,12 +55,6 @@ SET(LIBPSALM_SRC
 )
 
 ADD_LIBRARY(psalm ${LIBPSALM_SRC})
-
-SET(LIBPSALM_SRC
-	${LIBPSALM_SRC}
-	libpsalm_test.cpp
-)
-ADD_EXECUTABLE(libpsalm_test ${LIBPSALM_SRC})
 
 # Create subdivided test data using "meshlab"
 ADD_CUSTOM_TARGET(	test
