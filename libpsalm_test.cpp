@@ -85,8 +85,17 @@ void process_pline_file(std::string filename, bool ignore_IDs = false)
 		int num_new_faces	= 0;
 		long* new_vertex_IDs	= NULL;
 
-		bool res = fill_hole(	num_vertices, vertex_IDs, coordinates, normals,
+		// These are thrown away _after_ reading. This could be solved
+		// better.
+		if(ignore_IDs)
+		{
+			delete[] vertex_IDs;
+			vertex_IDs = NULL;
+		}
+
+		bool res = fill_hole(	num_vertices, vertex_IDs, coordinates, NULL, normals,
 					&num_new_vertices, &new_coordinates, &num_new_faces, &new_vertex_IDs);
+
 
 		if(res)
 			num_closed_holes++;
@@ -110,7 +119,10 @@ void process_pline_file(std::string filename, bool ignore_IDs = false)
 
 int main(int argc, char* argv[])
 {
-	process_pline_file("../Holes/Salmanassar3_Holes_w_Normals_HR_CLEAN_with_Indices.pline", true);
-	//process_pline_file("../Holes/0976.pline", true);
+	//process_pline_file("../Holes/Salmanassar3_Holes_w_Normals_HR_CLEAN_with_Indices.pline", true);
+	if(argc == 1)
+		process_pline_file("../Holes/0976.pline", true);
+	else
+		process_pline_file(argv[1], true);
 	return(0);
 }
