@@ -28,7 +28,6 @@ foreach my $file (@files)
 	parse_header($file);
 }
 
-print STDERR "catply: Processing " . ($#files+1) . " files with a total of $num_vertices vertices and $num_faces faces...\n";
 print STDOUT <<EOF
 ply
 format ascii 1.0
