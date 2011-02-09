@@ -4,6 +4,8 @@
 #include <string>
 #include <utility>
 
+#include <limits>
+
 #include "v3ctor.h"
 #include "SubdivisionAlgorithms/Liepa.h"
 
@@ -17,13 +19,10 @@ std::pair<double, double> area_and_density(psalm::mesh& M, double initial_area =
 		for(size_t i = 0; i < M.num_faces(); i++)
 		{
 			psalm::face* f = M.get_face(i);
-			for(size_t j = 0; j < 3; j++)
-			{
-				v3ctor a = f->get_vertex(1)->get_position() - f->get_vertex(0)->get_position();
-				v3ctor b = f->get_vertex(2)->get_position() - f->get_vertex(0)->get_position();
+			v3ctor a = f->get_vertex(1)->get_position() - f->get_vertex(0)->get_position();
+			v3ctor b = f->get_vertex(2)->get_position() - f->get_vertex(0)->get_position();
 
-				result.first += 0.5*(a|b).length();
-			}
+			result.first += 0.5*(a|b).length();
 		}
 	}
 	result.second = M.num_vertices()/result.first;
@@ -52,6 +51,10 @@ int main(int argc, char* argv[])
 		double initial_area = area_density.first;
 		double initial_density = area_density.second;
 
+		// Ignore large density values -- it makes no sense to try to fit anything here
+		if(initial_density > 5000)
+			continue;
+
 		for(int j = 0; j < 49; j++)
 		{
 			double alpha = j*0.1;
@@ -63,7 +66,7 @@ int main(int argc, char* argv[])
 
 			std::cout	<< (initial_density) << "\t"
 					<< (initial_area) << "\t"
-					<< (area_and_density(M, initial_area).second-initial_density) << "\t"
+					<< area_and_density(M, initial_area).second << "\t"
 					<< (alpha)
 					<< std::endl;
 		}
