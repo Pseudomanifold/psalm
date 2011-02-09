@@ -198,9 +198,7 @@ const face* edge::get_g() const
 
 bool edge::is_on_boundary()
 {
-	// <dev>
-	// Edge may decide for itself whether it is a boundary edge or not...
-	// </dev>
+	// FIXME: Optimize -- this is calculated every time
 	boundary = (f == NULL || g == NULL);
 	return(boundary);
 }
