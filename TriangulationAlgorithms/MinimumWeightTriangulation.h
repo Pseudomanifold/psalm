@@ -173,11 +173,12 @@ inline ktuple MinimumWeightTriangulation::minimum_area_and_normal_angle(const ve
 
 	v3ctor normal = ((B-A)|(C-A)).normalize();
 
+	// Use _maximum_ angle between normal of the triangle and the normal of
+	// the triangle
+	double angle;
+	angle = std::max(acos(normal*v1->get_normal().normalize()), acos(normal*v2->get_normal().normalize()));
+	angle = std::max(acos(normal*v3->get_normal().normalize()), angle);
 
-	// "Average" angle -- this is the best we can do here
-	double angle	= 0.33*(acos(normal*v1->get_normal().normalize())+
-				acos(normal*v2->get_normal().normalize())+
-				acos(normal*v3->get_normal().normalize()));
 	double area	= minimum_area(v1, v2, v3).get<0>();
 
 	return(boost::tuple<double, double>(angle, area));
