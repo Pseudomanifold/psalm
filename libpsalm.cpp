@@ -154,7 +154,6 @@ double estimate_density(double input_density, double desired_density)
 	// Fitted parameter values with asymptotic standard error of < 3%,
 	// which is sufficient for most mesh data.
 
-
 	double a0 =  7.63324e-07;
 	double a1 = -0.00710062;
 	double b0 = -4.70052e-07;
