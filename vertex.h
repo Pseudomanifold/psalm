@@ -71,6 +71,8 @@ class vertex
 		void set_scale_attribute(double value);
 		double get_scale_attribute() const;
 
+		std::vector<vertex*> get_neighbours();
+
 	private:
 		std::vector<edge*> E;
 		std::vector<const face*> F;

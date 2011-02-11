@@ -264,4 +264,30 @@ v3ctor vertex::discrete_bilaplacian() const
 	return(res);
 }
 
+/*!
+*	Enumerates all neighbours of the current vertex and returns them in a
+*	vector. The order of the enumeration is not fixed.
+*
+*	@returns Vector of neighbouring vertices, i.e. the 1-ring neighbourhood
+*	of the vertex
+*/
+
+std::vector<vertex*> vertex::get_neighbours()
+{
+	std::vector<vertex*> res;
+
+	// We enumerate the neighbours by enumerating all incident edges and
+	// storing those vertices that are not equal to the current vertex
+	for(size_t i = 0; i < this->valency(); i++)
+	{
+		edge* e = this->get_edge(i);
+		if(e->get_u() == this)
+			res.push_back(e->get_v());
+		else
+			res.push_back(e->get_u());
+	}
+
+	return(res);
+}
+
 } // end of namespace "psalm"
