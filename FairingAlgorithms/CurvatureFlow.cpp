@@ -17,7 +17,7 @@ namespace psalm
 *	@return	Sparse matrix describing the curvature operator
 */
 
-boost::numeric::ublas::mapped_matrix<double> CurvatureFlow::calculate_curvature_operator(mesh& input_mesh)
+boost::numeric::ublas::mapped_matrix<double> CurvatureFlow::calc_curvature_operator(mesh& input_mesh)
 {
 	using namespace boost::numeric::ublas;
 	mapped_matrix<double> K(input_mesh.num_vertices(), input_mesh.num_vertices()); // K as in "Kurvature"...
