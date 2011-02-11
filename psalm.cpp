@@ -401,7 +401,7 @@ int main(int argc, char* argv[])
 
 	// Various small flags
 
-	if(vm.count("crease-handling"))
+	if(vm.count("handle-creases"))
 		subdivision_algorithm->set_crease_handling_flag();
 
 	if(vm.count("geometric"))
