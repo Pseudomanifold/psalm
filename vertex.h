@@ -73,6 +73,8 @@ class vertex
 
 		std::vector<vertex*> get_neighbours();
 
+		double calc_voronoi_area();
+
 	private:
 		std::vector<edge*> E;
 		std::vector<const face*> F;

@@ -290,4 +290,18 @@ std::vector<vertex*> vertex::get_neighbours()
 	return(res);
 }
 
+/*!
+*	Calculates the Voronoi area of the current vertex. This requires
+*	enumerating the 1-ring neighbourhood of the vertex and calculating the
+*	opposite angles for incident edges.
+*
+*	@return Voronoi area. Negative values indicate an error.
+*/
+
+double vertex::calc_voronoi_area()
+{
+	double area = -1.0;
+	return(area);
+}
+
 } // end of namespace "psalm"
