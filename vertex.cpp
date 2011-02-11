@@ -436,7 +436,25 @@ std::pair<double, double> vertex::find_opposite_angles(vertex* v)
 
 double vertex::calc_voronoi_area()
 {
-	double area = -1.0;
+	double area = 0.0;
+
+	std::vector<vertex*> neighbours = this->get_neighbours();
+	if(neighbours.size() == 0)
+		return(-1.0);
+
+	for(size_t i = 0; i < neighbours.size(); i++)
+	{
+		std::pair<double, double> angles = this->find_opposite_angles(neighbours[i]);
+		if(angles.first < 0.0 || angles.second < 0.0)
+			return(-1.0);
+
+		double distance = (this->get_position() - neighbours[i]->get_position()).length();
+		area +=	0.125*(	 1.0/tan(angles.first)
+				+1.0/tan(angles.second))
+			*distance
+			*distance; // using the squared distance is _not_ a typo
+	}
+
 	return(area);
 }
 
