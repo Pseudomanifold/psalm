@@ -8,6 +8,9 @@
 
 #include "FairingAlgorithm.h"
 
+#include <boost/numeric/ublas/matrix_sparse.hpp>
+#include <boost/numeric/ublas/io.hpp>
+
 namespace psalm
 {
 
@@ -22,6 +25,9 @@ class CurvatureFlow : public FairingAlgorithm
 		CurvatureFlow();
 
 		bool apply_to(mesh& input_mesh);
+
+	private:
+		boost::numeric::ublas::mapped_matrix<double> calculate_curvature_operator(mesh& input_mesh);
 };
 
 } // end of namespace "psalm"
