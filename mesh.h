@@ -91,6 +91,8 @@ class mesh
 		size_t num_faces() const;
 		face* get_face(size_t i);
 
+		std::pair<double, double> find_opposite_angles(vertex* u, vertex* v);
+
 	protected:
 
 		// Data variables
