@@ -73,6 +73,7 @@ class vertex
 
 		std::vector<vertex*> get_neighbours();
 
+		std::pair<double, double> find_opposite_angles(vertex* v);
 		double calc_voronoi_area();
 
 	private:
