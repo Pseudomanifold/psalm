@@ -63,8 +63,12 @@ boost::numeric::ublas::mapped_matrix<double> CurvatureFlow::calc_curvature_opera
 	for(size_t i = 0; i < input_mesh.num_vertices(); i++)
 	{
 		double area = input_mesh.get_vertex(i)->calc_voronoi_area();
-		if(area < 0.0)
+		if(area < 2*std::numeric_limits<double>::epsilon())
+		{
+			// skip on error or upon encountering a Voronoi area
+			// that is too small
 			continue;
+		}
 
 		for(size_t j = 0; j < input_mesh.num_vertices(); j++)
 		{
