@@ -31,7 +31,7 @@ boost::numeric::ublas::mapped_matrix<double> CurvatureFlow::calc_curvature_opera
 		for(size_t j = 0; j < f->num_vertices(); j++)
 		{
 			vertex* v = f->get_vertex(j);
-			std::vector<vertex*> neighbours = v->get_neighbours();
+			std::vector<const vertex*> neighbours = v->get_neighbours();
 
 			// FIXME: Used to update the correct matrix entries
 			// below. This assumes that the IDs have been allocated

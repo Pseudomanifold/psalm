@@ -275,15 +275,15 @@ v3ctor vertex::discrete_bilaplacian() const
 *	of the vertex
 */
 
-std::vector<vertex*> vertex::get_neighbours()
+std::vector<const vertex*> vertex::get_neighbours() const
 {
-	std::vector<vertex*> res;
+	std::vector<const vertex*> res;
 
 	// We enumerate the neighbours by enumerating all incident edges and
 	// storing those vertices that are not equal to the current vertex
 	for(size_t i = 0; i < this->valency(); i++)
 	{
-		edge* e = this->get_edge(i);
+		const edge* e = this->get_edge(i);
 		if(e->get_u() == this)
 			res.push_back(e->get_v());
 		else
@@ -306,18 +306,18 @@ std::vector<vertex*> vertex::get_neighbours()
 *		negative angles in both components.
 */
 
-std::pair<double, double> vertex::find_opposite_angles(vertex* v)
+std::pair<double, double> vertex::find_opposite_angles(const vertex* v) const
 {
 	std::pair<double, double> res(-1.0, -1.0);
 
 	// Shortcut for working with the current vertex within in this function
-	vertex* u = this;
+	const vertex* u = this;
 
 	// Find common edge and obtain the two relevant faces that need to be
 	// checked
 
-	vertex* tmp;	// use vertex with smaller valency in order to speed up
-			// the search
+	const vertex* tmp;	// use vertex with smaller valency in order to speed up
+				// the search
 	if(u->valency() < v->valency())
 		tmp = u;
 	else
@@ -325,14 +325,14 @@ std::pair<double, double> vertex::find_opposite_angles(vertex* v)
 
 	// store first and second adjacent face of the edge; if one of these is
 	// NULL, we will not continue
-	face* faces[2];
+	const face* faces[2];
 
 	// set to the common edge of vertices u and v by the for-loop below
-	edge* common_edge = NULL;
+	const edge* common_edge = NULL;
 
 	for(size_t i = 0; i < tmp->valency(); i++)
 	{
-		edge* e = tmp->get_edge(i);
+		const edge* e = tmp->get_edge(i);
 		if(	(e->get_u() == u && e->get_v() == v) ||
 			(e->get_u() == v && e->get_v() == u))
 		{
@@ -434,11 +434,11 @@ std::pair<double, double> vertex::find_opposite_angles(vertex* v)
 *	@return Voronoi area. Negative values indicate an error.
 */
 
-double vertex::calc_voronoi_area()
+double vertex::calc_voronoi_area() const
 {
 	double area = 0.0;
 
-	std::vector<vertex*> neighbours = this->get_neighbours();
+	std::vector<const vertex*> neighbours = this->get_neighbours();
 	if(neighbours.size() == 0)
 		return(-1.0);
 
@@ -465,13 +465,13 @@ double vertex::calc_voronoi_area()
 *	@return Mean curvature around the vertex
 */
 
-double vertex::calc_mean_curvature()
+double vertex::calc_mean_curvature() const
 {
 	double voronoi_area = this->calc_voronoi_area(); // required for the formula below
 	if(voronoi_area < 2.0*std::numeric_limits<double>::epsilon())
 		return(0.0);
 
-	std::vector<vertex*> neighbours = this->get_neighbours();
+	std::vector<const vertex*> neighbours = this->get_neighbours();
 	if(neighbours.size() == 0)
 		return(0.0);
 

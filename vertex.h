@@ -71,11 +71,11 @@ class vertex
 		void set_scale_attribute(double value);
 		double get_scale_attribute() const;
 
-		std::vector<vertex*> get_neighbours();
+		std::vector<const vertex*> get_neighbours() const;
 
-		std::pair<double, double> find_opposite_angles(vertex* v);
-		double calc_voronoi_area();
-		double calc_mean_curvature();
+		std::pair<double, double> find_opposite_angles(const vertex* v) const;
+		double calc_voronoi_area() const;
+		double calc_mean_curvature() const;
 
 	private:
 		std::vector<edge*> E;
