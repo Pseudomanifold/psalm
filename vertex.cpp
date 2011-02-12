@@ -431,7 +431,7 @@ std::pair<double, double> vertex::find_opposite_angles(const vertex* v) const
 *	enumerating the 1-ring neighbourhood of the vertex and calculating the
 *	opposite angles for incident edges.
 *
-*	@return Voronoi area. Negative values indicate an error.
+*	@return Voronoi area of the vertex
 */
 
 double vertex::calc_voronoi_area() const
@@ -468,7 +468,7 @@ double vertex::calc_voronoi_area() const
 double vertex::calc_mean_curvature() const
 {
 	double voronoi_area = this->calc_voronoi_area(); // required for the formula below
-	if(voronoi_area < 2.0*std::numeric_limits<double>::epsilon())
+	if(std::abs(voronoi_area) < 8*std::numeric_limits<double>::epsilon())
 		return(0.0);
 
 	std::vector<const vertex*> neighbours = this->get_neighbours();
@@ -490,7 +490,6 @@ double vertex::calc_mean_curvature() const
 
 	scaled_normal /= 4.0*voronoi_area;
 	return(scaled_normal.length());
-
 }
 
 } // end of namespace "psalm"
