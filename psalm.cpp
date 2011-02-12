@@ -461,7 +461,13 @@ int main(int argc, char* argv[])
 	for(std::vector<std::string>::iterator it = files.begin(); it != files.end(); it++)
 	{
 		scene_mesh.load(*it, type);
-		subdivision_algorithm->apply_to(scene_mesh, steps);
+
+		// It is possible that the user did not choose a subdivision
+		// algorithm. psalm tries to work as a mesh converter in this
+		// instance.
+		if(subdivision_algorithm)
+			subdivision_algorithm->apply_to(scene_mesh, steps);
+
 		scene_mesh.prune(remove_faces, remove_vertices);
 
 		// If an output file has been set (even if it is empty), it
