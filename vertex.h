@@ -75,6 +75,7 @@ class vertex
 
 		std::pair<double, double> find_opposite_angles(vertex* v);
 		double calc_voronoi_area();
+		double calc_mean_curvature();
 
 	private:
 		std::vector<edge*> E;

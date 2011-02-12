@@ -458,4 +458,39 @@ double vertex::calc_voronoi_area()
 	return(area);
 }
 
+/*!
+*	Calculates the mean curvature around the vertex. This requires
+*	enumerating the 1-ring neighbourhood of the vertex.
+*
+*	@return Mean curvature around the vertex
+*/
+
+double vertex::calc_mean_curvature()
+{
+	double voronoi_area = this->calc_voronoi_area(); // required for the formula below
+	if(voronoi_area < 2.0*std::numeric_limits<double>::epsilon())
+		return(0.0);
+
+	std::vector<vertex*> neighbours = this->get_neighbours();
+	if(neighbours.size() == 0)
+		return(0.0);
+
+	// The length of this (non-unit!) normal will be the mean curvature
+	v3ctor scaled_normal;
+
+	for(size_t i = 0; i < neighbours.size(); i++)
+	{
+		std::pair<double, double> angles = this->find_opposite_angles(neighbours[i]);
+		if(angles.first < 0.0 || angles.second < 0.0)
+			return(0.0);
+
+		scaled_normal +=	 (this->get_position() - neighbours[i]->get_position())
+					*(1.0/tan(angles.first) + 1.0/tan(angles.second));
+	}
+
+	scaled_normal /= 4.0*voronoi_area;
+	return(scaled_normal.length());
+
+}
+
 } // end of namespace "psalm"
