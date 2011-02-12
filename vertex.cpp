@@ -401,7 +401,7 @@ std::pair<double, double> vertex::find_opposite_angles(const vertex* v) const
 		double angle = 0.0;
 
 		if(	e1->get_u() == e2->get_u() ||
-			e2->get_v() == e2->get_v())
+			e1->get_v() == e2->get_v())
 		{
 			v3ctor a = e1->get_u()->get_position() - e1->get_v()->get_position();
 			v3ctor b = e2->get_u()->get_position() - e2->get_v()->get_position();
