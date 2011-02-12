@@ -512,12 +512,11 @@ bool mesh::save_ply(std::ostream& out)
 						<< V[i]->get_position()[1] << " "
 						<< V[i]->get_position()[2];
 
-		// <dev>
+		// XXX
 		if(V[i]->is_on_boundary())
 			out << " 255 0 0\n";
 		else
 			out << " 0 255 0\n";
-		// </dev>
 	}
 
 	// write face list (separated by spaces)
