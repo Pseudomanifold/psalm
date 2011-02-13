@@ -90,59 +90,58 @@ boost::numeric::ublas::mapped_matrix<double> CurvatureFlow::calc_curvature_opera
 	using namespace boost::numeric::ublas;
 	mapped_matrix<double> K(input_mesh.num_vertices(), input_mesh.num_vertices()); // K as in "Kurvature"...
 
-	// We iterate over all faces and calculate the contributions of each
-	// vertex of the face to the corresponding entry of the matrix
+	// We iterate over all vertices and calculate the contributions of each
+	// vertex to the corresponding entry of the matrix
 
-	for(size_t i = 0; i < input_mesh.num_faces(); i++)
+	for(size_t i = 0; i < input_mesh.num_vertices(); i++)
 	{
-		face* f = input_mesh.get_face(i);
-		for(size_t j = 0; j < f->num_vertices(); j++)
+		vertex* v = input_mesh.get_vertex(i);
+		std::vector<const vertex*> neighbours = v->get_neighbours();
+
+		// FIXME: Used to update the correct matrix entries
+		// below. This assumes that the IDs have been allocated
+		// sequentially.
+		size_t cur_id = v->get_id();
+
+		// Find "opposing angles" for all neighbours; these are
+		// the $\alpha_{ij}$ and $\beta_{ij}$ values used for
+		// calculating the discrete curvature
+
+		for(size_t j = 0; j < neighbours.size(); j++)
 		{
-			vertex* v = f->get_vertex(j);
-			std::vector<const vertex*> neighbours = v->get_neighbours();
-
-			// FIXME: Used to update the correct matrix entries
-			// below. This assumes that the IDs have been allocated
-			// sequentially.
-			size_t cur_id = v->get_id();
-
-			// Find "opposing angles" for all neighbours; these are
-			// the $\alpha_{ij}$ and $\beta_{ij}$ values used for
-			// calculating the discrete curvature
-
-			for(size_t k = 0; k < neighbours.size(); k++)
+			std::pair<double, double> angles = v->find_opposite_angles(neighbours[j]);
+			if(angles.first >= 0.0 && angles.second >= 0.0)
 			{
-				std::pair<double, double> angles = v->find_opposite_angles(neighbours[k]);
-				if(angles.first >= 0.0 && angles.second >= 0.0)
-				{
-					// calculate contribution to matrix entries
+				// calculate contribution to matrix entries
 
-					double contribution = 1.0/tan(angles.first) + 1.0/tan(angles.second);
+				double contribution = 1.0/tan(angles.first) + 1.0/tan(angles.second);
 
-					K(cur_id, cur_id)			+= contribution;
-					K(cur_id, neighbours[k]->get_id())	-= contribution;
-				}
+				K(cur_id, cur_id)			+= contribution;
+				K(cur_id, neighbours[j]->get_id())	-= contribution;
 			}
 		}
 	}
 
-	// Scale the ith row of the matrix by the Voronoi area around the ith vertex
+	// Scale the ith row of the matrix by the Voronoi area around the ith
+	// vertex; this works because the _first_ iterator of all matrix types
+	// is dense, whereas the second iterator is sparse in this case
 
-	for(size_t i = 0; i < input_mesh.num_vertices(); i++)
+	size_t i = 0;
+	for(mapped_matrix<double>::iterator1 it1 = K.begin1(); it1 != K.end1(); it1++)
 	{
 		double area = input_mesh.get_vertex(i)->calc_voronoi_area();
 		if(area < 2*std::numeric_limits<double>::epsilon())
 		{
 			// skip on error or upon encountering a Voronoi area
 			// that is too small
+			i++;
 			continue;
 		}
 
-		for(size_t j = 0; j < input_mesh.num_vertices(); j++)
-		{
-			if(K(i,j) != 0)
-				K(i,j) *= area;
-		}
+		for(mapped_matrix<double>::iterator2 it2 = it1.begin(); it2 != it1.end(); it2++)
+			(*it2) *= area;
+
+		i++;
 	}
 
 	return(K);
