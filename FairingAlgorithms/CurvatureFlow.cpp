@@ -12,6 +12,14 @@ namespace psalm
 {
 
 /*!
+*	Empty constructor
+*/
+
+CurvatureFlow::CurvatureFlow()
+{
+}
+
+/*!
 *	Applies the curvature flow algorithm to the vertices of a given mesh.
 *	The size of timesteps needs to be set before. The input mesh is
 *	irreversibly changed by this operation.
