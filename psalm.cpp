@@ -26,6 +26,8 @@
 #include "SubdivisionAlgorithms/Loop.h"
 #include "SubdivisionAlgorithms/Liepa.h"
 
+#include "FairingAlgorithms/CurvatureFlow.h"
+
 #include "mesh.h"
 
 psalm::mesh scene_mesh;
@@ -156,7 +158,8 @@ int main(int argc, char* argv[])
 
 	size_t steps	= 0;
 
-	psalm::SubdivisionAlgorithm* subdivision_algorithm = NULL;
+	psalm::SubdivisionAlgorithm* subdivision_algorithm	= NULL;
+	psalm::FairingAlgorithm* fairing_algorithm		= NULL;
 
 	// Add general program options
 
@@ -224,7 +227,10 @@ int main(int argc, char* argv[])
 			"* catmull-clark, catmull, clark, cc\n"\
 			"* default\n"\
 			"* degenerate\n"\
-			"* doo-sabin, doo, sabin, ds\n");
+			"* doo-sabin, doo, sabin, ds\n")
+
+		(	"fair,f",
+			"Performs a fairing step after working with the mesh.");
 
 	// Add pruning program options
 
@@ -301,6 +307,11 @@ int main(int argc, char* argv[])
 			return(-1);
 		}
 	}
+
+	// As there is currently only _one_ fairing algorithm, there is really
+	// not much choice here
+	if(vm.count("fair"))
+		fairing_algorithm = new psalm::CurvatureFlow();
 
 	// We use this instance to create an instance of a subdivision
 	// algorithm class. Further class parameters are set _afterwards_,
@@ -468,6 +479,10 @@ int main(int argc, char* argv[])
 		if(subdivision_algorithm)
 			subdivision_algorithm->apply_to(scene_mesh, steps);
 
+		// Ditto for the fairing algorithm.
+		if(fairing_algorithm)
+			fairing_algorithm->apply_to(scene_mesh);
+
 		scene_mesh.prune(remove_faces, remove_vertices);
 
 		// If an output file has been set (even if it is empty), it
@@ -494,5 +509,7 @@ int main(int argc, char* argv[])
 	}
 
 	delete(subdivision_algorithm);
+	delete(fairing_algorithm);
+
 	return(0);
 }
