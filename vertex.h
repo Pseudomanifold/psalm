@@ -32,7 +32,9 @@ class vertex
 
 		void set(double x, double y, double z, size_t id);
 		void set(double x, double y, double z, double nx, double ny, double nz, size_t id);
+
 		void set_position(const v3ctor& v);
+		void set_position(double x, double y, double z);
 
 		const v3ctor& get_position() const;
 		const v3ctor& get_normal() const;
@@ -102,6 +104,13 @@ inline void vertex::set_position(const v3ctor& p)
 	this->p[0] = p[0];
 	this->p[1] = p[1];
 	this->p[2] = p[2];
+}
+
+inline void vertex::set_position(double x, double y, double z)
+{
+	p[0] = x;
+	p[1] = y;
+	p[2] = z;
 }
 
 /*!
