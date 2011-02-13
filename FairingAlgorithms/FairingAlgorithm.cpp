@@ -4,3 +4,16 @@
 */
 
 #include "FairingAlgorithm.h"
+
+namespace psalm
+{
+
+/*!
+*	Empty constructor
+*/
+
+FairingAlgorithm::FairingAlgorithm()
+{
+}
+
+} // end of namespace "libpsalm"
