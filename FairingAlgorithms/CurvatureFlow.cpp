@@ -6,6 +6,7 @@
 #include "CurvatureFlow.h"
 
 #include <boost/numeric/ublas/vector.hpp>
+#include <boost/numeric/ublas/operation.hpp>
 #include <boost/numeric/ublas/io.hpp>
 
 namespace psalm
@@ -51,27 +52,31 @@ bool CurvatureFlow::apply_to(mesh& input_mesh)
 		Z[i] = pos[2];
 	}
 
-	// Prepare for "solving" the linear system (for now, this is something
-	// akin to the explicit Euler method)
+	size_t step = 0;
+	while(step++ < 20)
+	{
+		// Prepare for "solving" the linear system (for now, this is something
+		// akin to the explicit Euler method)
 
-	mapped_matrix<double> M(n, n);	// transformed matrix for the solving
-					// process, i.e. id - dt*K, where K is
-					// the matrix of the curvature operator
+		mapped_matrix<double> M(n, n);	// transformed matrix for the solving
+						// process, i.e. id - dt*K, where K is
+						// the matrix of the curvature operator
 
-	// FIXME: Should be user-configurable
-	double dt = 0.01;
+		// FIXME: Should be user-configurable
+		double dt = 0.05;
 
-	M = identity_matrix<double>(n, n) - dt*calc_curvature_operator(input_mesh);
+		M = identity_matrix<double>(n, n) - dt*calc_curvature_operator(input_mesh);
 
-	// Solve x,y,z components independently. This is _hellishly_ slow, but
-	// sufficient for small meshes.
+		// Solve x,y,z components independently. This is _hellishly_ slow, but
+		// sufficient for small meshes.
 
-	vector<double> new_X = prod(M, X);
-	vector<double> new_Y = prod(M, Y);
-	vector<double> new_Z = prod(M, Z);
+		X = prod(M, X);
+		Y = prod(M, Y);
+		Z = prod(M, Z);
+	}
 
 	for(size_t i = 0; i < n; i++)
-		input_mesh.get_vertex(i)->set_position(new_X[i], new_Y[i], new_Z[i]);
+		input_mesh.get_vertex(i)->set_position(X[i], Y[i], Z[i]);
 
 	return(true);
 }
