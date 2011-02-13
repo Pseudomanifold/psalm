@@ -1,7 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(psalm) 
 
-ADD_DEFINITIONS(-Wall -pedantic -g -O11)
+ADD_DEFINITIONS(-Wall -g)
 
 # Include boost::program_options into psalm
 
