@@ -52,6 +52,8 @@ class face
 
 		void reconstruct_from_edges();
 
+		double calc_area() const;
+
 	private:
 		std::vector<directed_edge> E;
 		std::vector<vertex*> V;

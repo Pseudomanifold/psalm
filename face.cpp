@@ -169,4 +169,22 @@ void face::set_on_boundary(bool boundary)
 	this->boundary = boundary;
 }
 
+/*!
+*	Calculates the area of the face. Currently, this only works if the face
+*	is triangular.
+*
+*	@return Unsigned area of the face; negative values indicate an error
+*/
+
+double face::calc_area() const
+{
+	if(this->num_vertices() != 3)
+		return(-1.0);
+
+	v3ctor A = V[1]->get_position() - V[0]->get_position();
+	v3ctor B = V[2]->get_position() - V[0]->get_position();
+
+	return(0.5*(A|B).length());
+}
+
 } // end of namespace "psalm"
