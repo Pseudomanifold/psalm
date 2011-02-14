@@ -469,6 +469,37 @@ std::pair<double, double> vertex::find_opposite_angles(const vertex* v) const
 }
 
 /*!
+*	Given the current vertex and an adjacent vertex, calculates the Voronoi
+*	region around the vertex. The Voronoi region uses the opposite angles
+*	of the common edge between the two vertices.
+*
+*	Note that this is _not_ the Voronoi area. The Voronoi area is the
+*	weighted sum of all Voronoi regions.
+*
+*	@param	v Vertex that shares a common edge with the current vertex
+*	@return Voronoi region around the common edge
+*/
+
+double vertex::calc_voronoi_region(const vertex* v) const
+{
+	double region = 0.0;
+	if(!v)
+		return(region);
+
+	std::pair<double, double> angles = this->find_opposite_angles(v);
+	if(angles.first < 0.0 || angles.second < 0.0)
+		return(region);
+
+	double distance = (this->get_position() - v->get_position()).length();
+	region +=	0.125*(	 1.0/tan(angles.first)
+				+1.0/tan(angles.second))
+		*distance
+		*distance; // using the squared distance is _not_ a typo
+
+	return(region);
+}
+
+/*!
 *	Calculates the Voronoi area of the current vertex. This requires
 *	enumerating the 1-ring neighbourhood of the vertex and calculating the
 *	opposite angles for incident edges.
@@ -482,20 +513,10 @@ double vertex::calc_voronoi_area() const
 
 	std::vector<const vertex*> neighbours = this->get_neighbours();
 	if(neighbours.size() == 0)
-		return(-1.0);
+		return(area);
 
 	for(size_t i = 0; i < neighbours.size(); i++)
-	{
-		std::pair<double, double> angles = this->find_opposite_angles(neighbours[i]);
-		if(angles.first < 0.0 || angles.second < 0.0)
-			return(-1.0);
-
-		double distance = (this->get_position() - neighbours[i]->get_position()).length();
-		area +=	0.125*(	 1.0/tan(angles.first)
-				+1.0/tan(angles.second))
-			*distance
-			*distance; // using the squared distance is _not_ a typo
-	}
+		area += this->calc_voronoi_region(neighbours[i]);
 
 	return(area);
 }

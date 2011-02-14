@@ -77,6 +77,7 @@ class vertex
 		std::vector< std::pair<const face*, const vertex*> > get_1_ring() const;
 
 		std::pair<double, double> find_opposite_angles(const vertex* v) const;
+
 		double calc_mean_curvature() const;
 		double calc_voronoi_area() const;
 		double calc_mixed_area() const;
@@ -92,6 +93,8 @@ class vertex
 		bool boundary;		///< Flag signalling that the vertex is a boundary vertex
 
 		double scale_attribute;	///< Scale attribute for Liepa's refinement scheme
+
+		double calc_voronoi_region(const vertex* v) const;
 };
 
 /*!
