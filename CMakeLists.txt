@@ -15,7 +15,7 @@ ADD_SUBDIRECTORY(FairingAlgorithms)
 
 ADD_SUBDIRECTORY(Tests)
 
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR} SubdivisionAlgorithms TriangulationAlgorithms FairingAlgorithms)
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR} SubdivisionAlgorithms TriangulationAlgorithms FairingAlgorithms external)
 
 # Build psalm command-line interface; the target `psalm_cli` will be renamed
 # later on. Otherwise, name clashes with libpsalm would occur.

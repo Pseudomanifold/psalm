@@ -5,4 +5,5 @@ SET(	FAIRING_ALGORITHMS_SRC
 
 ADD_LIBRARY(FairingAlgorithms SHARED ${FAIRING_ALGORITHMS_SRC})
 
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR})
+# FIXME: Include path should be set by other means
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR} ../external /usr/include/suitesparse)
