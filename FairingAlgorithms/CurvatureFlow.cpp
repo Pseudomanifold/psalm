@@ -5,8 +5,10 @@
 
 #include "CurvatureFlow.h"
 
-#include <boost/numeric/ublas/vector.hpp>
-#include <boost/numeric/ublas/operation.hpp>
+#include <boost/numeric/bindings/traits/ublas_vector.hpp>
+#include <boost/numeric/bindings/traits/ublas_sparse.hpp>
+#include <boost/numeric/bindings/umfpack/umfpack.hpp>
+
 #include <boost/numeric/ublas/io.hpp>
 
 namespace psalm
@@ -31,16 +33,17 @@ CurvatureFlow::CurvatureFlow()
 
 bool CurvatureFlow::apply_to(mesh& input_mesh)
 {
-	using namespace boost::numeric::ublas;
+	namespace ublas = boost::numeric::ublas;
+	namespace umf = boost::numeric::bindings::umfpack;
 
 	size_t n = input_mesh.num_vertices();
 	if(n == 0)
 		return(true); // silently ignore empty meshes
 
 	// Stores x,y,z components of the vertices in the mesh
-	vector<double> X(n);
-	vector<double> Y(n);
-	vector<double> Z(n);
+	ublas::vector<double> X(n);
+	ublas::vector<double> Y(n);
+	ublas::vector<double> Z(n);
 
 	// Fill vector with position data
 	for(size_t i = 0; i < n; i++)
@@ -58,21 +61,39 @@ bool CurvatureFlow::apply_to(mesh& input_mesh)
 		// Prepare for "solving" the linear system (for now, this is something
 		// akin to the explicit Euler method)
 
-		mapped_matrix<double> M(n, n);	// transformed matrix for the solving
-						// process, i.e. id - dt*K, where K is
-						// the matrix of the curvature operator
+		ublas::compressed_matrix<	double,
+						ublas::column_major,
+						0,
+						ublas::unbounded_array<int>,
+						ublas::unbounded_array<double> > M(n, n);	// transformed matrix for the solving
+												// process, i.e. id - dt*K, where K is
+												// the matrix of the curvature operator
 
 		// FIXME: Should be user-configurable
 		double dt = 0.05;
 
-		M = identity_matrix<double>(n, n) - dt*calc_curvature_operator(input_mesh);
+		M = ublas::identity_matrix<double>(n, n) - dt*calc_curvature_operator(input_mesh);
 
-		// Solve x,y,z components independently. This is _hellishly_ slow, but
-		// sufficient for small meshes.
+		// Solve x,y,z components independently. This may be slower,
+		// but sufficient for small meshes.
 
-		X = prod(M, X);
-		Y = prod(M, Y);
-		Z = prod(M, Z);
+		umf::symbolic_type<double> Symbolic;
+		umf::numeric_type<double> Numeric;
+
+		umf::symbolic(M, Symbolic);
+		umf::numeric(M, Symbolic, Numeric);
+
+		ublas::vector<double> X_new(input_mesh.num_vertices());
+		ublas::vector<double> Y_new(input_mesh.num_vertices());
+		ublas::vector<double> Z_new(input_mesh.num_vertices());
+
+		umf::solve(M, X_new, X, Numeric);
+		umf::solve(M, Y_new, Y, Numeric);
+		umf::solve(M, Z_new, Z, Numeric);
+
+		X = X_new;
+		Y = Y_new;
+		Z = Z_new;
 	}
 
 	for(size_t i = 0; i < n; i++)
