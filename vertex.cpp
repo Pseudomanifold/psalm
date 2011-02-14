@@ -677,4 +677,32 @@ double vertex::calc_mean_curvature() const
 	return(scaled_normal.length());
 }
 
+/*!
+*	Calculates the Gaussian curvature around the vertex. This requires
+*	enumerating the 1-ring neighbourhood of the vertex.
+*
+*	@return Gaussian curvature around the vertex
+*/
+
+double vertex::calc_gaussian_curvature() const
+{
+	/*
+		FIXME: Actually, the _mixed_ area should be calculated instead
+		of the Voronoi area. Currently, this is not yet implemented.
+	*/
+
+	double voronoi_area = this->calc_voronoi_area(); // required for the formula below
+	if(std::abs(voronoi_area) < 8*std::numeric_limits<double>::epsilon())
+		return(0.0);
+
+	double gaussian_curvature = 2*M_PI/voronoi_area;
+	for(size_t i = 0; i < this->num_adjacent_faces(); i++)
+	{
+		const face* f = this->get_face(i);
+		gaussian_curvature -= this->find_interior_angle(f)/voronoi_area;
+	}
+
+	return(gaussian_curvature);
+}
+
 } // end of namespace "psalm"
