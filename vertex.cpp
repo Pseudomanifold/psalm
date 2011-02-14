@@ -508,30 +508,51 @@ double vertex::find_opposite_angle(const vertex* v, const face* f) const
 /*!
 *	Given the current vertex and an adjacent vertex, calculates the Voronoi
 *	region around the vertex. The Voronoi region uses the opposite angles
-*	of the common edge between the two vertices.
+*	of the common edge between the two vertices. If the caller also
+*	specified a face, only the Voronoi region for the vertex and the face
+*	will be calculated, i.e. only one of the opposite angles will be taken
+*	into account.
 *
 *	Note that this is _not_ the Voronoi area. The Voronoi area is the
 *	weighted sum of all Voronoi regions.
 *
-*	@param	v Vertex that shares a common edge with the current vertex
+*	@param v	Vertex that shares a common edge with the current vertex
+*	@param f	Optional face; if specified, only the region pertaining
+*			to vertex v and face f is calculated.
+*
 *	@return Voronoi region around the common edge
 */
 
-double vertex::calc_voronoi_region(const vertex* v) const
+double vertex::calc_voronoi_region(const vertex* v, const face* f) const
 {
-	double region = 0.0;
 	if(!v)
-		return(region);
+		return(0.0);
 
-	std::pair<double, double> angles = this->find_opposite_angles(v);
-	if(angles.first < 0.0 || angles.second < 0.0)
-		return(region);
+	double distance = (this->get_position() - v->get_position()).length(); // used below
+	double region = 0.0;
+	if(!f)
+	{
+		// no face specified, calculate both angles
 
-	double distance = (this->get_position() - v->get_position()).length();
-	region +=	0.125*(	 1.0/tan(angles.first)
-				+1.0/tan(angles.second))
-		*distance
-		*distance; // using the squared distance is _not_ a typo
+		std::pair<double, double> angles = this->find_opposite_angles(v);
+		if(angles.first < 0.0 || angles.second < 0.0)
+			return(0.0);
+
+		region +=	0.125*(	 1.0/tan(angles.first)
+					+1.0/tan(angles.second))
+				*distance
+				*distance; // using the squared distance is _not_ a typo
+	}
+	else
+	{
+		double angle = this->find_opposite_angle(v, f);
+		if(angle < 0.0)
+			return(0.0);
+
+		region +=	0.125/tan(angle)
+				*distance
+				*distance;
+	}
 
 	return(region);
 }
@@ -558,11 +579,37 @@ double vertex::calc_voronoi_area() const
 	return(area);
 }
 
+/*!
+*	Calculates the "mixed" area around the vertex, i.e. the Voronoi area
+*	whenever it is possible. In case of obtuse triangles, the normal
+*	triangle area is used.
+*
+*	@return Mixed area around the current vertex
+*/
+
 double vertex::calc_mixed_area() const
 {
-	std::vector< std::pair<const face*, const vertex*> > faces = this->get_1_ring();
+	double area = 0.0;
 
-	return(0.0);
+	std::vector< std::pair<const face*, const vertex*> > ring = this->get_1_ring();
+	if(ring.size() == 0)
+		return(area);
+
+	for(size_t i = 0; i < ring.size(); i++)
+	{
+		const face* f	= ring[i].first;
+		const vertex* v	= ring[i].second;
+
+		if(const_cast<face*>(f)->is_obtuse())
+		{
+		}
+
+		// non-obtuse triangle; use Voronoi region
+		else
+			area += this->calc_voronoi_region(v, f);
+	}
+
+	return(area);
 }
 
 /*!

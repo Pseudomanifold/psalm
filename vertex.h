@@ -95,7 +95,7 @@ class vertex
 
 		double scale_attribute;	///< Scale attribute for Liepa's refinement scheme
 
-		double calc_voronoi_region(const vertex* v) const;
+		double calc_voronoi_region(const vertex* v, const face* f = NULL) const;
 };
 
 /*!
