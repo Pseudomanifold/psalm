@@ -7,6 +7,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <limits>
+
 #include "face.h"
 #include "edge.h"
 
@@ -185,6 +186,30 @@ double face::calc_area() const
 	v3ctor B = V[2]->get_position() - V[0]->get_position();
 
 	return(0.5*(A|B).length());
+}
+
+/*!
+*	Checks wether the face is an obtuse triangle. This requires evaluating
+*	the `is_obtuse` flag. If the value of this flag has not yet been set,
+*	the function performs an obtusity test, sets the flag, and returns its
+*	value.
+*
+*	@return true if the face is an obtuse triangle, else false
+*/
+
+bool face::is_obtuse()
+{
+	using boost::logic::tribool;
+	if(indeterminate(obtuse))
+	{
+		double a = E[0].e->calc_length();
+		double b = E[1].e->calc_length();
+		double c = E[2].e->calc_length();
+
+		obtuse = (a*a+b*b < c*c) || (b*b* + c*c < a*a) || (c*c + a*a < b*b);
+	}
+
+	return(obtuse == true);
 }
 
 } // end of namespace "psalm"

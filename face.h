@@ -6,6 +6,8 @@
 #ifndef __FACE_H__
 #define __FACE_H__
 
+#include <boost/logic/tribool.hpp>
+
 #include "vertex.h"
 #include "directed_edge.h"
 
@@ -50,6 +52,8 @@ class face
 		bool is_on_boundary() const;
 		void set_on_boundary(bool boundary = true);
 
+		bool is_obtuse();
+
 		void reconstruct_from_edges();
 
 		double calc_area() const;
@@ -64,6 +68,16 @@ class face
 
 		bool boundary;	///< Flag signalling that the face is a
 				///< boundary face.
+
+		/*!
+		*	Flag signalling that the face is an obtuse triangle.
+		*	This makes only sense for triangles, of course. By
+		*	using the tribool, the function `is_obtuse()` may
+		*	decide whether it is required to _calculate_ the value
+		*	of the flag or can simply return it.
+		*/
+
+		boost::logic::tribool obtuse;
 };
 
 } // end of namespace "psalm"
