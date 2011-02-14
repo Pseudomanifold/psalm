@@ -23,6 +23,7 @@ face::face()
 	face_point	= NULL;
 	id		= std::numeric_limits<size_t>::max();
 	boundary	= false;
+	obtuse		= boost::logic::indeterminate;
 }
 
 /*!
@@ -199,8 +200,7 @@ double face::calc_area() const
 
 bool face::is_obtuse()
 {
-	using boost::logic::tribool;
-	if(indeterminate(obtuse))
+	if(boost::logic::indeterminate(obtuse))
 	{
 		double a = E[0].e->calc_length();
 		double b = E[1].e->calc_length();
