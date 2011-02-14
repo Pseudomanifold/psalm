@@ -452,7 +452,7 @@ double vertex::find_opposite_angle(const vertex* v, const face* f) const
 
 	if(!common_edge)
 	{
-		std::cerr	<< "psalm: mesh::find_opposite_angles(): Unable to find common edge. Aborting..."
+		std::cerr	<< "psalm: vertex::find_opposite_angle(): Unable to find common edge. Aborting..."
 				<< std::endl;
 
 		return(-1.0);
@@ -478,6 +478,75 @@ double vertex::find_opposite_angle(const vertex* v, const face* f) const
 			else
 				e1 = e;
 		}
+	}
+
+	// For the angle calculation, we need to check that both edges
+	// point into the _same_ direction -- otherwise the wrong angle
+	// would be calculated.
+
+	double angle = 0.0;
+
+	if(	e1->get_u() == e2->get_u() ||
+		e1->get_v() == e2->get_v())
+	{
+		v3ctor a = e1->get_u()->get_position() - e1->get_v()->get_position();
+		v3ctor b = e2->get_u()->get_position() - e2->get_v()->get_position();
+
+		angle = acos(a.normalize()*b.normalize());
+	}
+	else
+	{
+		v3ctor a = e1->get_u()->get_position() - e1->get_v()->get_position();
+		v3ctor b = e2->get_v()->get_position() - e2->get_u()->get_position(); // swap second edge
+
+		angle = acos(a.normalize()*b.normalize());
+	}
+
+	return(angle);
+}
+
+/*!
+*	Given a face f, find the angle of face f at the current vertex, i.e.
+*	the interior angle of the face when traversing around the vertex.
+*
+*	@param	f Face that is adjacent to the current vertex
+*	@return Angle between the two edges of f that are incident on the
+*		current vertex. Negative values indicate an error.
+*/
+
+double vertex::find_interior_angle(const face* f) const
+{
+	if(!f)
+		return(-1.0);
+
+	// Find the two edges belonging to f that are incident on v
+
+	const edge* e1 = NULL;
+	const edge* e2 = NULL;
+
+	for(size_t i = 0; i < this->valency(); i++)
+	{
+		const edge* e = this->get_edge(i);
+		if(e->get_f() == f || e->get_g() == f)
+		{
+			// if the first edge is set, both edges have been found
+			if(e1)
+			{
+				e2 = e;
+				break;
+			}
+			else
+				e1 = e;
+		}
+	}
+
+	// This signals a broken mesh or misuse of the function
+	if(!e1 || !e2)
+	{
+		std::cerr	<< "psalm: vertex::find_interior_angle(): Unable to find incident edges. Aborting..."
+				<< std::endl;
+
+		return(-1.0);
 	}
 
 	// For the angle calculation, we need to check that both edges
