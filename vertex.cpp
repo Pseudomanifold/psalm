@@ -355,8 +355,7 @@ std::pair<double, double> vertex::find_opposite_angles(const vertex* v) const
 	// Shortcut for working with the current vertex within in this function
 	const vertex* u = this;
 
-	// Find common edge and obtain the two relevant faces that need to be
-	// checked
+	// Find the two relevant faces that need to be checked
 
 	const vertex* tmp;	// use vertex with smaller valency in order to speed up
 				// the search
@@ -367,7 +366,69 @@ std::pair<double, double> vertex::find_opposite_angles(const vertex* v) const
 
 	// store first and second adjacent face of the edge; if one of these is
 	// NULL, we will not continue
-	const face* faces[2];
+	const face* faces[2] = {NULL, NULL};
+
+	for(size_t i = 0; i < tmp->valency(); i++)
+	{
+		const edge* e = tmp->get_edge(i);
+		if(	(e->get_u() == u && e->get_v() == v) ||
+			(e->get_u() == v && e->get_v() == u))
+		{
+			faces[0] = e->get_f();
+			faces[1] = e->get_g();
+
+			break;
+		}
+	}
+
+	if(	!faces[0] ||
+		!faces[1])
+	{
+		// This may happen for boundary edges/vertices and does _not_
+		// necessarily indicate an error.
+		return(res);
+	}
+
+	res = std::make_pair(	find_opposite_angle(v, faces[0]),
+				find_opposite_angle(v, faces[1]));
+
+	return(res);
+}
+
+/*!
+*	Given a vertex v and a face f, find the angle opposite to the edge of f
+*	that connects v and the current vertex. This function is implemented
+*	for triangular meshes only.
+*
+*	@param v Vertex
+*	@param f Face
+*
+*	@return	The opposite angle of the edge of f connecting the current
+*		vertex v; errors are indicated by negative return values.
+*/
+
+double vertex::find_opposite_angle(const vertex* v, const face* f) const
+{
+	// Handle misuse of the function
+	if(f->num_vertices() != 3)
+	{
+		std::cerr	<< "psalm: mesh::find_opposite_angles(): Non-triangular mesh detected. Aborting..."
+				<< std::endl;
+
+		return(-1.0);
+	}
+
+	// Shortcut for working with the current vertex within in this function
+	const vertex* u = this;
+
+	// Find common edge (in order to identify the remaining edges of f)
+
+	const vertex* tmp;	// use vertex with smaller valency in order to speed up
+				// the search
+	if(u->valency() < v->valency())
+		tmp = u;
+	else
+		tmp = v;
 
 	// set to the common edge of vertices u and v by the for-loop below
 	const edge* common_edge = NULL;
@@ -378,8 +439,11 @@ std::pair<double, double> vertex::find_opposite_angles(const vertex* v) const
 		if(	(e->get_u() == u && e->get_v() == v) ||
 			(e->get_u() == v && e->get_v() == u))
 		{
-			faces[0] = e->get_f();
-			faces[1] = e->get_g();
+
+			// Check that the face f is adjacent to the common
+			// edge; anything else would indicate an error
+			if(e->get_f() != f && e->get_g() != f)
+				return(-1.0);
 
 			common_edge = e;
 			break;
@@ -391,81 +455,54 @@ std::pair<double, double> vertex::find_opposite_angles(const vertex* v) const
 		std::cerr	<< "psalm: mesh::find_opposite_angles(): Unable to find common edge. Aborting..."
 				<< std::endl;
 
-		return(res);
+		return(-1.0);
 	}
 
-	if(	!faces[0] ||
-		!faces[1])
+	// Find remaining two edges of the face f and calculate their angle
+
+	edge* e1 = NULL;
+	edge* e2 = NULL;
+
+	for(size_t i = 0; i < f->num_edges(); i++)
 	{
-		// This may happen for boundary edges/vertices and does _not_
-		// necessarily indicate an error.
-		return(res);
-	}
-
-	// Handle misuse of the function
-	else if(faces[0]->num_vertices() != 3 || faces[1]->num_vertices() != 3)
-	{
-		std::cerr	<< "psalm: mesh::find_opposite_angles(): Non-triangular mesh detected. Aborting..."
-				<< std::endl;
-
-		return(res);
-	}
-
-	// Find remaining two edges for each of the two faces identified above
-	// and calculate their angle
-
-	for(size_t i = 0; i < 2; i++)
-	{
-		edge* e1 = NULL;
-		edge* e2 = NULL;
-
-		for(size_t j = 0; j < faces[i]->num_edges(); j++)
+		edge* e = f->get_edge(i).e;
+		if(e != common_edge)
 		{
-			edge* e = faces[i]->get_edge(j).e;
-			if(e != common_edge)
+			// if the first edge is set, we have found both
+			// edges...
+			if(e1)
 			{
-				// if the first edge is set, we have found both
-				// edges...
-				if(e1)
-				{
-					e2 = e;
-					break;
-				}
-				else
-					e1 = e;
+				e2 = e;
+				break;
 			}
+			else
+				e1 = e;
 		}
-
-		// For the angle calculation, we need to check that both edges
-		// point into the _same_ direction -- otherwise the wrong angle
-		// would be calculated.
-
-		double angle = 0.0;
-
-		if(	e1->get_u() == e2->get_u() ||
-			e1->get_v() == e2->get_v())
-		{
-			v3ctor a = e1->get_u()->get_position() - e1->get_v()->get_position();
-			v3ctor b = e2->get_u()->get_position() - e2->get_v()->get_position();
-
-			angle = acos(a.normalize()*b.normalize());
-		}
-		else
-		{
-			v3ctor a = e1->get_u()->get_position() - e1->get_v()->get_position();
-			v3ctor b = e2->get_v()->get_position() - e2->get_u()->get_position(); // swap second edge
-
-			angle = acos(a.normalize()*b.normalize());
-		}
-
-		// Check where to store the angle
-		if(res.first < 0.0)
-			res.first = angle;
-		else
-			res.second = angle;
 	}
 
-	return(res);
+	// For the angle calculation, we need to check that both edges
+	// point into the _same_ direction -- otherwise the wrong angle
+	// would be calculated.
+
+	double angle = 0.0;
+
+	if(	e1->get_u() == e2->get_u() ||
+		e1->get_v() == e2->get_v())
+	{
+		v3ctor a = e1->get_u()->get_position() - e1->get_v()->get_position();
+		v3ctor b = e2->get_u()->get_position() - e2->get_v()->get_position();
+
+		angle = acos(a.normalize()*b.normalize());
+	}
+	else
+	{
+		v3ctor a = e1->get_u()->get_position() - e1->get_v()->get_position();
+		v3ctor b = e2->get_v()->get_position() - e2->get_u()->get_position(); // swap second edge
+
+		angle = acos(a.normalize()*b.normalize());
+	}
+
+	return(angle);
 }
 
 /*!

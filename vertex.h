@@ -77,6 +77,7 @@ class vertex
 		std::vector< std::pair<const face*, const vertex*> > get_1_ring() const;
 
 		std::pair<double, double> find_opposite_angles(const vertex* v) const;
+		double find_opposite_angle(const vertex* v, const face* f) const;
 
 		double calc_mean_curvature() const;
 		double calc_voronoi_area() const;
