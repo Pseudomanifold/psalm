@@ -602,6 +602,12 @@ double vertex::calc_mixed_area() const
 
 		if(const_cast<face*>(f)->is_obtuse())
 		{
+			// FIXME: It should be checked where the obtuse angle
+			// is located. If it is located at the vertex, half of
+			// the triangle area should be used.
+
+			std::cerr << "psalm: FIXME: Non-obtuse faces are not calculated correctly" << std::endl;
+			area += f->calc_area()*0.25;
 		}
 
 		// non-obtuse triangle; use Voronoi region
