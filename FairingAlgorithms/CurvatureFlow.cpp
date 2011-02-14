@@ -144,7 +144,7 @@ boost::numeric::ublas::mapped_matrix<double> CurvatureFlow::calc_curvature_opera
 		}
 
 		for(mapped_matrix<double>::iterator2 it2 = it1.begin(); it2 != it1.end(); it2++)
-			(*it2) *= area;
+			(*it2) /= 4.0*area;
 
 		i++;
 	}
