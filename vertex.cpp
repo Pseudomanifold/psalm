@@ -480,29 +480,7 @@ double vertex::find_opposite_angle(const vertex* v, const face* f) const
 		}
 	}
 
-	// For the angle calculation, we need to check that both edges
-	// point into the _same_ direction -- otherwise the wrong angle
-	// would be calculated.
-
-	double angle = 0.0;
-
-	if(	e1->get_u() == e2->get_u() ||
-		e1->get_v() == e2->get_v())
-	{
-		v3ctor a = e1->get_u()->get_position() - e1->get_v()->get_position();
-		v3ctor b = e2->get_u()->get_position() - e2->get_v()->get_position();
-
-		angle = acos(a.normalize()*b.normalize());
-	}
-	else
-	{
-		v3ctor a = e1->get_u()->get_position() - e1->get_v()->get_position();
-		v3ctor b = e2->get_v()->get_position() - e2->get_u()->get_position(); // swap second edge
-
-		angle = acos(a.normalize()*b.normalize());
-	}
-
-	return(angle);
+	return(e1->calc_angle(e2));
 }
 
 /*!
@@ -549,29 +527,7 @@ double vertex::find_interior_angle(const face* f) const
 		return(-1.0);
 	}
 
-	// For the angle calculation, we need to check that both edges
-	// point into the _same_ direction -- otherwise the wrong angle
-	// would be calculated.
-
-	double angle = 0.0;
-
-	if(	e1->get_u() == e2->get_u() ||
-		e1->get_v() == e2->get_v())
-	{
-		v3ctor a = e1->get_u()->get_position() - e1->get_v()->get_position();
-		v3ctor b = e2->get_u()->get_position() - e2->get_v()->get_position();
-
-		angle = acos(a.normalize()*b.normalize());
-	}
-	else
-	{
-		v3ctor a = e1->get_u()->get_position() - e1->get_v()->get_position();
-		v3ctor b = e2->get_v()->get_position() - e2->get_u()->get_position(); // swap second edge
-
-		angle = acos(a.normalize()*b.normalize());
-	}
-
-	return(angle);
+	return(e1->calc_angle(e2));
 }
 
 /*!
