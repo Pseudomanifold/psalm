@@ -4,7 +4,7 @@
 */
 
 #include <iostream>
-#include <cassert>
+#include <cmath>
 
 #include "edge.h"
 
@@ -220,6 +220,38 @@ bool edge::is_on_boundary()
 void edge::set_on_boundary(bool boundary)
 {
 	this->boundary = boundary;
+}
+
+/*!
+*	Given another edge that is assumed to share one vertex with the current
+*	edge, calculate the interior angle between these two edges.
+*
+*	@warning The result is undefined if both edges do _not_ share a common
+*	vertex.
+*
+*	@return Interior angle between edge e and current edge
+*/
+
+double edge::calc_angle(const edge* e) const
+{
+	// Check that both edges point into the _same_ direction -- otherwise
+	// the wrong angle would be calculated.
+
+	if(	this->get_u() == e->get_u() ||
+		this->get_v() == e->get_v())
+	{
+		v3ctor a = this->get_u()->get_position() - this->get_v()->get_position();
+		v3ctor b = e->get_u()->get_position() - e->get_v()->get_position();
+
+		return(acos(a.normalize()*b.normalize()));
+	}
+	else
+	{
+		v3ctor a = this->get_u()->get_position() - this->get_v()->get_position();
+		v3ctor b = e->get_v()->get_position() - e->get_u()->get_position(); // swap second edge
+
+		return(acos(a.normalize()*b.normalize()));
+	}
 }
 
 } // end of namespace "psalm"

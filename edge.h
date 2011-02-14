@@ -58,6 +58,7 @@ class edge
 		void set_on_boundary(bool boundary = true);
 
 		double calc_length() const;
+		double calc_angle(const edge* e) const;
 
 	private:
 
