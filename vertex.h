@@ -39,6 +39,9 @@ class vertex
 		const v3ctor& get_position() const;
 		const v3ctor& get_normal() const;
 
+		void set_normal(const v3ctor& n);
+		void set_normal(double nx, double ny, double nz);
+
 		/*!
 		*	@brief Pointer to vertex point.
 		*
@@ -129,6 +132,27 @@ inline void vertex::set_position(double x, double y, double z)
 inline const v3ctor& vertex::get_position() const
 {
 	return(p);
+}
+
+/*!
+*	Sets a new normal for the vertex. All other attributes of the vertex
+*	remain unchanged.
+*
+*	@param n New vertex normal
+*/
+
+inline void vertex::set_normal(const v3ctor& n)
+{
+	this->n[0] = n[0];
+	this->n[1] = n[1];
+	this->n[2] = n[2];
+}
+
+inline void vertex::set_normal(double nx, double ny, double nz)
+{
+	n[0] = nx;
+	n[1] = ny;
+	n[2] = nz;
 }
 
 /*!
