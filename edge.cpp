@@ -17,10 +17,7 @@ namespace psalm
 
 edge::edge()
 {
-	u = v = NULL;
-	f = g = NULL;
-
-	edge_point = NULL;
+	set(NULL, NULL);
 }
 
 /*!
@@ -44,14 +41,15 @@ edge::edge(vertex* u, vertex* v)
 
 void edge::set(vertex* u, vertex* v)
 {
-	if(u == v)
-		u = v = NULL;
-
 	this->u = u;
 	this->v = v;
 
+	if(u == v)
+		this->u = this->v = NULL;
+
 	f = g		= NULL;
 	edge_point	= NULL;
+	boundary	= boost::logic::indeterminate;
 }
 
 /*!
@@ -203,8 +201,7 @@ const face* edge::get_g() const
 
 bool edge::is_on_boundary()
 {
-	using boost::logic::tribool;
-	if(indeterminate(boundary))
+	if(boost::logic::indeterminate(boundary))
 		boundary = (f == NULL) || (g == NULL);
 
 	return(boundary == true);
