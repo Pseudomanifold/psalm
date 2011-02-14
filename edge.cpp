@@ -191,21 +191,28 @@ const face* edge::get_g() const
 
 /*!
 *	Returns value of flag signalling whether the edge is a boundary edge.
-*	This flag is supposed to be set by the user.
+*	This flag may be set by the user, but the edge is also able to
+*	determine wether it is a boundary edge by taking a look at adjacent
+*	faces.
 *
-*	@see edge::set_on_boundary()
+*	The value of the flag is calculated if the boundary flag is set to be
+*	indeterminate.
+*
+*	@return true if the edge is a boundary edge, else false
 */
 
 bool edge::is_on_boundary()
 {
-	// FIXME: Optimize -- this is calculated every time
-	boundary = (f == NULL || g == NULL);
-	return(boundary);
+	using boost::logic::tribool;
+	if(indeterminate(boundary))
+		boundary = (f == NULL) || (g == NULL);
+
+	return(boundary == true);
 }
 
 /*!
-*	Sets value of flag signalling boundary edges. The parameter is set to
-*	false by default in all constructors.
+*	Sets value of flag signalling boundary edges. By default, the value of
+*	the flag is indeterminate.
 *
 *	@param	boundary Current value for boundary parameter (true by default)
 */

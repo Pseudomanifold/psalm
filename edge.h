@@ -9,6 +9,8 @@
 #include "vertex.h"
 #include "face.h"
 
+#include <boost/logic/tribool.hpp>
+
 namespace psalm
 {
 
@@ -52,20 +54,21 @@ class edge
 
 		vertex* edge_point;
 
-		bool is_on_boundary(); //FIXME: Should be const
+		bool is_on_boundary();
 		void set_on_boundary(bool boundary = true);
 
 		double calc_length() const;
 
 	private:
-		vertex* u;		///< Pointer to start vertex
-		vertex* v;		///< Pointer to end vertex
 
-		face* f;		///< Pointer to first adjacent face
-		face* g;		///< Pointer to second adjacent face
+		vertex* u;			///< Pointer to start vertex
+		vertex* v;			///< Pointer to end vertex
 
-		bool boundary;		///< Flag signalling that the edge is a
-					///< boundary edge
+		face* f;			///< Pointer to first adjacent face
+		face* g;			///< Pointer to second adjacent face
+
+		boost::logic::tribool boundary;	///< Flag signalling that the edge is a
+						///< boundary edge
 };
 
 /*!
@@ -76,7 +79,7 @@ class edge
 inline double edge::calc_length() const
 {
 	v3ctor d = u->get_position() - v->get_position();
-	return(d.length());
+	return(d.length()); // XXX: Optimization?
 }
 
 } // end of namespace "psalm"
