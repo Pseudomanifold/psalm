@@ -74,10 +74,12 @@ class vertex
 		double get_scale_attribute() const;
 
 		std::vector<const vertex*> get_neighbours() const;
+		std::vector< std::pair<const face*, const vertex*> > get_1_ring() const;
 
 		std::pair<double, double> find_opposite_angles(const vertex* v) const;
-		double calc_voronoi_area() const;
 		double calc_mean_curvature() const;
+		double calc_voronoi_area() const;
+		double calc_mixed_area() const;
 
 	private:
 		std::vector<edge*> E;

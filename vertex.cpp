@@ -294,6 +294,48 @@ std::vector<const vertex*> vertex::get_neighbours() const
 }
 
 /*!
+*	Enumerates the 1-ring-neighbourhood around a vertex. This is done by
+*	returning a vector of pairs, where each pair is a face and a vertex.
+*	The face is one face around the vertex, whereas the vertex of the pair
+*	is an adjacent vertex that is also part of the returned face.
+*
+*	Note that the results vector will definitely contain duplicate faces.
+*	This is irrelevant because they will be used for area calculations
+*	only.
+*
+*	@return Vector of pairs of faces and vertices
+*/
+
+std::vector< std::pair<const face*, const vertex*> > vertex::get_1_ring() const
+{
+	std::vector< std::pair<const face*, const vertex*> > res;
+
+	for(size_t i = 0; i < this->valency(); i++)
+	{
+		const vertex* adjacent_vertex;
+
+		// Find adjacent vertex
+
+		const edge* e = this->get_edge(i);
+		if(e->get_u() == this)
+			adjacent_vertex = e->get_v();
+		else
+			adjacent_vertex = e->get_u();
+
+		// If _both_ faces around the edge exist, we can add two pairs
+		// to the results vector
+
+		if(e->get_f())
+			res.push_back(std::make_pair(e->get_f(), adjacent_vertex));
+
+		if(e->get_g())
+			res.push_back(std::make_pair(e->get_g(), adjacent_vertex));
+	}
+
+	return(res);
+}
+
+/*!
 *	Given two vertices (where the first vertex is the current vertex for
 *	which this function is called), which are supposed to be the endpoints
 *	of an edge, finds the two angles opposite to the edge that is
@@ -456,6 +498,13 @@ double vertex::calc_voronoi_area() const
 	}
 
 	return(area);
+}
+
+double vertex::calc_mixed_area() const
+{
+	std::vector< std::pair<const face*, const vertex*> > faces = this->get_1_ring();
+
+	return(0.0);
 }
 
 /*!
