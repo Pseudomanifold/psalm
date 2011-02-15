@@ -27,7 +27,7 @@ class CurvatureFlow : public FairingAlgorithm
 		bool apply_to(mesh& input_mesh);
 
 	private:
-		boost::numeric::ublas::mapped_matrix<double> calc_curvature_operator(mesh& input_mesh);
+		boost::numeric::ublas::compressed_matrix<double> calc_curvature_operator(mesh& input_mesh);
 };
 
 } // end of namespace "psalm"

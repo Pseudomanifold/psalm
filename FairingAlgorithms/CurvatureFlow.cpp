@@ -111,10 +111,10 @@ bool CurvatureFlow::apply_to(mesh& input_mesh)
 *	@return	Sparse matrix describing the curvature operator
 */
 
-boost::numeric::ublas::mapped_matrix<double> CurvatureFlow::calc_curvature_operator(mesh& input_mesh)
+boost::numeric::ublas::compressed_matrix<double> CurvatureFlow::calc_curvature_operator(mesh& input_mesh)
 {
 	using namespace boost::numeric::ublas;
-	mapped_matrix<double> K(input_mesh.num_vertices(), input_mesh.num_vertices()); // K as in "Kurvature"...
+	compressed_matrix<double> K(input_mesh.num_vertices(), input_mesh.num_vertices()); // K as in "Kurvature"...
 
 	// We iterate over all vertices and calculate the contributions of each
 	// vertex to the corresponding entry of the matrix
@@ -153,7 +153,7 @@ boost::numeric::ublas::mapped_matrix<double> CurvatureFlow::calc_curvature_opera
 	// is dense, whereas the second iterator is sparse in this case
 
 	size_t i = 0;
-	for(mapped_matrix<double>::iterator1 it1 = K.begin1(); it1 != K.end1(); it1++)
+	for(compressed_matrix<double>::iterator1 it1 = K.begin1(); it1 != K.end1(); it1++)
 	{
 		double area = input_mesh.get_vertex(i)->calc_voronoi_area();
 		if(area < 2*std::numeric_limits<double>::epsilon())
@@ -164,7 +164,7 @@ boost::numeric::ublas::mapped_matrix<double> CurvatureFlow::calc_curvature_opera
 			continue;
 		}
 
-		for(mapped_matrix<double>::iterator2 it2 = it1.begin(); it2 != it1.end(); it2++)
+		for(compressed_matrix<double>::iterator2 it2 = it1.begin(); it2 != it1.end(); it2++)
 			(*it2) /= 4.0*area;
 
 		i++;
