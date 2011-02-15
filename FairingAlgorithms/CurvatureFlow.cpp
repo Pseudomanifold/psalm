@@ -171,4 +171,46 @@ boost::numeric::ublas::compressed_matrix<double> CurvatureFlow::calc_curvature_o
 	return(K);
 }
 
+/*!
+*	Sets current value for the delta parameter (used per timestep).
+*
+*	@param delta New value for delta parameter
+*/
+
+void CurvatureFlow::set_delta(double delta)
+{
+	this->dt = delta;
+}
+
+/*!
+*	@returns Current value of delta parameter (used per timestep).
+*/
+
+double CurvatureFlow::get_delta()
+{
+	return(dt);
+}
+
+/*!
+*	Sets current value for the number of steps the algorithm is supposed to
+*	perform.
+*
+*	@param num_steps New value for the number of steps
+*/
+
+void CurvatureFlow::set_steps(size_t num_steps)
+{
+	this->num_steps = num_steps;
+}
+
+/*!
+*	@returns Current number of steps the algorithm performs when being
+*	applied to a mesh.
+*/
+
+size_t CurvatureFlow::get_steps()
+{
+	return(num_steps);
+}
+
 } // end of namespace "psalm"
