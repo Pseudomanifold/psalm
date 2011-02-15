@@ -13,11 +13,13 @@ namespace psalm
 {
 
 /*!
-*	Empty constructor
+*	Sets default values
 */
 
 CurvatureFlow::CurvatureFlow()
 {
+	num_steps	= 0;
+	dt		= 0.5;
 }
 
 /*!
@@ -53,8 +55,7 @@ bool CurvatureFlow::apply_to(mesh& input_mesh)
 		Z[i] = pos[2];
 	}
 
-	size_t step = 0;
-	while(step++ < 20)
+	for(size_t i = 0; i < num_steps; i++)
 	{
 		// Prepare for "solving" the linear system (for now, this is something
 		// akin to the explicit Euler method)
@@ -66,9 +67,6 @@ bool CurvatureFlow::apply_to(mesh& input_mesh)
 						ublas::unbounded_array<double> > M(n, n);	// transformed matrix for the solving
 												// process, i.e. id - dt*K, where K is
 												// the matrix of the curvature operator
-
-		// FIXME: Should be user-configurable
-		double dt = 0.05;
 
 		M = ublas::identity_matrix<double>(n, n) - dt*calc_curvature_operator(input_mesh);
 
