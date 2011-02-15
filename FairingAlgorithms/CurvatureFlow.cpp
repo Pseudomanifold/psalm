@@ -92,10 +92,10 @@ bool CurvatureFlow::apply_to(mesh& input_mesh)
 		X = X_new;
 		Y = Y_new;
 		Z = Z_new;
-	}
 
-	for(size_t i = 0; i < n; i++)
-		input_mesh.get_vertex(i)->set_position(X[i], Y[i], Z[i]);
+		for(size_t i = 0; i < n; i++)
+			input_mesh.get_vertex(i)->set_position(X[i], Y[i], Z[i]);
+	}
 
 	return(true);
 }
@@ -153,7 +153,7 @@ boost::numeric::ublas::compressed_matrix<double> CurvatureFlow::calc_curvature_o
 	size_t i = 0;
 	for(compressed_matrix<double>::iterator1 it1 = K.begin1(); it1 != K.end1(); it1++)
 	{
-		double area = input_mesh.get_vertex(i)->calc_voronoi_area();
+		double area = input_mesh.get_vertex(i)->calc_ring_area();
 		if(area < 2*std::numeric_limits<double>::epsilon())
 		{
 			// skip on error or upon encountering a Voronoi area
