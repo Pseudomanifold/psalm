@@ -9,8 +9,6 @@
 #include <boost/numeric/bindings/traits/ublas_sparse.hpp>
 #include <boost/numeric/bindings/umfpack/umfpack.hpp>
 
-#include <boost/numeric/ublas/io.hpp>
-
 namespace psalm
 {
 
