@@ -644,6 +644,23 @@ double vertex::calc_mixed_area() const
 }
 
 /*!
+*	Calculates the area of the 1-ring neighbourhood of the vertex by
+*	summing up triangular areas. This may be used for an erroneous
+*	approximation of the discrete curvature operator.
+*
+*	@return Area
+*/
+
+double vertex::calc_ring_area() const
+{
+	double area = 0.0;
+	for(size_t i = 0; i < this->num_adjacent_faces(); i++)
+		area += this->get_face(i)->calc_area();
+
+	return(area);
+}
+
+/*!
 *	Calculates the mean curvature around the vertex. This requires
 *	enumerating the 1-ring neighbourhood of the vertex.
 *

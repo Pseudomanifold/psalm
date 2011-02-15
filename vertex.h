@@ -88,6 +88,7 @@ class vertex
 
 		double calc_voronoi_area() const;
 		double calc_mixed_area() const;
+		double calc_ring_area() const;
 
 	private:
 		std::vector<edge*> E;
