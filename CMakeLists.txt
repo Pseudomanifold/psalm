@@ -12,10 +12,16 @@ INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 ADD_SUBDIRECTORY(SubdivisionAlgorithms)
 ADD_SUBDIRECTORY(TriangulationAlgorithms)
 ADD_SUBDIRECTORY(FairingAlgorithms)
+ADD_SUBDIRECTORY(SegmentationAlgorithms)
 
 ADD_SUBDIRECTORY(Tests)
 
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR} SubdivisionAlgorithms TriangulationAlgorithms FairingAlgorithms external)
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}
+SubdivisionAlgorithms
+TriangulationAlgorithms
+FairingAlgorithms
+SegmentationAlgorithms
+external)
 
 # Build psalm command-line interface; the target `psalm_cli` will be renamed
 # later on. Otherwise, name clashes with libpsalm would occur.
@@ -31,7 +37,7 @@ SET(PSALM_SRC
 )
 
 ADD_EXECUTABLE(psalm_cli ${PSALM_SRC})
-TARGET_LINK_LIBRARIES(psalm_cli SubdivisionAlgorithms FairingAlgorithms ${Boost_LIBRARIES})
+TARGET_LINK_LIBRARIES(psalm_cli SubdivisionAlgorithms FairingAlgorithms SegmentationAlgorithms ${Boost_LIBRARIES})
 SET_TARGET_PROPERTIES(psalm_cli PROPERTIES OUTPUT_NAME psalm)
 
 # Build `libpsalm` _without_ relying on any libraries; this makes inclusion of

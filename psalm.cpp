@@ -28,6 +28,8 @@
 
 #include "FairingAlgorithms/CurvatureFlow.h"
 
+#include "SegmentationAlgorithms/PlanarSegmentation.h"
+
 #include "mesh.h"
 
 psalm::mesh scene_mesh;
@@ -482,6 +484,9 @@ int main(int argc, char* argv[])
 		// Ditto for the fairing algorithm.
 		if(fairing_algorithm)
 			fairing_algorithm->apply_to(scene_mesh);
+
+		psalm::PlanarSegmentation segmentation_algorithm;
+		segmentation_algorithm.apply_to(scene_mesh).save("test.ply");
 
 		scene_mesh.prune(remove_faces, remove_vertices);
 
