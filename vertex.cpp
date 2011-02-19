@@ -722,4 +722,20 @@ double vertex::calc_gaussian_curvature() const
 	return(gaussian_curvature);
 }
 
+/*!
+*	Calculates the root mean square curvature around the vertex. This
+*	requires enumerating the 1-ring neighbourhood of the vertex.
+*
+*	@return RMS curvature around the vertex
+*/
+
+double vertex::calc_rms_curvature() const
+{
+	double H = this->calc_mean_curvature();
+	double K = this->calc_gaussian_curvature();
+
+	return(sqrt(4*H*H-2*K));
+}
+
+
 } // end of namespace "psalm"
