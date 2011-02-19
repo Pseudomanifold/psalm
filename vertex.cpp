@@ -741,7 +741,11 @@ double vertex::calc_rms_curvature() const
 	double H = this->calc_mean_curvature();
 	double K = this->calc_gaussian_curvature();
 
-	return(sqrt(4*H*H-2*K));
+	double squared_curvature = 4*H*H-2*K;
+	if(squared_curvature < 0)
+		return(0.0);
+	else
+		return(sqrt(squared_curvature));
 }
 
 
