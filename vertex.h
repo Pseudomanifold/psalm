@@ -91,6 +91,8 @@ class vertex
 		double calc_mixed_area() const;
 		double calc_ring_area() const;
 
+		size_t region; // XXX: Identifies region the vertex belongs to
+
 	private:
 		std::vector<edge*> E;
 		std::vector<const face*> F;

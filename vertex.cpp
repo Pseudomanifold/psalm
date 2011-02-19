@@ -22,7 +22,11 @@ vertex::vertex()
 	boundary	= false;
 	vertex_point	= NULL;
 	id		= std::numeric_limits<size_t>::max();
+	region		= std::numeric_limits<size_t>::max();
 	scale_attribute	= 0.0;
+
+	// FIXME: this->set(...) should be called here in order to avoid code
+	// duplication
 }
 
 /*!
@@ -85,6 +89,9 @@ void vertex::set(double x, double y, double z, double nx, double ny, double nz, 
 	// Sensible default for any vertex. Negative values make no sense, as
 	// the scale attribute is composed of edge lengths.
 	scale_attribute = 0.0;
+
+	// By default, no region is assigned to the vertex
+	region = std::numeric_limits<size_t>::max();
 }
 
 /*!
