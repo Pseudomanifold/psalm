@@ -45,6 +45,17 @@ v3ctor::v3ctor()
 }
 
 /*!
+*	Initializes components with user-defined values.
+*/
+
+v3ctor::v3ctor(double x, double y, double z)
+{
+	this->x = x;
+	this->y = y;
+	this->z = z;
+}
+
+/*!
 *	Adds two vectors.
 */
 
@@ -272,3 +283,79 @@ std::ostream& operator<<(std::ostream& o, const v3ctor& v)
 			<< v.y << " "
 			<< v.z << std::endl);
 }
+
+/*!
+*	Calculates the distance between a plane given by three points and
+*	another point.
+*
+*	@param a First point in plane
+*	@param b Second point in plane
+*	@param c Third point in plane
+*	@param x Point for which the distance is to be determined
+*
+*	@return Absolute distance value
+*/
+
+double distance_to_plane(const v3ctor& a, const v3ctor& b, const v3ctor& c, const v3ctor & x)
+{
+	v3ctor normal = ((b-a)|(c-a)).normalize();
+	return(abs(normal*(x-a)));
+}
+
+/*!
+*	Calculates the perpendicular foot of a point with respect to a plane
+*	given by three points.
+*
+*	@param a First point in plane
+*	@param b Second point in plane
+*	@param c Third point in plane
+*	@param x Point for which the perpendicular foot is to be determined
+*
+*	@return Position of perpendicular foot
+*/
+
+v3ctor perpendicular_foot(const v3ctor& a, const v3ctor& b, const v3ctor& c, const v3ctor& x)
+{
+	v3ctor normal = ((b-a)|(c-a)).normalize();
+	double d = -(normal*a);
+
+	return(normal*(-d)-normal*(x*normal)+x);
+}
+
+/*!
+*	Calculates distance from a point to a line specified by two points.
+*
+*	@param a First point on line
+*	@param b Second point on line
+*	@param x Point for which the distance is to be determined
+*
+*	@return Absolute distance from point x to line given by a and b
+*/
+
+double distance_to_line(const v3ctor& a, const v3ctor& b, const v3ctor& x)
+{
+	double double_area = ((a-x)|(b-x)).length();
+	double side_length = (a-b).length();
+
+	return(double_area/side_length);
+}
+
+/*!
+*	Calculates the perpendicular foot of a point with respect to a line
+*	given by two points.
+*
+*	@param a First point on line
+*	@param b Second point on line
+*	@param x Point for which the perpendicular foot is to be determined
+*
+*	@return Position of perpendicular foot
+*/
+
+v3ctor perpendicular_foot(const v3ctor& a, const v3ctor& b, const v3ctor& x)
+{
+	double length = (b-a).length();
+	double t = (a-x)*(b-a)/(length*length)*(-1.0);
+
+	return(a+(b-a)*t);
+}
+

@@ -44,6 +44,7 @@ class v3ctor
 {
 	public:
 		v3ctor();
+		v3ctor(double x, double y, double z);
 
 		v3ctor  operator+ (const v3ctor& b) const;
 		v3ctor& operator+=(const v3ctor& b);
@@ -70,5 +71,11 @@ class v3ctor
 		double y;
 		double z;
 };
+
+double distance_to_plane(const v3ctor& a, const v3ctor& b, const v3ctor& c, const v3ctor & x);
+v3ctor perpendicular_foot(const v3ctor& a, const v3ctor& b, const v3ctor& c, const v3ctor& x);
+
+double distance_to_line(const v3ctor& a, const v3ctor& b, const v3ctor& x);
+v3ctor perpendicular_foot(const v3ctor& a, const v3ctor& b, const v3ctor& x);
 
 #endif
