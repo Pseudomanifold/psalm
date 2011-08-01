@@ -1,0 +1,5 @@
+The following packages are required for building libpsalm:
+
+* Recent version of cmake
+* libboostX.XX-all-dev
+* libboostX.XX-all
