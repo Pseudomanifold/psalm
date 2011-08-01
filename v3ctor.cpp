@@ -299,7 +299,7 @@ std::ostream& operator<<(std::ostream& o, const v3ctor& v)
 double distance_to_plane(const v3ctor& a, const v3ctor& b, const v3ctor& c, const v3ctor & x)
 {
 	v3ctor normal = ((b-a)|(c-a)).normalize();
-	return(abs(normal*(x-a)));
+	return(fabs(normal*(x-a)));
 }
 
 /*!
