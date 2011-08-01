@@ -1372,6 +1372,13 @@ bool mesh::relax_edge(edge* e)
 		double theta = acos(a.normalize()*b.normalize());	// interior angle between a and b
 		double r = (A-B).length()/(2*sin(theta));		// circumradius
 
+		if(r == std::numeric_limits<double>::infinity() ||
+			std::isnan(r) ||
+			theta == 0.0)
+		{
+			return(false);
+		}
+
 		v3ctor d = (a|b);	// vector perpendicular to a and b; used in
 					// the formula below
 		double d_len = d.length();
@@ -1390,7 +1397,8 @@ bool mesh::relax_edge(edge* e)
 			if(v != e->get_u() && v != e->get_v())
 			{
 				// ...and check whether it is outside the circumcircle
-				swap = (v->get_position() - c).length() < r;
+				swap = (v->get_position() - c).length() < r - 5*std::numeric_limits<double>::epsilon();	// Why we used a factor of 5 times epsilon is left as an easy
+															// exercise to the reader
 
 				// Set new vertices
 				if(v1)
