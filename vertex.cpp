@@ -22,7 +22,11 @@ vertex::vertex()
 	boundary	= false;
 	vertex_point	= NULL;
 	id		= std::numeric_limits<size_t>::max();
+	region		= std::numeric_limits<size_t>::max();
 	scale_attribute	= 0.0;
+
+	// FIXME: this->set(...) should be called here in order to avoid code
+	// duplication
 }
 
 /*!
@@ -85,6 +89,9 @@ void vertex::set(double x, double y, double z, double nx, double ny, double nz, 
 	// Sensible default for any vertex. Negative values make no sense, as
 	// the scale attribute is composed of edge lengths.
 	scale_attribute = 0.0;
+
+	// By default, no region is assigned to the vertex
+	region = std::numeric_limits<size_t>::max();
 }
 
 /*!
@@ -721,5 +728,25 @@ double vertex::calc_gaussian_curvature() const
 
 	return(gaussian_curvature);
 }
+
+/*!
+*	Calculates the root mean square curvature around the vertex. This
+*	requires enumerating the 1-ring neighbourhood of the vertex.
+*
+*	@return RMS curvature around the vertex
+*/
+
+double vertex::calc_rms_curvature() const
+{
+	double H = this->calc_mean_curvature();
+	double K = this->calc_gaussian_curvature();
+
+	double squared_curvature = 4*H*H-2*K;
+	if(squared_curvature < 0)
+		return(0.0);
+	else
+		return(sqrt(squared_curvature));
+}
+
 
 } // end of namespace "psalm"

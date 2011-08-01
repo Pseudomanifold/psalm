@@ -85,10 +85,13 @@ class vertex
 
 		double calc_mean_curvature() const;
 		double calc_gaussian_curvature() const;
+		double calc_rms_curvature() const;
 
 		double calc_voronoi_area() const;
 		double calc_mixed_area() const;
 		double calc_ring_area() const;
+
+		size_t region; // XXX: Identifies region the vertex belongs to
 
 	private:
 		std::vector<edge*> E;

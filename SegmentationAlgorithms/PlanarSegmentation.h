@@ -21,6 +21,15 @@ class PlanarSegmentation : public SegmentationAlgorithm
 {
 	public:
 		mesh apply_to(mesh& input_mesh);
+	
+	private:
+		void label_planar_vertices(mesh& input_mesh);
+		void label_nonplanar_faces(mesh& input_mesh);
+		void label_regions(mesh& input_mesh);
+
+		std::vector<vertex*>	planar_vertices;
+		std::vector<vertex*>	nonplanar_vertices;
+		std::vector<face*>	nonplanar_faces;
 };
 
 } // end of namespace "psalm"
