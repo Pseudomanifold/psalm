@@ -20,6 +20,7 @@ class FairingAlgorithm
 {
 	public:
 		FairingAlgorithm();
+                virtual ~FairingAlgorithm();
 
 		virtual bool apply_to(mesh& input_mesh) = 0;
 };

@@ -16,4 +16,8 @@ FairingAlgorithm::FairingAlgorithm()
 {
 }
 
+FairingAlgorithm::~FairingAlgorithm()
+{
+}
+
 } // end of namespace "libpsalm"
