@@ -60,7 +60,7 @@ SET(LIBPSALM_SRC
 ADD_LIBRARY(psalm ${LIBPSALM_SRC})
 
 # Create subdivided test data using "meshlab"
-ADD_CUSTOM_TARGET(	test
+ADD_CUSTOM_TARGET(	test_data
 			echo "Catmull-Clark subdivision"
 			./psalm -a cc -n 1 -o ICO_CC_01.ply ../Meshes/Icosahedron.ply
 			./psalm -a cc -n 2 -o ICO_CC_02.ply ../Meshes/Icosahedron.ply
