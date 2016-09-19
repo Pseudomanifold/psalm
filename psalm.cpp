@@ -26,7 +26,12 @@
 #include "SubdivisionAlgorithms/Loop.h"
 #include "SubdivisionAlgorithms/Liepa.h"
 
-#include "FairingAlgorithms/CurvatureFlow.h"
+#include "FairingAlgorithms/FairingAlgorithm.h"
+
+// FIXME: This should be conditional
+#if 0
+  #include "FairingAlgorithms/CurvatureFlow.h"
+#endif
 
 #include "mesh.h"
 
@@ -311,7 +316,12 @@ int main(int argc, char* argv[])
 	// As there is currently only _one_ fairing algorithm, there is really
 	// not much choice here
 	if(vm.count("fair"))
+        {
+// FIXME: Should be conditionally disabled...
+#if 0
 		fairing_algorithm = new psalm::CurvatureFlow();
+#endif
+        }
 
 	// We use this instance to create an instance of a subdivision
 	// algorithm class. Further class parameters are set _afterwards_,
