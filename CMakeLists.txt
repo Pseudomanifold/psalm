@@ -47,6 +47,8 @@ ADD_EXECUTABLE( psalm_cli ${PSALM_SRC} )
 TARGET_LINK_LIBRARIES( psalm_cli SubdivisionAlgorithms FairingAlgorithms SegmentationAlgorithms ${Boost_LIBRARIES} )
 SET_TARGET_PROPERTIES( psalm_cli PROPERTIES OUTPUT_NAME psalm )
 
+MESSAGE( STATUS ${Boost_LIBRARIES} )
+
 #
 # Build `libpsalm` _without_ relying on any libraries; this makes inclusion of
 # the library easier.
