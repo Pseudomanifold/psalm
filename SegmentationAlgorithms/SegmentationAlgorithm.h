@@ -4,7 +4,7 @@
 */
 
 #ifndef __SEGMENTATION_ALGORITHM_H__
-#define __SEGMENTATION_ALGORIOTM_H__
+#define __SEGMENTATION_ALGORITHM_H__
 
 #include "mesh.h"
 
