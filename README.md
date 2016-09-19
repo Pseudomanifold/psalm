@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/Submanifold/psalm.svg?branch=master)](https://travis-ci.org/Submanifold/psalm)
+
 # NAME
 
 **psalm** - pretty subdivision algorithms on meshes
