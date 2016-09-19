@@ -5,8 +5,13 @@
 
 #include "CurvatureFlow.h"
 
-#include <boost/numeric/bindings/traits/ublas_vector.hpp>
+#include <boost/numeric/ublas/matrix_sparse.hpp>
+#include <boost/numeric/ublas/vector.hpp>
+#include <boost/numeric/ublas/vector_sparse.hpp>
+
 #include <boost/numeric/bindings/traits/ublas_sparse.hpp>
+#include <boost/numeric/bindings/traits/ublas_vector.hpp>
+
 #include <boost/numeric/bindings/umfpack/umfpack.hpp>
 
 namespace psalm
