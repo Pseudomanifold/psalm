@@ -1,7 +1,7 @@
 CC          = g++
 CCFLAGS     = -g -Wall -c -pedantic -O11 -DNO_EXCEPTIONS
 LIBS        = -L /usr/X11/lib -L /usr/local/lib
-INCLUDES    = -I /usr/local/include
+INCLUDES    = -I /usr/local/include -I.
 LDFLAGS     =
 MYOBJECTS   = psalm.o v3ctor.o mesh.o face.o vertex.o edge.o directed_edge.o
 LIBOBJECTS  = libpsalm.o v3ctor.o mesh.o face.o vertex.o edge.o directed_edge.o hole.o
