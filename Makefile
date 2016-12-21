@@ -25,10 +25,6 @@ libpsalm:
 libpsalm_test: libpsalm_test.o Makefile
 	$(CC) libpsalm_test.o -L. -lpsalm -o libpsalm_test
 
-# Test for libpsalm
-libpsalm_test: libpsalm_test.o Makefile
-	$(CC) libpsalm_test.o -L. -lpsalm -o libpsalm_test
-
 clean:
 	rm -f *.o *.core *.html $(BIN)
 	rm -rf Doxygen
