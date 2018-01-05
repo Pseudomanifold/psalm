@@ -53,7 +53,7 @@ bool MinimumWeightTriangulation::apply_to(mesh& input_mesh)
 
 		// Initialize weights array correctly
 		if(i < n-1)
-			weights[i][i+1] = 0;
+			weights[i][i+1] = ktuple( 0 );
 		if(i < n-2)
 			weights[i][i+2] = objective_function(	input_mesh.get_vertex(i),
 								input_mesh.get_vertex(i+1),
