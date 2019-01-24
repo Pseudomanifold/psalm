@@ -204,7 +204,7 @@ bool edge::is_on_boundary()
 	if(boost::logic::indeterminate(boundary))
 		boundary = (f == NULL) || (g == NULL);
 
-	return(boundary == true);
+	return(bool(boundary) == true);
 }
 
 /*!

@@ -209,7 +209,7 @@ bool face::is_obtuse()
 		obtuse = (a*a+b*b < c*c) || (b*b* + c*c < a*a) || (c*c + a*a < b*b);
 	}
 
-	return(obtuse == true);
+	return(bool(obtuse) == true);
 }
 
 } // end of namespace "psalm"
